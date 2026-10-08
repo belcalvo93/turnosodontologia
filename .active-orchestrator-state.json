@@ -1,1 +1,122 @@
-{ "version": 4, "step": "discovery", "owner": "active-orchestrator" }
+{
+  "version": 4,
+  "step": "discovery",
+  "owner": "active-orchestrator",
+  "discovery": {
+    "created_by": "discovery-research",
+    "file": "docs/discovery/discovery.md",
+    "report_file": "docs/discovery/informe-discovery.md",
+    "sources_fetched_at": "2026-10-08",
+    "sources": [
+      "https://agendapro.com/ar/dental/software-odontologico",
+      "https://www.softwaredentalink.com/",
+      "https://www.wati.io/geo-argentina-es/automatiza-los-turnos-clinicos-por-whatsapp-sin-perder-el-cont"
+    ],
+    "competitors": [
+      {
+        "name": "AgendaPro",
+        "notes_file": "docs/discovery/sources/agendapro.md"
+      },
+      {
+        "name": "Dentalink",
+        "notes_file": "docs/discovery/sources/dentalink.md"
+      },
+      {
+        "name": "Wati",
+        "notes_file": "docs/discovery/sources/wati-whatsapp-turnos.md"
+      },
+      {
+        "name": "Doctocliq",
+        "notes_file": "docs/discovery/informe-discovery.md"
+      },
+      {
+        "name": "Turnito",
+        "notes_file": "docs/discovery/informe-discovery.md"
+      },
+      {
+        "name": "Reservo",
+        "notes_file": "docs/discovery/informe-discovery.md"
+      }
+    ],
+    "problema": "Los consultorios odontologicos argentinos gestionan turnos con herramientas que no evitan solapamientos de profesional ni de sillon, no liberan horarios cancelados y no dejan registro de cambios.",
+    "usuarios": [
+      "administracion",
+      "recepcion",
+      "odontologo"
+    ],
+    "casos_de_uso": [
+      "crear turno sin solapamientos por profesional, sillon y paciente",
+      "cancelar turno liberando el horario",
+      "reprogramar turno conservando historial",
+      "ver agenda diaria y semanal",
+      "bloquear horarios de profesional o sillon"
+    ],
+    "funcionalidades_necesarias": [
+      "profesionales, sillones/boxes y prestaciones con duracion",
+      "horarios de atencion y bloqueos",
+      "crear turno sin solapamientos",
+      "cancelar turno",
+      "reprogramar turno",
+      "agenda diaria y semanal",
+      "pacientes ficticios con obra social como dato",
+      "autenticacion JWT y roles",
+      "auditoria de cambios en turnos"
+    ],
+    "funcionalidades_opcionales": [
+      "confirmacion por enlace",
+      "lista de espera",
+      "anticipacion minima configurable",
+      "reserva online",
+      "exportacion de datos",
+      "recordatorios WhatsApp",
+      "senas Mercado Pago",
+      "facturacion ARCA",
+      "liquidacion obras sociales",
+      "historia clinica y odontograma",
+      "multisede",
+      "frontend React"
+    ],
+    "reglas_de_negocio": [
+      "sin solapamiento por profesional",
+      "sin solapamiento por sillon/box",
+      "sin solapamiento por paciente",
+      "intervalos semiabiertos [inicio, fin): turnos contiguos son validos",
+      "la duracion la define la prestacion",
+      "se rechaza fuera del horario de atencion",
+      "se rechaza dentro de un bloqueo de profesional o sillon",
+      "sin sobreturnos",
+      "solo se cancela o reprograma un turno futuro",
+      "cancelar libera el horario",
+      "reprogramar aplica las mismas reglas y conserva historial",
+      "toda modificacion queda auditada"
+    ],
+    "integraciones": [],
+    "restricciones": [
+      "stack Python, FastAPI, JWT, SQLAlchemy, PostgreSQL, Docker",
+      "para el change alcanza con el backend",
+      "datos de pacientes ficticios",
+      "sin secretos en el repo",
+      "no contactar proveedores",
+      "fecha de entrega sin definir"
+    ],
+    "riesgos": [
+      "evidencia de competidores mayormente comercial",
+      "necesidad de agenda por sillon no validada con usuarios reales",
+      "supuesto de que todo turno usa un sillon",
+      "zonas horarias y cambios de horario",
+      "concurrencia en reservas simultaneas",
+      "costo de WhatsApp"
+    ],
+    "preguntas_abiertas": [
+      "escala supuesta: una sede, varios odontologos y sillones",
+      "sobreturnos con permiso",
+      "margen de limpieza entre turnos",
+      "anticipacion minima de cancelacion",
+      "turnos existentes al crear un bloqueo",
+      "uso de la obra social en la liquidacion",
+      "requisitos de la Ley 27.706 si se agrega historia clinica",
+      "datos No evidenciado del informe"
+    ],
+    "verification_pending": true
+  }
+}
