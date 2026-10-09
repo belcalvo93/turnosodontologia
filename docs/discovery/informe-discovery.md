@@ -18,11 +18,11 @@ Se relevaron **18 soluciones** de gestión de turnos y agenda aplicables a consu
 
 **Principales hallazgos:**
 
-1. **La evidencia es mayormente comercial.** De lo relevado, solo una parte está comprobada: centros de ayuda de Dentalink y RAS Salud, tutoriales oficiales de AgendaPro, precios publicados de Turnito, Encuadrado y Clinicorp, y datos de tiendas de aplicaciones. El resto es afirmación del proveedor. Ninguna cifra de resultados publicada, como la reducción de inasistencias o la cantidad de clientes, informa metodología o fuente independiente.
+1. **La evidencia es mayormente comercial.** De lo relevado, solo una parte está comprobada: centros de ayuda de Dentalink y RAS Salud, tutoriales oficiales de AgendaPro, precios publicados de AgendaPro, Turnito, Encuadrado y Clinicorp, y datos de tiendas de aplicaciones. El resto es afirmación del proveedor. Ninguna cifra de resultados publicada, como la reducción de inasistencias o la cantidad de clientes, informa metodología o fuente independiente.
 2. **El estándar de mercado ya está definido.** Lo componen la agenda online por profesional, la reserva por enlace sin registro del paciente, los recordatorios con confirmación (WhatsApp como canal dominante), la historia clínica digital y el funcionamiento en la nube con acceso móvil.
 3. **El mercado argentino tiene vacíos visibles:**
    - Ningún software odontológico especializado evidencia facturación electrónica ARCA ni liquidación a obras sociales y prepagas.
-   - Solo un producto horizontal, no odontológico, publica precios en pesos (Turnito).
+   - Solo dos productos publican precios en pesos: Turnito (horizontal, no odontológico) y AgendaPro (versión dental). Los demás productos dentales funcionan por cotización o no los publican.
    - Ningún producto evidencia la prevención de solapamientos como regla, ni por profesional ni por sillón o box.
    - Ningún producto evidencia lista de espera ni exportación de datos.
 4. **El costo de WhatsApp es real.** Los recordatorios por la API oficial de WhatsApp tienen costos de Meta además de los de la plataforma, lo que condiciona su inclusión en un MVP.
@@ -76,9 +76,9 @@ El número (#) de cada sistema se mantiene en todas las tablas.
 | # | Producto | Proveedor | País de origen | Segmento | Modalidad | URL oficial / fuente principal | Fecha |
 |---|---|---|---|---|---|---|---|
 | 1 | AgendaPro (vertical dental) | AgendaPro | Chile (versión Argentina) | Consultorio y clínica, uno o varios sillones, multisede | SaaS + apps iOS/Android | https://agendapro.com/ar/dental/software-odontologico | 2026-10-08 |
-| 2 | Turnito | Turnito | Argentina | Horizontal (consultorios médicos, psicólogos, estética, etc.); no específico de odontología | SaaS web | https://www.turnito.app/ | 2026-10-08 |
+| 2 | Turnito | Turnito | Argentina | Horizontal (consultorios médicos, psicólogos, estética, etc.); no específico de odontología | SaaS web | https://turnito.app/ar/planes/ | 2026-10-08 |
 | 3 | TurneroMed | TusProgramas | Argentina (Tercero) | Odontólogos, médicos, kinesiólogos, estética (Tercero) | SaaS web (Tercero) | https://www.capterra.com/p/10040798/TurneroMed/ (sitio oficial: No evidenciado) | 2026-10-08 |
-| 4 | Doctoralia (para especialistas) | Docplanner | España / Polonia (opera en Argentina) | Profesionales independientes y centros | SaaS + app + marketplace de pacientes | https://apps.apple.com/es/app/doctoralia-para-especialistas/id1237598188 (doctoralia.com.ar no respondió) | 2026-10-08 |
+| 4 | Doctoralia (para especialistas) | Docplanner Health (proveedor: Docplanner Italy S.R.L.) | España / Polonia (opera en Argentina) | Profesionales independientes y centros | SaaS + app + marketplace de pacientes | https://apps.apple.com/es/app/doctoralia-para-especialistas/id1237598188 (doctoralia.com.ar no respondió) | 2026-10-08 |
 | 5 | Reservo | Reservo | Chile (opera en Chile, México y Argentina, Tercero) | Profesionales independientes, centros médicos y clínicas | SaaS | https://reservo.cl/ar/ · https://chocale.cl/2026/09/reservo-la-plataforma-que-ayuda-a-clinicas-a-recuperar-hasta-50-horas-semanales/ | 2026-10-08 |
 | 6 | RAS Salud (módulo de turnos, MrTurno) | RAS Salud | Argentina (domicilio en Godoy Cruz, Mendoza, según su centro de ayuda) | Instituciones médicas; módulo para el paciente | Web | https://intercom.help/ayuda-ras-salud/en/articles/3843356-mrturno-gestion-de-turnos-confirmar-cancelar-etc · https://intercom.help/ayuda-ras-salud/en/articles/3400146-leccion-5-de-turnos-cancelacion-de-turnos | 2026-10-08 |
 | 7 | Medicloud | Woopi App | Argentina (Tercero) | Médicos y profesionales de la salud | App Android | https://chrome-stats.com/d/com.woopi.medicloud (espejo de la ficha de Google Play) | 2026-10-08 |
@@ -121,7 +121,7 @@ El número (#) de cada sistema se mantiene en todas las tablas.
 
 | # | Producto | Reserva online 24/7 por enlace | Canales: web, redes, chatbot, WhatsApp | Confirmación | Cancelación | Reprogramación | Lista de espera |
 |---|---|---|---|---|---|---|---|
-| 1 | AgendaPro | Declarado (sin registro del paciente) | No evidenciado como canal de reserva | Declarado (doble confirmación) | Declarado (liberación automática del espacio) | No evidenciado | No evidenciado |
+| 1 | AgendaPro | Declarado (sin registro del paciente) | Declarado (link de reserva para compartir en redes sociales; turnos online 24/7) | Declarado (doble confirmación) | Declarado (liberación automática del espacio) | No evidenciado | No evidenciado |
 | 2 | Turnito | Declarado (enlace sin registro ni descarga; el turno se bloquea al acreditarse la seña) | Declarado (enlace compartido por WhatsApp, Instagram o web) | No evidenciado | No evidenciado | No evidenciado | No evidenciado |
 | 3 | TurneroMed | No evidenciado | No evidenciado | No evidenciado | No evidenciado | No evidenciado | No evidenciado |
 | 4 | Doctoralia | Declarado (marketplace de pacientes) | Declarado (sitio de Doctoralia) | Declarado (el paciente confirma, app de México) | Declarado (el paciente cancela, app de México) | No evidenciado | No evidenciado |
@@ -144,7 +144,7 @@ El número (#) de cada sistema se mantiene en todas las tablas.
 
 | # | Producto | Recordatorios | Seguimiento de ausentes o recuperación | Controles periódicos | Campañas |
 |---|---|---|---|---|---|
-| 1 | AgendaPro | Declarado (WhatsApp, SMS, email) | No evidenciado | No evidenciado | Declarado (CRM, emailing) |
+| 1 | AgendaPro | Declarado (WhatsApp, SMS, email; envío configurable el mismo día o 1, 2 o 3 días antes) | No evidenciado | No evidenciado | Declarado (CRM, emailing) |
 | 2 | Turnito | Declarado (desde el plan Plus; 30/100/250 mensajes de WhatsApp por mes) | No evidenciado | No evidenciado | No evidenciado |
 | 3 | TurneroMed | Tercero (WhatsApp) | No evidenciado | No evidenciado | No evidenciado |
 | 4 | Doctoralia | Declarado (al paciente) | No evidenciado | No evidenciado | No evidenciado |
@@ -167,7 +167,7 @@ El número (#) de cada sistema se mantiene en todas las tablas.
 
 | # | Producto | Ficha / historia clínica | Anamnesis | Odontograma | Periodontograma | Imágenes / radiografías | Presupuestos / planes de tratamiento |
 |---|---|---|---|---|---|---|---|
-| 1 | AgendaPro | Declarado (personalizable) | No evidenciado | No evidenciado | No evidenciado | Declarado | Declarado (presupuestos); planes No evidenciado |
+| 1 | AgendaPro | Declarado (personalizable) | No evidenciado | Declarado (respuesta de preguntas frecuentes y descripción de la página) | No evidenciado | Declarado | Declarado (presupuestos); planes No evidenciado |
 | 2 | Turnito | No evidenciado (solo historial de clientes en plan Pro) | No evidenciado | No evidenciado | No evidenciado | No evidenciado | No evidenciado |
 | 3 | TurneroMed | Tercero (gestión de pacientes) | No evidenciado | No evidenciado | No evidenciado | No evidenciado | No evidenciado |
 | 4 | Doctoralia | Declarado (información básica del paciente) | No evidenciado | No evidenciado | No evidenciado | No evidenciado | No evidenciado |
@@ -190,7 +190,7 @@ El número (#) de cada sistema se mantiene en todas las tablas.
 
 | # | Producto | Caja / cobros | Señas / pago online | Mercado Pago | Facturación electrónica local | Obras sociales / prepagas / seguros | Liquidaciones / comisiones | Reportes |
 |---|---|---|---|---|---|---|---|---|
-| 1 | AgendaPro | Declarado | Declarado | No evidenciado | No evidenciado | No evidenciado | Declarado (comisiones por dentista) | Declarado (por profesional y sede) |
+| 1 | AgendaPro | Declarado | Declarado | No evidenciado | No evidenciado ("Próximamente" en la página de planes) | No evidenciado | Declarado (comisiones por dentista) | Declarado (por profesional y sede) |
 | 2 | Turnito | No evidenciado | Declarado (seña o total con MercadoPago, Talo o transferencia) | Declarado | No evidenciado | No evidenciado | No evidenciado | No evidenciado |
 | 3 | TurneroMed | No evidenciado | No evidenciado | Tercero | Tercero ("facturación integrada") | Tercero (seguimiento de seguros) | No evidenciado | No evidenciado |
 | 4 | Doctoralia | No evidenciado | No evidenciado | No evidenciado | No evidenciado | No evidenciado | No evidenciado | No evidenciado |
@@ -282,7 +282,7 @@ El número (#) de cada sistema se mantiene en todas las tablas.
 
 | # | Producto | Prueba gratuita | Plan gratuito | Precios publicados | Moneda | Modalidad de cobro | Costos adicionales visibles |
 |---|---|---|---|---|---|---|---|
-| 1 | AgendaPro | Declarado | No evidenciado | No evidenciado (agendapro.com/ar/precios devolvió 404) | No evidenciado | No evidenciado | No evidenciado |
+| 1 | AgendaPro | Declarado | No evidenciado | Comprobado: Individual $13.900, Básico $33.900, Premium $44.900 y Pro $314.900 por mes, IVA incluido (https://agendapro.com/ar/planes) | ARS | Mensual o anual; anual con 2 meses gratis (Declarado) | Comprobado: WhatsApp desde $7.900/mes por 50 mensajes; videoconferencia desde $10.900/mes; asistente Charly desde $31.900/mes |
 | 2 | Turnito | No evidenciado | Comprobado ("gratis sin límite de tiempo") | Comprobado: Plus $12.000, Advance $24.500, Pro $42.000 por mes, IVA incluido | ARS | Mensual; se puede pausar o cancelar (Declarado) | Comprobado (comisión por cobro: 5 %, 3,5 %, 1 % y 0 % según plan) |
 | 3 | TurneroMed | Tercero | No evidenciado | Tercero, inconsistente (ver nota) | Inconsistente (rotulado USD) | Tercero (1, 3 o 6 meses) | No evidenciado |
 | 4 | Doctoralia | No evidenciado | No evidenciado | No evidenciado | No evidenciado | No evidenciado | No evidenciado |
@@ -305,8 +305,8 @@ El número (#) de cada sistema se mantiene en todas las tablas.
 
 | # | Producto | Fortalezas / diferenciales evidentes | Limitaciones evidentes | Adopción publicada |
 |---|---|---|---|---|
-| 1 | AgendaPro | Versión argentina dental; reserva sin registro; liberación automática del horario cancelado; señas integradas; tutoriales oficiales | Producto horizontal (también belleza y bienestar); precios argentinos no localizados; sin evidencia de odontograma, ARCA u obras sociales | Afirmación comercial: +135.000 profesionales, +20.000 negocios, 98 % de asistencia con confirmación |
-| 2 | Turnito | Único con precios públicos en pesos; plan gratuito; seña que bloquea el turno | No odontológico; sin evidencia de cancelación, reprogramación, multiprofesional ni historia clínica | No evidenciado |
+| 1 | AgendaPro | Versión argentina dental; reserva sin registro; liberación automática del horario cancelado; señas integradas; tutoriales oficiales | Producto horizontal (también belleza y bienestar); odontograma solo declarado en preguntas frecuentes; sin evidencia de ARCA ("Próximamente" en la página de planes) ni de obras sociales | Afirmación comercial: +135.000 profesionales, +20.000 negocios, 98 % de asistencia con confirmación |
+| 2 | Turnito | Precios públicos en pesos; plan gratuito; seña que bloquea el turno | No odontológico; sin evidencia de cancelación, reprogramación, multiprofesional ni historia clínica | No evidenciado |
 | 3 | TurneroMed | Local; WhatsApp y Mercado Pago (Tercero) | Sitio oficial no localizado; precios contradictorios | No evidenciado |
 | 4 | Doctoralia | Marketplace con demanda de pacientes; app profesional bien calificada | Precios argentinos no evidenciados; la app se limita a planes Premium y First Class | Comprobado: 4,7/5 con unas 3.000 valoraciones (App Store España) |
 | 5 | Reservo | Opera en Argentina; landing con mención a facturación ARCA | Landing argentina sin contenido funcional; odontología no evidenciada | Afirmación comercial: +36.500 profesionales y centros, unos 14 millones de reservas al año |
@@ -337,7 +337,7 @@ El número (#) de cada sistema se mantiene en todas las tablas.
 
 | # | Producto | Turnos y autom. (25 %) | Odontológica (20 %) | Integr. locales y WhatsApp (15 %) | Administración (15 %) | Paciente (10 %) | Seguridad (10 %) | Precio (5 %) | **Total ponderado** |
 |---|---|---|---|---|---|---|---|---|---|
-| 1 | AgendaPro | 4 | 3 | 3 | 4 | 4 | 2 | 2 | **3,35** |
+| 1 | AgendaPro | 4 | 3 | 3 | 4 | 4 | 2 | 4 | **3,45** |
 | 9 | Doctocliq | 4 | 4 | 2 | 4 | 3 | 2 | 3 | **3,35** |
 | 8 | Dentalink | 4 | 4 | 1 | 4 | 3 | 4 | 1 | **3,30** |
 | 12 | Clinicorp | 4 | 3 | 2 | 4 | 4 | 1 | 4 | **3,20** |
@@ -406,7 +406,7 @@ Las funciones de IA (notas por voz, copilotos clínicos, agentes de WhatsApp) es
 2. **Sillón o box como recurso con reglas.** Ningún producto evidencia la prevención de solapamientos, ni por profesional ni por sillón o box. Dentalink muestra "recursos" en su agenda, pero no documenta qué ocurre si dos citas coinciden.
 3. **Sobreturnos y lista de espera.** No están evidenciados en ninguno de los 18 sistemas.
 4. **Exportación de datos y auditoría.** Tampoco están evidenciadas en ningún sistema. Dentalink documenta solo la importación.
-5. **Precios en pesos.** Solo Turnito los publica, y no es odontológico. Los productos dentales funcionan por cotización.
+5. **Precios en pesos.** Solo Turnito (no odontológico) y AgendaPro (versión dental) los publican. Los demás productos dentales funcionan por cotización o no los publican.
 6. **Normativa argentina.** Solo Medicloud declara (según un tercero) ajustarse a las leyes 25.326 (datos personales) y 26.529 (derechos del paciente). Nadie menciona la Ley 27.706 de historia clínica digital, reglamentada por el Decreto 393/2023, ni su exigencia de trazabilidad.
 
 ### C.4 Oportunidades de innovación
@@ -426,9 +426,9 @@ Las funciones de IA (notas por voz, copilotos clínicos, agentes de WhatsApp) es
 
 Por consigna del TP no se contactan proveedores ni se crean cuentas: el análisis se limita a demos, tutoriales y videos públicos.
 
-1. **AgendaPro:** versión argentina dental, reserva sin registro, liberación de turnos y tutoriales oficiales disponibles.
+1. **AgendaPro:** versión argentina dental, mejor puntaje ponderado (3,45), precios en pesos publicados, reserva sin registro, liberación de turnos y tutoriales oficiales disponibles.
 2. **Dentalink:** referencia clínica más completa y agenda por recursos documentada.
-3. **Doctocliq:** mejor puntaje ponderado; odontograma, roles y plan gratuito.
+3. **Doctocliq:** segundo mejor puntaje ponderado (3,35); odontograma, roles y plan gratuito.
 4. **Turnito:** referencia local de precios, seña con MercadoPago y WhatsApp.
 5. **Reservo:** opera en Argentina y declara facturación ARCA, a confirmar.
 
@@ -480,6 +480,8 @@ Por consigna del TP no se contactan proveedores ni se crean cuentas: el análisi
 4. **Dato no verificable descartado.** Se descartó la cifra "70.000 odontólogos en Argentina, 3 % con herramientas tecnológicas". Viene de una tesis de la UdeSA cuyo repositorio pide inicio de sesión.
 5. **Precios de terceros no usados.** Un agregador indicaba "USD 29 por usuario por mes" para AgendaPro y Dentalink. No se usó porque no proviene del proveedor.
 6. **Datos que contradicen el discurso.** Reservo dice operar en Argentina, pero su landing argentina no tiene contenido. Doctocliq se presenta como app, pero su ficha de iOS no tiene valoraciones suficientes para mostrar.
+7. **Errores del agente detectados en la verificación humana.** El informe afirmaba que AgendaPro no publicaba precios y que no mencionaba el odontograma. Ambas afirmaciones eran falsas: el agente probó una URL de precios inventada (`/ar/precios`, 404) en lugar de seguir el enlace real del menú, y su resumen automático omitió las preguntas frecuentes colapsadas. Parecían razonables y estaban mal. Si se hubiera dado "Continuar", la matriz y el resumen ejecutivo habrían quedado con una afirmación falsa ("solo Turnito publica precios en pesos").
+8. **Afirmaciones sobreestimadas.** La duración variable de Dentalink figuraba como "Comprobado", pero solo se edita la duración de cada cita, no por prestación; y la ausencia de tutoriales de AgendaPro sobre agenda y recordatorios era más matizada de lo informado. Se corrigieron con Ajustar.
 
 ---
 
@@ -494,11 +496,11 @@ Cada integrante carga su verificación en un archivo propio, `docs/discovery/ver
 
 | # | Tipo de fuente | Fuente | Qué afirma el informe | Verificó | Fecha | ¿Está en la URL? (Sí / Parcial / No) | Corrección aplicada |
 |---|---|---|---|---|---|---|---|
-| 1 | Sitio oficial | https://agendapro.com/ar/dental/software-odontologico | Reserva sin registro; recordatorios WhatsApp/SMS/email con doble confirmación; liberación automática ante cancelaciones; sin precios; sin mención de odontograma | Bruno Fiouchetta | | | |
-| 2 | Página de precios | https://www.turnito.app/ | Plan gratuito; Plus $12.000, Advance $24.500, Pro $42.000 por mes IVA incluido; cupos de WhatsApp 30/100/250; comisiones 5 %/3,5 %/1 %/0 % | Elías Tello | 2026-10-09 | Sí (en https://turnito.app/ar/planes/) | La URL citada (raíz del sitio) no contiene los precios: están en `/ar/planes/`. Los valores coinciden. Matiz: la página publica el precio sin IVA ($9.900, $20.300 y $34.800) y el total "+ IVA" ($12.000, $24.500 y $42.000), por lo que "IVA incluido" equivale al total con IVA. El plan gratuito incluye 100 reservas por mes y 3 agendas. Se corrige la URL de la fuente. |
+| 1 | Sitio oficial | https://agendapro.com/ar/dental/software-odontologico | Reserva sin registro; recordatorios WhatsApp/SMS/email con doble confirmación; liberación automática ante cancelaciones; sin precios; sin mención de odontograma | Bruno Fiouchetta | 2026-10-09 | Parcial (2 afirmaciones incorrectas) | Sí hay precios: la página de planes (https://agendapro.com/ar/planes) los publica en pesos, IVA incluido. El agente había probado una URL inventada (`/ar/precios`, 404) en lugar de seguir el enlace "Precios" del menú. Sí se menciona el odontograma, en una pregunta frecuente colapsada y en la descripción de la página. Se corrigen A.3, A.4, A.5, A.6, A.10, la matriz B, el resumen y C.3. Detalle en `verificacion-bruno.md`. |
+| 2 | Página de precios | https://turnito.app/ar/planes/ (el informe citaba https://www.turnito.app/) | Plan gratuito; Plus $12.000, Advance $24.500, Pro $42.000 por mes IVA incluido; cupos de WhatsApp 30/100/250; comisiones 5 %/3,5 %/1 %/0 % | Elías Tello | 2026-10-09 | Sí (en https://turnito.app/ar/planes/) | La URL citada (raíz del sitio) no contiene los precios: están en `/ar/planes/`. Los valores coinciden. Matiz: la página publica el precio sin IVA ($9.900, $20.300 y $34.800) y el total "+ IVA" ($12.000, $24.500 y $42.000), por lo que "IVA incluido" equivale al total con IVA. El plan gratuito incluye 100 reservas por mes y 3 agendas. Se corrige la URL de la fuente. |
 | 3 | Centro de ayuda | https://intercom.help/softwaredentalink/es/articles/9493130-como-confirmar-anular-y-cambiar-citas | 3 vistas de agenda (diaria, semanal, diaria global por especialidad, profesional y recurso); cambio de fecha por arrastre; duración editable; estados configurables; no menciona sobrecupos ni sillones | Belén Calvo | 2026-10-09 | Parcial | La duración solo se edita en cada cita y no se vincula a la prestación: en A.2 "Duración variable" pasa de "Comprobado" a "Comprobado en parte". El resto de las afirmaciones coincide con la página. Detalle en `verificacion-belen.md`. |
-| 4 | Tienda de aplicaciones | https://apps.apple.com/es/app/doctoralia-para-especialistas/id1237598188 | Desarrollador Docplanner; app solo para clientes Premium y First Class; 4,7/5 con unas 3.000 valoraciones | Hernán Gonzales | | | |
-| 5 | Video / tutorial oficial | https://agendapro.com/bo/tutoriales | 2 manuales PDF y 7 videos en Vimeo, uno de ellos "Creación de Cuenta Recepcionista"; no hay tutoriales de agenda, recordatorios ni exportación | Joaquín Morán | | | |
+| 4 | Tienda de aplicaciones | https://apps.apple.com/es/app/doctoralia-para-especialistas/id1237598188 | Desarrollador Docplanner; app solo para clientes Premium y First Class; 4,7/5 con unas 3.000 valoraciones | Hernán Gonzales | 2026-10-09 | Sí (con precisión) | La ficha indica "Desarrollador: Docplanner Health" (proveedor: Docplanner Italy S.R.L.). Se corrige en A.1. Planes y valoraciones coinciden. Detalle en `verificacion-hernan.md`. |
+| 5 | Video / tutorial oficial | https://agendapro.com/bo/tutoriales | 2 manuales PDF y 7 videos en Vimeo, uno de ellos "Creación de Cuenta Recepcionista"; no hay tutoriales de agenda, recordatorios ni exportación | Joaquín Morán | 2026-10-09 | Sí (con precisiones) | Manuales y videos coinciden. Se precisa la última afirmación: no hay tutoriales dedicados a agenda, recordatorios ni exportación; solo se explica el período de agendamiento (tiempo mínimo y máximo para aceptar reservas). Los videos parecen antiguos (capturas de 2015) y el Centro de Ayuda enlazado no se revisó. Detalle en `verificacion-joaquin.md`. |
 
 **Fuentes adicionales sugeridas** si sobra tiempo:
 
@@ -515,7 +517,8 @@ Todas las fuentes se consultaron el 2026-10-08.
 
 1. AgendaPro — Software odontológico (Argentina). https://agendapro.com/ar/dental/software-odontologico
 2. AgendaPro — Tutoriales (manuales y videos oficiales). https://agendapro.com/bo/tutoriales
-3. Turnito — Sitio oficial y planes. https://www.turnito.app/
+   - AgendaPro — Planes y precios (agregada en la verificación de fuentes). https://agendapro.com/ar/planes
+3. Turnito — Planes y precios. https://turnito.app/ar/planes/
 4. Capterra — TurneroMed. https://www.capterra.com/p/10040798/TurneroMed/ (acceso automatizado bloqueado; datos tomados del resumen del buscador sobre las fichas regionales)
 5. Apple App Store — Doctoralia para especialistas. https://apps.apple.com/es/app/doctoralia-para-especialistas/id1237598188
 6. Reservo — Landing Argentina. https://reservo.cl/ar/
@@ -548,5 +551,5 @@ Todas las fuentes se consultaron el 2026-10-08.
 - G2 (MedicAI): error 403.
 - doctoralia.com.ar: conexión rechazada.
 - Repositorio UdeSA, tesis sobre Sultapp/Consulmed: requiere inicio de sesión.
-- Páginas de precios de AgendaPro (`/ar/precios`), Doctocliq (`/precios`) y Dentalink (`/precios`): error 404.
+- Páginas de precios de Doctocliq (`/precios`) y Dentalink (`/precios`): error 404. La URL de AgendaPro (`/ar/precios`) también dio 404, pero era inventada: los precios reales están en `/ar/planes` (hallazgo 7).
 - DentalSoft Plus: no se localizó el sitio oficial.
