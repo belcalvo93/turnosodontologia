@@ -490,7 +490,7 @@ La completan los integrantes, cada uno con una fuente de un tipo distinto, sin c
 - si lo que afirma el informe está realmente en la URL;
 - la corrección aplicada con "Ajustar", si hizo falta.
 
-Esta tabla la consolida Elías.
+Cada integrante carga su verificación en un archivo propio, `docs/discovery/verificacion-<nombre>.md` (ver `verificacion-belen.md` como ejemplo), y lo commitea desde su cuenta en la rama `etapa-2-discovery`. Así se evitan conflictos de merge sobre esta tabla. Después Elías consolida los resultados acá.
 
 | # | Tipo de fuente | Fuente | Qué afirma el informe | Verificó | Fecha | ¿Está en la URL? (Sí / Parcial / No) | Corrección aplicada |
 |---|---|---|---|---|---|---|---|
