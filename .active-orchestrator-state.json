@@ -1,6 +1,6 @@
 {
   "version": 4,
-  "step": "discovery",
+  "step": "kb",
   "owner": "active-orchestrator",
   "discovery": {
     "created_by": "discovery-research",
@@ -116,7 +116,6 @@
       "uso de la obra social en la liquidacion",
       "requisitos de la Ley 27.706 si se agrega historia clinica",
       "datos No evidenciado del informe"
-    ],
-    "verification_pending": true
+    ]
   }
 }
