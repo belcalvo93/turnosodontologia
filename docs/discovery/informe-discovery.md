@@ -3,7 +3,7 @@
 **Materia:** Metodología I — Tecnicatura Universitaria en Programación (UTN)
 **Integrantes:** Bruno Fiouchetta, Elías Tello, Belén Calvo, Hernán Gonzales, Joaquín Morán
 **Fecha de relevamiento:** 2026-10-08
-**Estado:** borrador pendiente de verificación de fuentes (etapa en "Parar acá")
+**Estado:** versión final, con las 5 fuentes verificadas y los "Ajustar" aplicados (2026-10-09)
 **Consigna que responde:** `docs/discovery/consigna-investigacion.md` (texto literal de la consigna del TP)
 
 ---
