@@ -51,6 +51,7 @@ Los nombres de rutas son una propuesta del equipo (**Supuesto del equipo**).
 | Recurso | Endpoints principales |
 |---------|-----------------------|
 | auth | `POST /auth/login` |
+| usuarios | `GET/POST /usuarios`, `PATCH /usuarios/{id}` (solo administración, US-013) |
 | profesionales | `GET/POST /profesionales`, `PATCH /profesionales/{id}` |
 | sillones | `GET/POST /sillones`, `PATCH /sillones/{id}` |
 | prestaciones | `GET/POST /prestaciones`, `PATCH /prestaciones/{id}` |

@@ -72,6 +72,7 @@ Cada ítem se buscó en el informe antes de rotularlo; ninguno aparece textualme
 | SE-21 | Reprogramar mantiene el mismo id de turno (alternativa: turno nuevo encadenado) | Baja | Modelo de auditoría | Equipo | RN-TUR-07, D-05 |
 | SE-22 | Stack provisional: SQLite en lugar de PostgreSQL/Docker (ver IN-01). Revisar si hay concurrencia real o necesidad de despliegue compartido | Media | D-01 | Equipo / cátedra | D-01 |
 | SE-23 | Fecha de entrega del trabajo práctico sin definir (consta en el estado del proyecto, no en el informe) | Baja | Planificación | Equipo | — |
+| SE-24 | Feriados y cierres de todo el consultorio: hoy un bloqueo es solo por profesional o por sillón, así que habría que cargarlo recurso por recurso. Opciones: bloqueo con alcance "consultorio" o cargarlo por recurso | Media | Modelo de Bloqueo (alcance) | Equipo / cátedra | RN-REC-02, RN-TUR-05 |
 
 ## Resumen para decisiones del primer change
 

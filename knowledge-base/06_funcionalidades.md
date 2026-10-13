@@ -82,7 +82,7 @@ Los criterios de aceptación son propuesta del equipo; los datos de ejemplo son 
 - [ ] Si el profesional tiene otro turno activo que se superpone, responde 409.
 - [ ] Si el sillón tiene otro turno activo que se superpone, responde 409.
 - [ ] Turnos contiguos (uno termina cuando empieza el otro) son aceptados.
-- [ ] Fuera del horario del profesional o dentro de un bloqueo responde 409/422 con mensaje claro.
+- [ ] Fuera del horario del profesional o dentro de un bloqueo responde 409 con mensaje claro (RN-GLO-01).
 - [ ] Se registra auditoría de la creación.
 
 **Reglas relacionadas**: RN-TUR-01 a RN-TUR-05, RN-TUR-12, RN-AUD-01

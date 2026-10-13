@@ -43,7 +43,7 @@ Recepción --> API --> DB (lee contexto)
 
 **Casos de error**:
 - Solapamiento de profesional o sillón (o paciente) -> 409 con detalle del turno en conflicto, sin cambios.
-- Fuera de horario o dentro de bloqueo -> 409 (o 422) con motivo.
+- Fuera de horario o dentro de bloqueo -> 409 con motivo (RN-GLO-01).
 - Profesional, sillón o prestación inexistente o inactivo -> 422.
 - Dos reservas simultáneas del mismo hueco: la segunda ve el conflicto porque la verificación y la inserción ocurren en una única transacción de escritura (concurrencia: SE-06).
 
@@ -60,7 +60,7 @@ Recepción --> API --> DB (lee contexto)
 
 **Casos de error**:
 - Turno inexistente -> 404.
-- Turno pasado o en curso -> 409/422.
+- Turno pasado o en curso -> 409 (RN-TUR-09).
 - Turno ya cancelado -> 409.
 
 ## Flujo 4: Reprogramar un turno
@@ -75,7 +75,7 @@ Recepción --> API --> DB (lee contexto)
 
 **Casos de error**:
 - Nuevo horario ocupado, fuera de horario o bloqueado -> 409; el turno queda como estaba y no se audita un cambio (RN-AUD-03).
-- Turno cancelado o pasado -> 409/422.
+- Turno cancelado o pasado -> 409 (RN-TUR-09).
 
 ## Flujo 5: Bloquear un horario
 **Disparador**: vacaciones, feriado o mantenimiento de un sillón.
