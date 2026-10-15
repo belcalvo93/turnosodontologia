@@ -1,6 +1,6 @@
 {
   "version": 4,
-  "step": "kb",
+  "step": "done",
   "owner": "active-orchestrator",
   "discovery": {
     "created_by": "discovery-research",
@@ -141,6 +141,67 @@
       "knowledge-base/09_decisiones_y_supuestos.md",
       "knowledge-base/10_preguntas_abiertas.md",
       "knowledge-base/README.md"
+    ]
+  },
+  "roadmap": {
+    "created_by": "roadmap-generator",
+    "changes_file": "CHANGES.md"
+  },
+  "skills": {
+    "created_by": "find-skill",
+    "recommended": [
+      "wshobson/agents@python-testing-patterns",
+      "wshobson/agents@fastapi-templates",
+      "fastapi/fastapi@fastapi",
+      "wshobson/agents@auth-implementation-patterns",
+      "wshobson/agents@api-design-principles",
+      "mindrally/skills@fastapi-python",
+      "affaan-m/ecc@fastapi-patterns",
+      "jeffallan/claude-skills@fastapi-expert",
+      "github/awesome-copilot@pytest-coverage",
+      "getsentry/skills@security-review",
+      "wshobson/agents@sql-optimization-patterns",
+      "wshobson/agents@python-configuration",
+      "pydantic/skills@pydantic",
+      "martinholovsky/claude-skills-generator@SQLite Database Expert",
+      "coderabbitai/skills@code-review",
+      "alleneubank/claude-code@python-best-practices",
+      "mattpocock/skills@tdd"
+    ],
+    "installed": [
+      "wshobson/agents@python-testing-patterns",
+      "wshobson/agents@fastapi-templates",
+      "fastapi/fastapi@fastapi",
+      "wshobson/agents@auth-implementation-patterns",
+      "wshobson/agents@api-design-principles"
+    ],
+    "decision_file": "docs/etapa-5-skills.md"
+  },
+  "registry": {
+    "created_by": "skill-registry",
+    "file": ".atl/skill-registry.md"
+  },
+  "agents": {
+    "created_by": "agent-instruction",
+    "files": [
+      "CLAUDE.md",
+      "AGENTS.md"
+    ],
+    "reglas_applied": [
+      "NUNCA importar FastAPI ni nada de `app/db`/`app/api` desde `app/domain/`",
+      "NUNCA llamar `datetime.now()`/`date.today()` dentro del dominio",
+      "NUNCA usar intervalos cerrados en `solapan()`",
+      "NUNCA concatenar ni interpolar strings en SQL",
+      "NUNCA escribir el turno y su auditoría por separado",
+      "NUNCA hacer UPDATE ni DELETE sobre `auditoria_turno`",
+      "NUNCA devolver errores ad-hoc",
+      "NUNCA poner reglas de negocio en el router",
+      "NUNCA versionar `.env`",
+      "NUNCA usar datos reales de pacientes",
+      "NUNCA dejar una regla RN-xx sin test",
+      "NUNCA romper el estilo",
+      "NUNCA hacer commit ni push sin que el usuario lo pida",
+      "NUNCA modificar `knowledge-base/`, `CHANGES.md`, `docs/discovery/` ni `.active-orchestrator-state.json` sin pedirlo"
     ]
   }
 }
