@@ -18,4 +18,4 @@
 
 ## 3. Verificación de integración del change
 
-- [ ] 3.1 Correr la suite completa de dominio `pytest tests/domain/` y verificar que todo está en verde sin importar FastAPI ni `app/db` desde `app/domain`
+- [x] 3.1 Correr la suite completa de dominio `pytest tests/domain/` y verificar que todo está en verde sin importar FastAPI ni `app/db` desde `app/domain`
