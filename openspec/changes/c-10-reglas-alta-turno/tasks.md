@@ -3,7 +3,7 @@
 ## 0. Base técnica mínima (C-01 y C-02 reducidos)
 
 - [x] 0.1 Crear la estructura `app/domain/` y `tests/domain/`, `requirements.txt` con pytest y el README con cómo instalar y correr `pytest tests/domain/`, verificando que `pytest` arranca sin errores
-- [ ] 0.2 Implementar `solapan()` con intervalos semiabiertos, los errores de dominio y los modelos mínimos (`Turno`, `Prestacion`, `HorarioAtencion`, `Bloqueo`), con tests de `solapan()` (contiguos válidos, solapamiento parcial), verificando que pasan
+- [x] 0.2 Implementar `solapan()` con intervalos semiabiertos, los errores de dominio y los modelos mínimos (`Turno`, `Prestacion`, `HorarioAtencion`, `Bloqueo`), con tests de `solapan()` (contiguos válidos, solapamiento parcial), verificando que pasan
 
 ## 1. Función validar_alta y cálculo de fin (RN-TUR-01)
 
