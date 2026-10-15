@@ -29,10 +29,10 @@ Detalle completo en `informe-discovery.md` (secciones A y B). Los prioritarios s
 
 | Competidor | Problema que resuelve | Precio | Diferenciador |
 |---|---|---|---|
-| AgendaPro | "Más turnos, menos papeleo": agenda, recordatorios y pagos | No publicado | Versión argentina dental; liberación automática del horario cancelado |
+| AgendaPro | "Más turnos, menos papeleo": agenda, recordatorios y pagos | ARS 13.900 / 33.900 / 44.900 / 314.900 por mes, IVA incluido (corregido en la verificación) | Versión argentina dental; liberación automática del horario cancelado |
 | Dentalink | Gestión clínica y administrativa dental | Por cotización | Agenda por recursos documentada; odontograma y periodontograma |
 | Doctocliq | Software dental y médico 100 % online | Plan gratuito; resto no publicado | Roles por perfil, odontograma y WhatsApp |
-| Turnito | Turnos online para negocios de servicios | ARS 0 / 12.000 / 24.500 / 42.000 por mes | Seña que bloquea el turno; único con precios en pesos |
+| Turnito | Turnos online para negocios de servicios | ARS 0 / 12.000 / 24.500 / 42.000 por mes | Seña que bloquea el turno; plan gratuito |
 | Reservo | Agenda, ficha y facturación para salud | No publicado | Opera en Argentina; declara facturación ARCA (sin evidencia funcional) |
 
 **Notas:** ningún competidor evidencia prevención de solapamientos, lista de espera, exportación de datos, auditoría, facturación ARCA ni liquidación a obras sociales. Esos vacíos fundamentan el MVP.
@@ -98,7 +98,9 @@ Ninguna en el MVP: es una API backend autocontenida. WhatsApp, Mercado Pago, ARC
 - Datos de pacientes siempre ficticios, en ejemplos, tests y capturas.
 - Ninguna clave ni secreto en el repositorio.
 - No se contactan proveedores ni se crean cuentas para evaluar competidores.
-- La fecha de entrega todavía no está definida.
+- Entrega del video: viernes 16 de octubre de 2026; evaluación la semana siguiente.
+
+> **Nota posterior (Etapa 3):** para el TP el grupo usó SQLite en lugar de PostgreSQL y Docker, de forma provisional. La decisión y su criterio de revisión están en `knowledge-base/09_decisiones_y_supuestos.md` (D-01).
 
 ## 10. Riesgos
 
@@ -127,5 +129,5 @@ Ninguna en el MVP: es una API backend autocontenida. WhatsApp, Mercado Pago, ARC
 - facturación ARCA de Reservo;
 - obras sociales en los productos dentales;
 - gestión de sillones en los competidores;
-- precios de AgendaPro y Dentalink en Argentina;
+- precios de Dentalink en Argentina (los de AgendaPro se confirmaron en la verificación de fuentes);
 - sitio oficial de TurneroMed.
