@@ -8,7 +8,7 @@
 ## 1. Función validar_alta y cálculo de fin (RN-TUR-01)
 
 - [x] 1.1 Implementar `validar_alta` con cálculo `fin = inicio + duracion_minutos` y test con prestación ficticia de 45 min (inicio 10:00 → fin 10:45) y de 30 min (→ fin 10:30), verificando que `pytest tests/domain/test_reglas_turno.py` pasa
-- [ ] 1.2 Validar franja única de atención (RN-PRO-01/02) con tests: turno 12:30-13:00 aceptado y 12:45-13:15 rechazado con `FueraDeHorario`, verificando que ambos tests pasan sin DB ni HTTP
+- [x] 1.2 Validar franja única de atención (RN-PRO-01/02) con tests: turno 12:30-13:00 aceptado y 12:45-13:15 rechazado con `FueraDeHorario`, verificando que ambos tests pasan sin DB ni HTTP
 
 ## 2. Bloqueos y solapamientos (RN-TUR-03/04/05/08/12)
 
