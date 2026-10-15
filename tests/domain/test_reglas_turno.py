@@ -3,14 +3,15 @@ from datetime import datetime, time
 
 import pytest
 
-from app.domain.errores import FueraDeHorario
-from app.domain.models import HorarioAtencion, Prestacion, Turno
+from app.domain.errores import DentroDeBloqueo, FueraDeHorario
+from app.domain.models import Bloqueo, HorarioAtencion, Prestacion, Turno
 from app.domain.reglas_turno import validar_alta
 
 # Datos ficticios (RN-PAC-03)
 LUNES = datetime(2026, 10, 19)
 ODONTOLOGO_FICTICIO_A = 1
 SILLON_1 = 1
+SILLON_2 = 2
 PACIENTE_FICTICIO_1 = 1  # DNI "00000001 (ficticio)"
 
 CONSULTA_FICTICIA = Prestacion(id=1, nombre="Consulta ficticia", duracion_minutos=30)
@@ -34,15 +35,17 @@ def _validar(
     inicio: datetime,
     prestacion: Prestacion = CONSULTA_FICTICIA,
     horarios: Sequence[HorarioAtencion] = HORARIO_LUNES,
+    sillon_id: int = SILLON_1,
+    bloqueos: Sequence[Bloqueo] = (),
 ) -> Turno:
     return validar_alta(
         inicio=inicio,
         prestacion=prestacion,
         profesional_id=ODONTOLOGO_FICTICIO_A,
-        sillon_id=SILLON_1,
+        sillon_id=sillon_id,
         paciente_id=PACIENTE_FICTICIO_1,
         horarios=horarios,
-        bloqueos=[],
+        bloqueos=bloqueos,
         turnos_activos=[],
     )
 
@@ -117,3 +120,51 @@ def test_franja_horario_de_otro_profesional_no_habilita_el_turno() -> None:
     ]
     with pytest.raises(FueraDeHorario):
         _validar(_hora(10), horarios=horario_de_otro)
+
+
+MANTENIMIENTO_SILLON_1 = Bloqueo(
+    alcance="sillon",
+    recurso_id=SILLON_1,
+    inicio=_hora(10),
+    fin=_hora(12),
+    motivo="Mantenimiento ficticio",
+)
+
+
+def test_bloqueo_de_sillon_rechaza_turno_en_ese_sillon() -> None:
+    with pytest.raises(DentroDeBloqueo):
+        _validar(_hora(11), sillon_id=SILLON_1, bloqueos=[MANTENIMIENTO_SILLON_1])
+
+
+def test_bloqueo_de_sillon_no_afecta_a_otro_sillon() -> None:
+    turno = _validar(_hora(11), sillon_id=SILLON_2, bloqueos=[MANTENIMIENTO_SILLON_1])
+    assert turno.sillon_id == SILLON_2
+
+
+def test_bloqueo_de_sillon_acepta_turno_contiguo_al_fin_del_bloqueo() -> None:
+    turno = _validar(_hora(12), sillon_id=SILLON_1, bloqueos=[MANTENIMIENTO_SILLON_1])
+    assert turno.inicio == _hora(12)
+
+
+def test_bloqueo_de_profesional_rechaza_turno_en_cualquier_sillon() -> None:
+    vacaciones = Bloqueo(
+        alcance="profesional",
+        recurso_id=ODONTOLOGO_FICTICIO_A,
+        inicio=_hora(9),
+        fin=_hora(13),
+        motivo="Vacaciones ficticias",
+    )
+    with pytest.raises(DentroDeBloqueo):
+        _validar(_hora(11), sillon_id=SILLON_2, bloqueos=[vacaciones])
+
+
+def test_bloqueo_de_otro_profesional_no_afecta() -> None:
+    vacaciones_de_otro = Bloqueo(
+        alcance="profesional",
+        recurso_id=ODONTOLOGO_FICTICIO_A + 1,
+        inicio=_hora(9),
+        fin=_hora(13),
+        motivo="Vacaciones ficticias",
+    )
+    turno = _validar(_hora(11), bloqueos=[vacaciones_de_otro])
+    assert turno.inicio == _hora(11)
