@@ -2,17 +2,17 @@
 
 **Uso exclusivo del delegador.** Todo agente que lance sub-agentes lee este registro para resolver las reglas compactas y las inyecta directamente en el prompt del sub-agente. Los sub-agentes NO leen este registro ni los `SKILL.md`.
 
-Las rutas son relativas a `~/.agents/skills/` (instalación global de cada integrante). Las skills de la fundación (`active-orchestrator`, `find-skill`, `kb-creator`, `roadmap-generator`, `agent-instruction`, `skill-creator`) no se listan: no se usan al programar los changes.
+Las skills vienen versionadas en el repositorio (`.agents/skills/` para OpenCode y `.claude/skills/` para Claude Code); `skills-lock.json` registra su origen y versión. Las skills de la fundación (`active-orchestrator`, `find-skill`, `kb-creator`, `roadmap-generator`, `agent-instruction`, `skill-creator`) no se listan: no se usan al programar los changes.
 
 ## User Skills
 
 | Skill | Cuándo usarla | Ruta |
 |-------|---------------|------|
-| fastapi | Escribir routers, dependencias y modelos Pydantic de la API (C-03 en adelante) | `fastapi/SKILL.md` |
-| fastapi-templates | Armar la estructura inicial del proyecto y `conftest.py` (C-01 `foundation-setup`) | `fastapi-templates/SKILL.md` |
-| python-testing-patterns | Escribir tests con pytest: unitarios del dominio, de API y e2e (todos los changes, Strict TDD) | `python-testing-patterns/SKILL.md` |
-| auth-implementation-patterns | Login, token y roles (C-03 `auth-login-roles`, dominio CRÍTICO) | `auth-implementation-patterns/SKILL.md` |
-| api-design-principles | Definir rutas, códigos de estado y formato de errores de la API | `api-design-principles/SKILL.md` |
+| fastapi | Escribir routers, dependencias y modelos Pydantic de la API (C-03 en adelante) | `.agents/skills/fastapi/SKILL.md` |
+| fastapi-templates | Armar la estructura inicial del proyecto y `conftest.py` (C-01 `foundation-setup`) | `.agents/skills/fastapi-templates/SKILL.md` |
+| python-testing-patterns | Escribir tests con pytest: unitarios del dominio, de API y e2e (todos los changes, Strict TDD) | `.agents/skills/python-testing-patterns/SKILL.md` |
+| auth-implementation-patterns | Login, token y roles (C-03 `auth-login-roles`, dominio CRÍTICO) | `.agents/skills/auth-implementation-patterns/SKILL.md` |
+| api-design-principles | Definir rutas, códigos de estado y formato de errores de la API | `.agents/skills/api-design-principles/SKILL.md` |
 
 ## Compact Rules
 
