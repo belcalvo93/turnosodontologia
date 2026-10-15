@@ -3,16 +3,18 @@ from datetime import datetime, time
 
 import pytest
 
-from app.domain.errores import DentroDeBloqueo, FueraDeHorario
-from app.domain.models import Bloqueo, HorarioAtencion, Prestacion, Turno
+from app.domain.errores import ConflictoAgenda, DentroDeBloqueo, FueraDeHorario
+from app.domain.models import Bloqueo, EstadoTurno, HorarioAtencion, Prestacion, Turno
 from app.domain.reglas_turno import validar_alta
 
 # Datos ficticios (RN-PAC-03)
 LUNES = datetime(2026, 10, 19)
 ODONTOLOGO_FICTICIO_A = 1
+ODONTOLOGO_FICTICIO_B = 2
 SILLON_1 = 1
 SILLON_2 = 2
 PACIENTE_FICTICIO_1 = 1  # DNI "00000001 (ficticio)"
+PACIENTE_FICTICIO_2 = 2  # DNI "00000002 (ficticio)"
 
 CONSULTA_FICTICIA = Prestacion(id=1, nombre="Consulta ficticia", duracion_minutos=30)
 LIMPIEZA_FICTICIA = Prestacion(id=2, nombre="Limpieza ficticia", duracion_minutos=45)
@@ -37,6 +39,8 @@ def _validar(
     horarios: Sequence[HorarioAtencion] = HORARIO_LUNES,
     sillon_id: int = SILLON_1,
     bloqueos: Sequence[Bloqueo] = (),
+    turnos_activos: Sequence[Turno] = (),
+    excluir_turno_id: int | None = None,
 ) -> Turno:
     return validar_alta(
         inicio=inicio,
@@ -46,7 +50,8 @@ def _validar(
         paciente_id=PACIENTE_FICTICIO_1,
         horarios=horarios,
         bloqueos=bloqueos,
-        turnos_activos=[],
+        turnos_activos=turnos_activos,
+        excluir_turno_id=excluir_turno_id,
     )
 
 
@@ -168,3 +173,98 @@ def test_bloqueo_de_otro_profesional_no_afecta() -> None:
     )
     turno = _validar(_hora(11), bloqueos=[vacaciones_de_otro])
     assert turno.inicio == _hora(11)
+
+
+def _turno_activo(
+    inicio: datetime,
+    fin: datetime,
+    *,
+    profesional_id: int = ODONTOLOGO_FICTICIO_B,
+    sillon_id: int = SILLON_2,
+    paciente_id: int = PACIENTE_FICTICIO_2,
+    estado: EstadoTurno = "reservado",
+    id: int | None = 100,
+) -> Turno:
+    """Turno existente; por defecto no comparte ningún recurso con la solicitud."""
+    return Turno(
+        id=id,
+        paciente_id=paciente_id,
+        profesional_id=profesional_id,
+        sillon_id=sillon_id,
+        prestacion_id=CONSULTA_FICTICIA.id,
+        inicio=inicio,
+        fin=fin,
+        estado=estado,
+    )
+
+
+def test_solapamiento_del_profesional_lanza_conflicto_agenda() -> None:
+    existente = _turno_activo(
+        _hora(10), _hora(10, 30), profesional_id=ODONTOLOGO_FICTICIO_A, sillon_id=SILLON_1
+    )
+    with pytest.raises(ConflictoAgenda):
+        _validar(_hora(10, 15), sillon_id=SILLON_2, turnos_activos=[existente])
+
+
+def test_solapamiento_del_sillon_lanza_conflicto_agenda() -> None:
+    existente = _turno_activo(_hora(10), _hora(10, 30), sillon_id=SILLON_1)
+    with pytest.raises(ConflictoAgenda):
+        _validar(_hora(10, 15), sillon_id=SILLON_1, turnos_activos=[existente])
+
+
+def test_solapamiento_del_paciente_lanza_conflicto_agenda() -> None:
+    existente = _turno_activo(_hora(10), _hora(10, 30), paciente_id=PACIENTE_FICTICIO_1)
+    with pytest.raises(ConflictoAgenda):
+        _validar(_hora(10, 15), sillon_id=SILLON_1, turnos_activos=[existente])
+
+
+def test_solapamiento_sin_recursos_compartidos_se_acepta() -> None:
+    existente = _turno_activo(_hora(10), _hora(10, 30))
+    turno = _validar(_hora(10, 15), sillon_id=SILLON_1, turnos_activos=[existente])
+    assert turno.inicio == _hora(10, 15)
+
+
+def test_contiguo_mismo_profesional_y_sillon_se_acepta() -> None:
+    existente = _turno_activo(
+        _hora(10), _hora(10, 30), profesional_id=ODONTOLOGO_FICTICIO_A, sillon_id=SILLON_1
+    )
+    turno = _validar(_hora(10, 30), sillon_id=SILLON_1, turnos_activos=[existente])
+    assert turno.fin == _hora(11)
+
+
+def test_cancelado_que_se_superpone_no_genera_conflicto() -> None:
+    cancelado = _turno_activo(
+        _hora(10),
+        _hora(10, 30),
+        profesional_id=ODONTOLOGO_FICTICIO_A,
+        sillon_id=SILLON_1,
+        estado="cancelado",
+    )
+    turno = _validar(_hora(10), sillon_id=SILLON_1, turnos_activos=[cancelado])
+    assert turno.inicio == _hora(10)
+
+
+def test_excluir_turno_id_ignora_el_propio_turno() -> None:
+    propio = _turno_activo(
+        _hora(10), _hora(10, 30), profesional_id=ODONTOLOGO_FICTICIO_A, sillon_id=SILLON_1, id=7
+    )
+    turno = _validar(
+        _hora(10, 15), sillon_id=SILLON_1, turnos_activos=[propio], excluir_turno_id=7
+    )
+    assert turno.inicio == _hora(10, 15)
+
+
+def test_excluir_turno_id_no_oculta_conflicto_con_otro_turno() -> None:
+    otro = _turno_activo(
+        _hora(10), _hora(10, 30), profesional_id=ODONTOLOGO_FICTICIO_A, sillon_id=SILLON_1, id=8
+    )
+    with pytest.raises(ConflictoAgenda):
+        _validar(_hora(10, 15), sillon_id=SILLON_1, turnos_activos=[otro], excluir_turno_id=7)
+
+
+def test_solapamiento_con_turno_sin_id_y_sin_excluir_lanza_conflicto_agenda() -> None:
+    sin_id = _turno_activo(
+        _hora(10), _hora(10, 30), profesional_id=ODONTOLOGO_FICTICIO_A, id=None
+    )
+    with pytest.raises(ConflictoAgenda):
+        _validar(_hora(10, 15), turnos_activos=[sin_id])

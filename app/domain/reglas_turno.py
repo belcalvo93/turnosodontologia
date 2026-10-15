@@ -3,13 +3,18 @@
 from collections.abc import Sequence
 from datetime import datetime, timedelta
 
-from app.domain.errores import DentroDeBloqueo, FueraDeHorario
+from app.domain.errores import ConflictoAgenda, DentroDeBloqueo, FueraDeHorario
 from app.domain.intervalos import solapan
 from app.domain.models import Bloqueo, HorarioAtencion, Prestacion, Turno
 
 _MENSAJE_BLOQUEO = {
     "profesional": "El profesional está bloqueado en ese horario.",
     "sillon": "El sillón está bloqueado en ese horario.",
+}
+_MENSAJE_CONFLICTO = {
+    "profesional": "El profesional ya tiene un turno en ese horario.",
+    "sillon": "El sillón ya está ocupado en ese horario.",
+    "paciente": "El paciente ya tiene un turno en ese horario.",
 }
 
 
@@ -38,7 +43,25 @@ def validar_alta(
     for bloqueo in bloqueos:
         if _bloqueo_afecta(bloqueo, candidato) and solapan(candidato, bloqueo):
             raise DentroDeBloqueo(_MENSAJE_BLOQUEO[bloqueo.alcance])
+    for turno in turnos_activos:
+        es_excluido = excluir_turno_id is not None and turno.id == excluir_turno_id
+        if turno.estado != "reservado" or es_excluido:
+            continue  # RN-TUR-08: cancelados y el propio turno no ocupan agenda
+        recurso = _recurso_compartido(candidato, turno)
+        if recurso is not None and solapan(candidato, turno):
+            raise ConflictoAgenda(_MENSAJE_CONFLICTO[recurso])
     return candidato
+
+
+def _recurso_compartido(candidato: Turno, turno: Turno) -> str | None:
+    """RN-TUR-03/12: un turno compite si comparte profesional, sillón o paciente."""
+    if turno.profesional_id == candidato.profesional_id:
+        return "profesional"
+    if turno.sillon_id == candidato.sillon_id:
+        return "sillon"
+    if turno.paciente_id == candidato.paciente_id:
+        return "paciente"
+    return None
 
 
 def _bloqueo_afecta(bloqueo: Bloqueo, turno: Turno) -> bool:
