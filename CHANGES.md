@@ -315,7 +315,7 @@ El MVP es solo backend (el frontend React es etapa posterior, D.3), así que no 
 > `C-10` se puede hacer en paralelo con toda la FASE 2 (solo necesita `C-02`). `C-12` y `C-13` son paralelos.
 
 ### [C-10] `reglas-alta-turno`
-- **Estado**: `[ ]` pendiente
+- **Estado**: `[x]` completado
 - **Scope**:
   - `app/domain/reglas_turno.py::validar_alta(...)`: recibe prestación, horarios, bloqueos y turnos activos ya cargados; devuelve el turno armado o lanza error de dominio
   - `fin = inicio + duracion_minutos` (RN-TUR-01)
