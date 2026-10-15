@@ -45,6 +45,8 @@ La fuente de verdad del dominio vive en `knowledge-base/`. **Leé el archivo rel
 
 > Fuente de verdad: `.atl/skill-registry.md` (generado por `skill-registry`). El MVP es solo backend, así que no hay agente de frontend.
 
+> Las skills vienen incluidas en el repositorio (`.agents/skills/` y `.claude/skills/`): **no hace falta instalarlas**. Para restaurarlas o reinstalarlas, usar `npx skills experimental_install`, que lee `skills-lock.json`.
+
 | Agente | Rol | Skills que carga |
 |--------|-----|------------------|
 | **Dominio y turnos** | Reglas puras de solapamiento/validación, tests de dominio | `python-testing-patterns`, `api-design-principles` |
