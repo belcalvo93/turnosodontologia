@@ -14,7 +14,7 @@
 
 - [x] 2.1 Implementar rechazo por bloqueo de profesional/sillón (RN-TUR-05) con tests: bloqueo ficticio de sillón 10:00-12:00 rechaza turno 11:00 en ese sillón y acepta en otro y a las 12:00, verificando que los 3 tests pasan
 - [x] 2.2 Implementar solapamiento por profesional, sillón y paciente con intervalos semiabiertos (RN-TUR-03/04/12) más exclusión de cancelados y `excluir_turno_id` (RN-TUR-08), verificando que `pytest tests/domain/test_reglas_turno.py -k "solapamiento or contiguo or cancelado or excluir"` pasa
-- [ ] 2.3 Cubrir el escenario de borde de turnos contiguos 10:00-10:30 y 10:30-11:00 aceptados y 10:29-10:59 rechazado (RN-TUR-04), verificando que los tests de borde pasan
+- [x] 2.3 Cubrir el escenario de borde de turnos contiguos 10:00-10:30 y 10:30-11:00 aceptados y 10:29-10:59 rechazado (RN-TUR-04), verificando que los tests de borde pasan
 
 ## 3. Verificación de integración del change
 

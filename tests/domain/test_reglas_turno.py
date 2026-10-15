@@ -268,3 +268,27 @@ def test_solapamiento_con_turno_sin_id_y_sin_excluir_lanza_conflicto_agenda() ->
     )
     with pytest.raises(ConflictoAgenda):
         _validar(_hora(10, 15), turnos_activos=[sin_id])
+
+
+def _existente_10_a_1030() -> Turno:
+    return _turno_activo(
+        _hora(10), _hora(10, 30), profesional_id=ODONTOLOGO_FICTICIO_A, sillon_id=SILLON_1
+    )
+
+
+def test_borde_turno_que_empieza_cuando_termina_otro_se_acepta() -> None:
+    turno = _validar(_hora(10, 30), sillon_id=SILLON_1, turnos_activos=[_existente_10_a_1030()])
+    assert (turno.inicio, turno.fin) == (_hora(10, 30), _hora(11))
+
+
+def test_borde_turno_que_termina_cuando_empieza_otro_se_acepta() -> None:
+    existente_1030_a_11 = _turno_activo(
+        _hora(10, 30), _hora(11), profesional_id=ODONTOLOGO_FICTICIO_A, sillon_id=SILLON_1
+    )
+    turno = _validar(_hora(10), sillon_id=SILLON_1, turnos_activos=[existente_1030_a_11])
+    assert (turno.inicio, turno.fin) == (_hora(10), _hora(10, 30))
+
+
+def test_borde_turno_que_se_superpone_un_minuto_lanza_conflicto_agenda() -> None:
+    with pytest.raises(ConflictoAgenda):
+        _validar(_hora(10, 29), sillon_id=SILLON_1, turnos_activos=[_existente_10_a_1030()])
