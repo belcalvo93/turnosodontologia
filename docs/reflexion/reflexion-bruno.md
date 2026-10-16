@@ -22,7 +22,7 @@ Lo que "menos" aportó fue el roadmap. Tiene 17 changes y nosotros implementamos
 
 ## 5. En grupo: ¿qué hizo cada integrante y en qué etapa?
 
-Yo hice la etapa 1 (`openspec init` y la bifurcación del Discovery), la etapa 2 (la investigación de 18 sistemas, el checklist de reglas de negocio y la verificación de la página dental de AgendaPro (fuente #1)), la convención de Engram, la revisión del PR de Joaquín y la revisión final del repo antes de entregar. Elías verificó la fuente de Turnito, aplicó los ajustes del informe, hizo el PDF y la etapa 5. Belén hizo las etapas 3 y 4 y revisó el propose de C-10. Hernán hizo el explore y el propose de C-10 y Engram. Joaquín hizo el apply, verify y archive de C-10 y el README. Los cinco verificamos una fuente cada uno.
+Yo hice la etapa 1 (`openspec init` y la bifurcación del Discovery), la etapa 2 (la investigación de 18 sistemas, el checklist de reglas de negocio y la verificación de la página dental de AgendaPro, fuente #1), la convención de Engram, la revisión del PR de Joaquín y la revisión final del repo antes de entregar. Elías verificó la fuente de Turnito, aplicó los ajustes del informe, hizo el PDF y la etapa 5. Belén hizo las etapas 3 y 4 y revisó el propose de C-10. Hernán hizo el explore y el propose de C-10 y Engram. Joaquín hizo el apply, verify y archive de C-10 y el README. Los cinco verificamos una fuente cada uno.
 
 ## Declaración de uso de IA
 
