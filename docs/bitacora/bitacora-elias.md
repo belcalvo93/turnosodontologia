@@ -1,7 +1,5 @@
 # Bitácora de decisiones — Elías Tello
 
-> **Borrador.** Puntos preparados a partir del historial del repositorio; falta redactarlos con mis palabras antes de entregarlos.
-
 **Etapas a cargo:** etapa 2 (verificación de fuentes, Ajustar y PDF del informe) y etapa 5 (skills, registro y reglas del agente).
 
 ---
