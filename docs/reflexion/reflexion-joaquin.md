@@ -1,6 +1,6 @@
 ## 1. ¿Qué información del Discovery resultó incorrecta, no verificable o inventada por el agente? ¿Cómo la detectaron?
 
-En mi fuente (AgendaPro) el informe decía que no había tutoriales de agenda, pero al abrir los manuales y los videos vi que uno explica cómo configurar el período de reservas, así que la marqué como parcial y anoté que los videos son de 2015 y la empresa es chilena.
+En mi fuente (los tutoriales de AgendaPro, fuente #5) el informe decía que no había tutoriales de agenda, pero al abrir los manuales y los videos vi que uno explica cómo configurar el período de reservas, así que esa afirmación la marqué como parcial (el resultado general de la fuente fue «Sí, con precisiones») y anoté que los videos son de 2015 y la empresa es chilena.
 
 ## 2. ¿En qué etapa usaron Ajustar, qué estaba mal y qué habría pasado si hubieran apretado Continuar?
 

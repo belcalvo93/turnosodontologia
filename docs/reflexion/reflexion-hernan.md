@@ -22,7 +22,7 @@ Lo que más miré fueron las reglas de negocio (las RN de la KB): necesitaba ent
 
 ## 5. Qué hice yo dentro del grupo
 
-Mi participación se concentró en las etapas 2 y 6, más la 7. En la Etapa 2 verifiqué manualmente la fuente de Doctoralia en la App Store. En la Etapa 6 hice el explore de C-10, redacté el propose completo, acepté los ajustes de Belén, corregí el design y guardé el resumen del explore en el repo. En la Etapa 7 guardé el explore en Engram y preparé mi evidencia y mi bitácora. Belén verificó Dentalink, ajustó la KB y revisó mi propose; Elías verificó Turnito, consolidó las verificaciones y se encargó de skills y reglas; Bruno hizo el Discovery y la entrega final; Joaquín habría hecho el apply, verify, archive y README, aunque esto queda **pendiente de confirmar con él**.
+Mi participación se concentró en las etapas 2 y 6, más la 7. En la Etapa 2 verifiqué manualmente la fuente de Doctoralia en la App Store. En la Etapa 6 hice el explore de C-10, redacté el propose completo, acepté los ajustes de Belén, corregí el design y guardé el resumen del explore en el repo. En la Etapa 7 guardé el explore en Engram y preparé mi evidencia y mi bitácora. Belén verificó Dentalink, ajustó la KB y revisó mi propose; Elías verificó Turnito, consolidó las verificaciones y se encargó de skills y reglas; Bruno hizo el Discovery y la entrega final; Joaquín hizo el apply, verify, archive de C-10 y el README.
 
 ## 6. Uso de IA
 
