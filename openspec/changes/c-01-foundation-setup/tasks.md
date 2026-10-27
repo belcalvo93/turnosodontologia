@@ -14,7 +14,7 @@
 
 ## 3. Persistencia
 
-- [ ] 3.1 Implementar `abrir_conexion(config)` en `app/db/conexion.py` con `isolation_level=None`, `PRAGMA foreign_keys=ON` y `PRAGMA busy_timeout=5000`, verificando con un test que crea sus propias tablas temporales (el `esquema.sql` de este change solo tiene comentarios) que un `INSERT` con FK inexistente falla y que una FK válida se acepta
+- [x] 3.1 Implementar `abrir_conexion(config)` en `app/db/conexion.py` con `isolation_level=None`, `PRAGMA foreign_keys=ON` y `PRAGMA busy_timeout=5000`, verificando con un test que crea sus propias tablas temporales (el `esquema.sql` de este change solo tiene comentarios) que un `INSERT` con FK inexistente falla y que una FK válida se acepta
 - [ ] 3.2 Implementar `transaccion(conexion)` como context manager con `BEGIN IMMEDIATE`, `commit` al salir sin excepción y `rollback` si hay excepción, verificando con tests que crean sus propias tablas temporales (el `esquema.sql` de este change solo tiene comentarios): el `INSERT` confirmado sobrevive en una conexión nueva y el `INSERT` seguido de excepción no deja fila
 - [ ] 3.3 Crear `app/db/esquema.sql` (solo comentarios que expliquen la convención `CREATE TABLE IF NOT EXISTS`) e implementar `inicializar_esquema(config, ruta=None)` con `executescript` sobre conexión propia, verificando con tests que aplicarlo dos veces no lanza error y que la base queda usable
 - [ ] 3.4 Invocar `inicializar_esquema` desde el `lifespan` de la app, verificando que una base temporal recién creada arranca sin error a través del `TestClient`
