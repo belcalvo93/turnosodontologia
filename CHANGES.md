@@ -154,7 +154,7 @@ El MVP es solo backend (el frontend React es etapa posterior, D.3), así que no 
 > `C-02` y `C-03` son paralelos una vez completado `C-01`.
 
 ### [C-01] `foundation-setup`
-- **Estado**: `[ ]` pendiente
+- **Estado**: `[x]` completado
 - **Scope**:
   - `pyproject.toml` / `requirements.txt` con FastAPI, uvicorn, pydantic, pytest y httpx (TestClient)
   - Estructura `app/{domain,api,db}/` y `tests/{domain,api}/` según 08
