@@ -3,7 +3,7 @@
 ## 1. Dependencias y estructura
 
 - [x] 1.1 Declarar `fastapi>=0.115`, `uvicorn>=0.30`, `pydantic>=2.7`, `httpx>=0.27` y `pytest>=8.0` en `requirements.txt`, verificando que `python -c "import fastapi, uvicorn, pydantic, httpx, pytest"` funciona y que `pip install -r requirements.txt` no falla
-- [ ] 1.2 Crear `app/api/__init__.py`, `app/db/__init__.py` y `tests/api/__init__.py`, verificando que `pytest tests` sigue en verde con los 32 tests actuales
+- [x] 1.2 Crear `app/api/__init__.py`, `app/db/__init__.py` y `tests/api/__init__.py`, verificando que `pytest tests` sigue en verde con los 32 tests actuales
 - [ ] 1.3 Crear `.env.example` con placeholders de `APP_ENV`, `DATABASE_URL` y `CLINIC_TIMEZONE` (sin valores sensibles ni variables de JWT: esas son de C-03), verificando que `git status` no lista ningún `.env`
 
 ## 2. Configuración
