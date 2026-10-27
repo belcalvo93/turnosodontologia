@@ -24,7 +24,7 @@
 - [x] 4.1 Implementar `app/api/salud.py` con router `GET /health` que devuelve `{"status": "ok"}` sin tocar la base, verificando que el test de `tests/api/test_salud.py` recibe 200 sin cabecera de autenticación
 - [x] 4.2 Implementar `app/main.py` con `create_app(config=None)` (config en `app.state.config`, routers montados) y `app = create_app()` a nivel módulo, verificando que `uvicorn app.main:app` levanta y `GET /health` responde 200
 - [x] 4.3 Crear `tests/conftest.py` con fixture de `Config` sobre `tmp_path` y fixture de `TestClient` usando `with TestClient(create_app(config))`, verificando que los tests de `tests/api/` pasan sin tocar la base real
-- [ ] 4.4 Actualizar la sección "Estructura" y "Estado actual" del `README.md`, verificando que el comando documentado para correr la suite (`pytest tests`) coincide con el que se ejecuta
+- [x] 4.4 Actualizar la sección "Estructura" y "Estado actual" del `README.md`, verificando que el comando documentado para correr la suite (`pytest tests`) coincide con el que se ejecuta
 
 ## 5. Verificación del change
 

@@ -6,7 +6,11 @@ Desarrollado con Spec-Driven Development usando OpenSpec y Active Stack (ciclo O
 
 ## Estado actual
 
-Implementado el change **C-10 `reglas-alta-turno`**: validación del alta de un turno en dominio puro, sin base de datos ni HTTP.
+Implementados **C-01 `foundation-setup`** y **C-10 `reglas-alta-turno`**. La suite pasa en verde: `44 passed`.
+
+**C-01 — base técnica:** configuración desde variables de entorno, conexión SQLite con transacciones atómicas (`BEGIN IMMEDIATE`, commit y rollback), aplicación del esquema al arrancar y `GET /health` público.
+
+**C-10 — reglas de alta de turno** en dominio puro, sin base de datos ni HTTP:
 
 - Calcula el fin del turno a partir de la duración de la prestación.
 - Rechaza turnos fuera del horario de atención del profesional.
@@ -88,16 +92,31 @@ Resultado esperado: `turnos.db` con los defaults (sin variables exportadas).
 Desde la raíz del repositorio, con el entorno virtual activo:
 
 ```bash
-pytest tests/domain/ -v
+pytest tests
 ```
 
-Resultado esperado: `32 passed`. Los tests de dominio corren sin base de datos ni HTTP.
+Resultado esperado: `44 passed`. Los tests de dominio corren sin base de datos ni HTTP; los de `tests/api/` usan una SQLite temporal por test.
+
+## Levantar la API
+
+```bash
+uvicorn app.main:app
+```
+
+`GET /health` responde `200` con `{"status": "ok"}`.
 
 ## Estructura
 
 ```
+app/main.py                 App FastAPI (create_app, lifespan y routers)
+app/config.py               Configuración desde variables de entorno
+app/api/                    Routers HTTP (salud; auth y recursos en los próximos changes)
 app/domain/                 Lógica de dominio pura (modelos, intervalos, errores y reglas de alta)
+app/db/                     Conexión SQLite, transacciones y esquema
 tests/domain/               Tests unitarios de dominio (pytest)
+tests/api/                  Tests de API y de base con SQLite temporal
+tests/conftest.py           Fixtures de configuración y TestClient
+.env.example                Variables de entorno de referencia (placeholders)
 knowledge-base/             Base de conocimiento del proyecto (10 archivos)
 docs/discovery/             Informe de Discovery y verificación de fuentes
 openspec/specs/             Specs vigentes del sistema
