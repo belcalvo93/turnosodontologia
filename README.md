@@ -49,6 +49,40 @@ pip install -r requirements.txt
 
 > En Linux / macOS puede ser necesario usar `python3` en lugar de `python`.
 
+## Variables de entorno
+
+La configuración se lee del entorno del proceso. **No hay carga automática de `.env`**: el proyecto no usa `python-dotenv`, así que un archivo `.env` no se lee solo; usalo como referencia local junto con `.env.example` y exportá las variables antes de correr la API.
+
+| Variable | Descripción | Default |
+|----------|-------------|---------|
+| `APP_ENV` | Entorno de ejecución | `development` |
+| `DATABASE_URL` | Ruta de la base SQLite (acepta `sqlite:///ruta` o un path plano) | `./turnos.db` |
+| `CLINIC_TIMEZONE` | Zona horaria del consultorio | `America/Argentina/Buenos_Aires` |
+
+Exportarlas en la sesión actual:
+
+```powershell
+# Windows (PowerShell)
+$env:APP_ENV="development"
+$env:DATABASE_URL="sqlite:///./turnos.db"
+$env:CLINIC_TIMEZONE="America/Argentina/Buenos_Aires"
+```
+
+```bash
+# Linux / macOS (bash)
+export APP_ENV=development
+export DATABASE_URL=sqlite:///./turnos.db
+export CLINIC_TIMEZONE=America/Argentina/Buenos_Aires
+```
+
+Verificar que la configuración se resuelve:
+
+```bash
+python -c "from app.config import cargar_config; print(cargar_config().database_path)"
+```
+
+Resultado esperado: `turnos.db` con los defaults (sin variables exportadas).
+
 ## Correr los tests
 
 Desde la raíz del repositorio, con el entorno virtual activo:
