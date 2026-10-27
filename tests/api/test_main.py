@@ -24,3 +24,8 @@ def test_create_app_guarda_la_config_y_monta_health(tmp_path: Path) -> None:
 def test_existe_una_app_a_nivel_modulo() -> None:
     assert isinstance(app, FastAPI)
     assert isinstance(app.state.config, Config)
+
+
+def test_arranque_inicializa_el_esquema(config: Config, cliente: TestClient) -> None:
+    assert config.database_path.exists()
+    assert cliente.get("/health").status_code == 200
