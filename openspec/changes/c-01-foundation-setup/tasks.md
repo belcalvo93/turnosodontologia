@@ -8,7 +8,7 @@
 
 ## 2. Configuración
 
-- [ ] 2.1 Implementar `app/config.py` con `Config` (dataclass frozen: `app_env`, `database_path`, `clinic_timezone`) y `cargar_config(entorno=None)` con defaults de desarrollo, verificando con tests en `tests/api/test_config.py`: entorno vacío → `development` / `./turnos.db` / `America/Argentina/Buenos_Aires`
+- [x] 2.1 Implementar `app/config.py` con `Config` (dataclass frozen: `app_env`, `database_path`, `clinic_timezone`) y `cargar_config(entorno=None)` con defaults de desarrollo, verificando con tests en `tests/api/test_config.py`: entorno vacío → `development` / `./turnos.db` / `America/Argentina/Buenos_Aires`
 - [ ] 2.2 Normalizar `DATABASE_URL` en `cargar_config` (quitar `sqlite:///` y respetar paths absolutos), verificando con tests: `sqlite:///./turnos.db` → `./turnos.db` y un path absoluto de `tmp_path` queda intacto
 - [ ] 2.3 Documentar las variables en `README.md` (PowerShell y bash) aclarando que `.env` no se carga automáticamente, verificando que los comandos documentados exportan `DATABASE_URL` y que `python -c "from app.config import cargar_config; print(cargar_config().database_path)"` muestra el path esperado
 
