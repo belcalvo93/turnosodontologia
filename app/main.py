@@ -17,7 +17,7 @@ def create_app(config: Config | None = None) -> FastAPI:
     @asynccontextmanager
     async def lifespan(_: FastAPI) -> AsyncIterator[None]:
         """Aplica el esquema antes de atender requests."""
-        inicializar_esquema(config_app)
+        inicializar_esquema(config_app.database_path)
         yield
 
     aplicacion = FastAPI(title="Turnos Odontológicos", lifespan=lifespan)

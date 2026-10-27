@@ -1,4 +1,4 @@
-"""Tests de la conexión SQLite: PRAGMAs y claves foráneas (C-01)."""
+"""Tests de la conexión SQLite: PRAGMAs, transacciones y esquema (C-01)."""
 
 import sqlite3
 from contextlib import closing
@@ -6,18 +6,13 @@ from pathlib import Path
 
 import pytest
 
-from app.config import Config, cargar_config
 from app.db.conexion import abrir_conexion, inicializar_esquema, transaccion
 
 
-def _config_temporal(ruta: Path) -> Config:
-    return cargar_config(entorno={"DATABASE_URL": str(ruta)})
-
-
 def test_abrir_conexion_hace_cumplir_las_claves_foraneas(tmp_path: Path) -> None:
-    config = _config_temporal(tmp_path / "turnos_test.db")
+    ruta = tmp_path / "turnos_test.db"
 
-    with closing(abrir_conexion(config)) as conexion:
+    with closing(abrir_conexion(ruta)) as conexion:
         # El test crea sus propias tablas: en C-01 esquema.sql solo tiene comentarios.
         conexion.executescript(
             """
@@ -38,22 +33,22 @@ def test_abrir_conexion_hace_cumplir_las_claves_foraneas(tmp_path: Path) -> None
 
 
 def test_transaccion_confirma_al_salir_sin_excepcion(tmp_path: Path) -> None:
-    config = _config_temporal(tmp_path / "commit.db")
+    ruta = tmp_path / "commit.db"
 
-    with closing(abrir_conexion(config)) as conexion:
+    with closing(abrir_conexion(ruta)) as conexion:
         conexion.execute("CREATE TABLE prueba (id INTEGER PRIMARY KEY)")
 
         with transaccion(conexion):
             conexion.execute("INSERT INTO prueba (id) VALUES (1)")
 
-    with closing(abrir_conexion(config)) as nueva:
+    with closing(abrir_conexion(ruta)) as nueva:
         assert nueva.execute("SELECT COUNT(*) FROM prueba").fetchone()[0] == 1
 
 
 def test_transaccion_revierte_ante_excepcion_y_propaga(tmp_path: Path) -> None:
-    config = _config_temporal(tmp_path / "rollback.db")
+    ruta = tmp_path / "rollback.db"
 
-    with closing(abrir_conexion(config)) as conexion:
+    with closing(abrir_conexion(ruta)) as conexion:
         conexion.execute("CREATE TABLE prueba (id INTEGER PRIMARY KEY)")
 
         with pytest.raises(RuntimeError, match="falla simulada"):
@@ -65,16 +60,16 @@ def test_transaccion_revierte_ante_excepcion_y_propaga(tmp_path: Path) -> None:
 
 
 def test_inicializar_esquema_se_puede_aplicar_dos_veces(tmp_path: Path) -> None:
-    config = _config_temporal(tmp_path / "esquema.db")
+    ruta = tmp_path / "esquema.db"
 
-    inicializar_esquema(config)
-    inicializar_esquema(config)
+    inicializar_esquema(ruta)
+    inicializar_esquema(ruta)
 
 
 def test_inicializar_esquema_deja_la_base_usable(tmp_path: Path) -> None:
-    config = _config_temporal(tmp_path / "esquema.db")
+    ruta = tmp_path / "esquema.db"
 
-    inicializar_esquema(config)
+    inicializar_esquema(ruta)
 
-    with closing(abrir_conexion(config)) as conexion:
+    with closing(abrir_conexion(ruta)) as conexion:
         assert conexion.execute("SELECT 1").fetchone()[0] == 1

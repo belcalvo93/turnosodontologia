@@ -14,9 +14,9 @@
 
 ## 3. Persistencia
 
-- [x] 3.1 Implementar `abrir_conexion(config)` en `app/db/conexion.py` con `isolation_level=None`, `PRAGMA foreign_keys=ON` y `PRAGMA busy_timeout=5000`, verificando con un test que crea sus propias tablas temporales (el `esquema.sql` de este change solo tiene comentarios) que un `INSERT` con FK inexistente falla y que una FK válida se acepta
+- [x] 3.1 Implementar `abrir_conexion(ruta)` en `app/db/conexion.py` con `isolation_level=None`, `PRAGMA foreign_keys=ON` y `PRAGMA busy_timeout=5000`, verificando con un test que crea sus propias tablas temporales (el `esquema.sql` de este change solo tiene comentarios) que un `INSERT` con FK inexistente falla y que una FK válida se acepta
 - [x] 3.2 Implementar `transaccion(conexion)` como context manager con `BEGIN IMMEDIATE`, `commit` al salir sin excepción y `rollback` si hay excepción, verificando con tests que crean sus propias tablas temporales (el `esquema.sql` de este change solo tiene comentarios): el `INSERT` confirmado sobrevive en una conexión nueva y el `INSERT` seguido de excepción no deja fila
-- [x] 3.3 Crear `app/db/esquema.sql` (solo comentarios que expliquen la convención `CREATE TABLE IF NOT EXISTS`) e implementar `inicializar_esquema(config, ruta=None)` con `executescript` sobre conexión propia, verificando con tests que aplicarlo dos veces no lanza error y que la base queda usable
+- [x] 3.3 Crear `app/db/esquema.sql` (solo comentarios que expliquen la convención `CREATE TABLE IF NOT EXISTS`) e implementar `inicializar_esquema(ruta_base, ruta_esquema=None)` con `executescript` sobre conexión propia, verificando con tests que aplicarlo dos veces no lanza error y que la base queda usable
 - [x] 3.4 Invocar `inicializar_esquema` desde el `lifespan` de la app, verificando que una base temporal recién creada arranca sin error a través del `TestClient`
 
 ## 4. Aplicación y salud
@@ -28,9 +28,9 @@
 
 ## 5. Verificación del change
 
-- [ ] 5.1 Correr `pytest tests` completo y verificar que pasan los tests de dominio existentes y los nuevos de `tests/api/`
-- [ ] 5.2 Verificar que `app/domain/` no importa `fastapi` ni `app.db`/`app.api` (búsqueda de imports) y que `app/db/` no importa `fastapi`
-- [ ] 5.3 Correr `openspec validate c-01-foundation-setup --strict` y verificar que no reporta errores
+- [x] 5.1 Correr `pytest tests` completo y verificar que pasan los tests de dominio existentes y los nuevos de `tests/api/`
+- [x] 5.2 Verificar que `app/domain/` no importa `fastapi` ni `app.db`/`app.api` (búsqueda de imports) y que `app/db/` no importa `fastapi`
+- [x] 5.3 Correr `openspec validate c-01-foundation-setup --strict` y verificar que no reporta errores
 
 ## Workflow follow-up
 
