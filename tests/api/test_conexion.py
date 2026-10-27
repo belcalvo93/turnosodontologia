@@ -7,7 +7,7 @@ from pathlib import Path
 import pytest
 
 from app.config import Config, cargar_config
-from app.db.conexion import abrir_conexion
+from app.db.conexion import abrir_conexion, transaccion
 
 
 def _config_temporal(ruta: Path) -> Config:
@@ -35,3 +35,30 @@ def test_abrir_conexion_hace_cumplir_las_claves_foraneas(tmp_path: Path) -> None
             conexion.execute("INSERT INTO hija (id, padre_id) VALUES (2, 99)")
 
         assert conexion.execute("SELECT COUNT(*) FROM hija").fetchone()[0] == 1
+
+
+def test_transaccion_confirma_al_salir_sin_excepcion(tmp_path: Path) -> None:
+    config = _config_temporal(tmp_path / "commit.db")
+
+    with closing(abrir_conexion(config)) as conexion:
+        conexion.execute("CREATE TABLE prueba (id INTEGER PRIMARY KEY)")
+
+        with transaccion(conexion):
+            conexion.execute("INSERT INTO prueba (id) VALUES (1)")
+
+    with closing(abrir_conexion(config)) as nueva:
+        assert nueva.execute("SELECT COUNT(*) FROM prueba").fetchone()[0] == 1
+
+
+def test_transaccion_revierte_ante_excepcion_y_propaga(tmp_path: Path) -> None:
+    config = _config_temporal(tmp_path / "rollback.db")
+
+    with closing(abrir_conexion(config)) as conexion:
+        conexion.execute("CREATE TABLE prueba (id INTEGER PRIMARY KEY)")
+
+        with pytest.raises(RuntimeError, match="falla simulada"):
+            with transaccion(conexion):
+                conexion.execute("INSERT INTO prueba (id) VALUES (1)")
+                raise RuntimeError("falla simulada")
+
+        assert conexion.execute("SELECT COUNT(*) FROM prueba").fetchone()[0] == 0

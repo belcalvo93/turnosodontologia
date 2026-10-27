@@ -1,6 +1,8 @@
 """Conexión SQLite y transacciones (C-01)."""
 
 import sqlite3
+from collections.abc import Iterator
+from contextlib import contextmanager
 
 from app.config import Config
 
@@ -19,3 +21,20 @@ def abrir_conexion(config: Config) -> sqlite3.Connection:
     conexion.execute(_PRAGMA_FOREIGN_KEYS)
     conexion.execute(_PRAGMA_BUSY_TIMEOUT)
     return conexion
+
+
+@contextmanager
+def transaccion(conexion: sqlite3.Connection) -> Iterator[sqlite3.Connection]:
+    """Transacción de escritura atómica sobre una conexión en autocommit.
+
+    Emite BEGIN IMMEDIATE (toma el lock de escritura al inicio), confirma al
+    salir sin excepción y revierte re-lanzando si el bloque falla.
+    """
+    conexion.execute("BEGIN IMMEDIATE")
+    try:
+        yield conexion
+    except BaseException:
+        conexion.rollback()
+        raise
+    else:
+        conexion.commit()
