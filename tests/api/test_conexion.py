@@ -7,7 +7,7 @@ from pathlib import Path
 import pytest
 
 from app.config import Config, cargar_config
-from app.db.conexion import abrir_conexion, transaccion
+from app.db.conexion import abrir_conexion, inicializar_esquema, transaccion
 
 
 def _config_temporal(ruta: Path) -> Config:
@@ -62,3 +62,19 @@ def test_transaccion_revierte_ante_excepcion_y_propaga(tmp_path: Path) -> None:
                 raise RuntimeError("falla simulada")
 
         assert conexion.execute("SELECT COUNT(*) FROM prueba").fetchone()[0] == 0
+
+
+def test_inicializar_esquema_se_puede_aplicar_dos_veces(tmp_path: Path) -> None:
+    config = _config_temporal(tmp_path / "esquema.db")
+
+    inicializar_esquema(config)
+    inicializar_esquema(config)
+
+
+def test_inicializar_esquema_deja_la_base_usable(tmp_path: Path) -> None:
+    config = _config_temporal(tmp_path / "esquema.db")
+
+    inicializar_esquema(config)
+
+    with closing(abrir_conexion(config)) as conexion:
+        assert conexion.execute("SELECT 1").fetchone()[0] == 1

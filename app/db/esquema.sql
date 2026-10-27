@@ -1,0 +1,10 @@
+-- Esquema de la base SQLite.
+--
+-- En C-01 este archivo solo documenta la convención: no crea tablas.
+-- Cada change que necesite persistencia agrega sus tablas acá usando:
+--
+--     CREATE TABLE IF NOT EXISTS <nombre> (...);
+--
+-- Así inicializar_esquema() puede reaplicar el archivo en cada arranque sin
+-- error. No hay sistema de migraciones: los cambios de columnas se resuelven
+-- a mano sobre la base existente.
