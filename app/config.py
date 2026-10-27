@@ -11,6 +11,8 @@ _DEFAULTS = {
     "CLINIC_TIMEZONE": "America/Argentina/Buenos_Aires",
 }
 
+_PREFIJO_SQLITE = "sqlite:///"
+
 
 @dataclass(frozen=True)
 class Config:
@@ -26,7 +28,7 @@ def cargar_config(entorno: Mapping[str, str] | None = None) -> Config:
     valores = os.environ if entorno is None else entorno
     return Config(
         app_env=_valor(valores, "APP_ENV"),
-        database_path=Path(_valor(valores, "DATABASE_URL")),
+        database_path=_normalizar_database_url(_valor(valores, "DATABASE_URL")),
         clinic_timezone=_valor(valores, "CLINIC_TIMEZONE"),
     )
 
@@ -34,3 +36,8 @@ def cargar_config(entorno: Mapping[str, str] | None = None) -> Config:
 def _valor(valores: Mapping[str, str], clave: str) -> str:
     """Devuelve la variable del entorno o el default de desarrollo si falta o está vacía."""
     return valores.get(clave) or _DEFAULTS[clave]
+
+
+def _normalizar_database_url(valor: str) -> Path:
+    """Acepta `sqlite:///ruta` o un path plano y devuelve el path de la base."""
+    return Path(valor.removeprefix(_PREFIJO_SQLITE))
