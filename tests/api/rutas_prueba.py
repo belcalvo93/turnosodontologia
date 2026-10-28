@@ -5,6 +5,7 @@ las monta sobre una app de test.
 """
 
 from fastapi import APIRouter
+from pydantic import BaseModel
 
 from app.domain.errores import ConflictoAgenda, DatoInvalido, DentroDeBloqueo, FueraDeHorario
 
@@ -34,3 +35,15 @@ def lanzar_dentro_de_bloqueo() -> None:
 @router.get("/error/dato-invalido")
 def lanzar_dato_invalido() -> None:
     raise DatoInvalido(MENSAJE_DATO_INVALIDO)
+
+
+class CuerpoPrueba(BaseModel):
+    """Body con la forma del login, para probar la validación de entrada."""
+
+    username: str
+    password: str
+
+
+@router.post("/validacion")
+def validar_cuerpo(cuerpo: CuerpoPrueba) -> dict[str, str]:
+    return {"username": cuerpo.username}

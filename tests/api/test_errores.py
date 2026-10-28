@@ -84,6 +84,62 @@ def test_otro_error_http_conserva_su_status_con_codigo_error_http(config: Config
     assert cuerpo["mensaje"] != "Detalle en inglés que no debe salir."
 
 
+def test_body_vacio_responde_422_con_un_detalle_por_campo_faltante(
+    cliente_con_rutas_prueba: TestClient,
+) -> None:
+    respuesta = cliente_con_rutas_prueba.post("/prueba/validacion", json={})
+
+    assert respuesta.status_code == 422
+    assert respuesta.json() == {
+        "codigo": "dato_invalido",
+        "mensaje": "Los datos enviados no son válidos.",
+        "detalles": [
+            {"campo": "username", "mensaje": "Campo obligatorio."},
+            {"campo": "password", "mensaje": "Campo obligatorio."},
+        ],
+    }
+
+
+def test_tipo_incorrecto_responde_422_con_el_campo_sin_prefijo_body(
+    cliente_con_rutas_prueba: TestClient,
+) -> None:
+    respuesta = cliente_con_rutas_prueba.post(
+        "/prueba/validacion", json={"username": "recepcion_ficticia", "password": 123}
+    )
+
+    assert respuesta.status_code == 422
+    cuerpo = respuesta.json()
+    assert cuerpo["codigo"] == "dato_invalido"
+    assert cuerpo["detalles"] == [{"campo": "password", "mensaje": "Debe ser un texto."}]
+
+
+def test_json_mal_formado_responde_422_dato_invalido(
+    cliente_con_rutas_prueba: TestClient,
+) -> None:
+    respuesta = cliente_con_rutas_prueba.post(
+        "/prueba/validacion",
+        content=b'{"username": ',
+        headers={"Content-Type": "application/json"},
+    )
+
+    assert respuesta.status_code == 422
+    cuerpo = respuesta.json()
+    assert cuerpo["codigo"] == "dato_invalido"
+    # El loc de Pydantic trae la posición del carácter; el campo es todo el cuerpo.
+    assert cuerpo["detalles"] == [
+        {"campo": "body", "mensaje": "El cuerpo no es un JSON válido."}
+    ]
+
+
+def test_body_que_no_es_un_objeto_usa_campo_body_y_valor_invalido(
+    cliente_con_rutas_prueba: TestClient,
+) -> None:
+    respuesta = cliente_con_rutas_prueba.post("/prueba/validacion", json=["no-es-un-objeto"])
+
+    assert respuesta.status_code == 422
+    assert respuesta.json()["detalles"] == [{"campo": "body", "mensaje": "Valor inválido."}]
+
+
 class ErrorDominioSinMapeo(ErrorDominio):
     """Error de dominio definido solo en el test, sin entrada en la tabla de mapeo."""
 

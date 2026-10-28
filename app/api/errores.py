@@ -1,6 +1,9 @@
 """Mapeo global de errores a JSON `{codigo, mensaje, detalles?}` (C-03, RN-GLO-01)."""
 
+from collections.abc import Sequence
+
 from fastapi import FastAPI, Request
+from fastapi.exceptions import RequestValidationError
 from fastapi.responses import JSONResponse
 from starlette.exceptions import HTTPException as StarletteHTTPException
 
@@ -29,11 +32,48 @@ _MAPEO_HTTP: dict[int, tuple[str, str]] = {
 # Cualquier otro status conserva su número; el `detail` del framework no se expone.
 _ERROR_HTTP_GENERICO = ("error_http", "No se pudo procesar la solicitud.")
 
+# Mensajes en español por `type` de error de Pydantic; el texto original (en inglés) no se expone.
+_MENSAJES_VALIDACION: dict[str, str] = {
+    "missing": "Campo obligatorio.",
+    "string_type": "Debe ser un texto.",
+    "string_too_short": "No puede estar vacío.",
+    "json_invalid": "El cuerpo no es un JSON válido.",
+}
+_MENSAJE_VALIDACION_GENERICO = "Valor inválido."
+# `campo` de los errores que afectan a todo el cuerpo y no a un campo concreto.
+_CAMPO_CUERPO = "body"
+
 
 def registrar_manejadores(aplicacion: FastAPI) -> None:
     """Registra los handlers que convierten las excepciones en el formato de error."""
     aplicacion.add_exception_handler(ErrorDominio, _manejar_error_dominio)
     aplicacion.add_exception_handler(StarletteHTTPException, _manejar_error_http)
+    aplicacion.add_exception_handler(RequestValidationError, _manejar_error_validacion)
+
+
+async def _manejar_error_validacion(_: Request, exc: RequestValidationError) -> JSONResponse:
+    detalles = [
+        {
+            "campo": _campo_de_validacion(error["loc"], error["type"]),
+            "mensaje": _MENSAJES_VALIDACION.get(error["type"], _MENSAJE_VALIDACION_GENERICO),
+        }
+        for error in exc.errors()
+    ]
+    return _respuesta_error(
+        422, "dato_invalido", "Los datos enviados no son válidos.", detalles=detalles
+    )
+
+
+def _campo_de_validacion(loc: Sequence[str | int], tipo: str) -> str:
+    """Nombre del campo con error: el `loc` sin su prefijo ("body", "query"...).
+
+    Si el error es de todo el cuerpo (no es un objeto, o es un JSON mal formado,
+    cuyo `loc` trae la posición del carácter), el campo es "body".
+    """
+    resto = loc[1:]
+    if not resto or tipo == "json_invalid":
+        return _CAMPO_CUERPO
+    return ".".join(str(parte) for parte in resto)
 
 
 async def _manejar_error_http(_: Request, exc: StarletteHTTPException) -> JSONResponse:
@@ -53,6 +93,11 @@ async def _manejar_error_dominio(_: Request, exc: ErrorDominio) -> JSONResponse:
     return _respuesta_error(status, codigo, str(exc))
 
 
-def _respuesta_error(status: int, codigo: str, mensaje: str) -> JSONResponse:
-    """Arma el cuerpo de error común a todos los handlers."""
-    return JSONResponse(status_code=status, content={"codigo": codigo, "mensaje": mensaje})
+def _respuesta_error(
+    status: int, codigo: str, mensaje: str, detalles: list[dict[str, str]] | None = None
+) -> JSONResponse:
+    """Arma el cuerpo de error común a todos los handlers; `detalles` solo si hay por campo."""
+    cuerpo: dict[str, object] = {"codigo": codigo, "mensaje": mensaje}
+    if detalles is not None:
+        cuerpo["detalles"] = detalles
+    return JSONResponse(status_code=status, content=cuerpo)

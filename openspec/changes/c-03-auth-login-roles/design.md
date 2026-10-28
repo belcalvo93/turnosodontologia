@@ -142,12 +142,14 @@ CREATE TABLE IF NOT EXISTS usuario (
 | `ErrorDominio` sin mapeo propio | 500 | `error_interno` | "Error interno." |
 
 - El mapeo de los errores de dominio es una tabla `{clase: (status, codigo)}`. Un test recorre las subclases de `ErrorDominio` y verifica que cada una tenga entrada, para que un error nuevo no caiga en 500 sin que nadie lo note. El fallback a 500 (`error_interno`) es una red de seguridad, no un comportamiento esperado. **Aceptado por el equipo**, igual que los dos códigos 401 separados (`credenciales_invalidas` / `no_autenticado`) y la validación de `JWT_ALGORITHM` y `ACCESS_TOKEN_EXPIRE_MINUTES`.
-- `detalles` de validación: `campo` es el `loc` de Pydantic sin el prefijo `body`, unido con `.`. `mensaje` sale de un diccionario por `type`:
-  - `missing` → "Campo obligatorio."
-  - `string_type` → "Debe ser un texto."
-  - `string_too_short` → "No puede estar vacío."
-  - `json_invalid` → "El cuerpo no es un JSON válido."
-  - cualquier otro → "Valor inválido."
+- `detalles` de validación: `campo` es el `loc` de Pydantic sin el prefijo `body`, unido con `.`.
+  - Si el error es de todo el cuerpo, `campo` es `"body"`. Pasa en dos casos: el body no es un objeto (`loc` es solo `("body",)`) o es un JSON mal formado (`type` `json_invalid`, cuyo `loc` trae la posición del carácter). Así `campo` nunca queda vacío ni muestra una posición. **Decidido por el equipo en la tarea 3.4.**
+  - `mensaje` sale de un diccionario por `type`:
+    - `missing` → "Campo obligatorio."
+    - `string_type` → "Debe ser un texto."
+    - `string_too_short` → "No puede estar vacío."
+    - `json_invalid` → "El cuerpo no es un JSON válido."
+    - cualquier otro → "Valor inválido."
 - `NoAutenticado`, `SinPermiso` y `CredencialesInvalidas` son errores de la capa API (heredan de una base `ErrorApi`), no de dominio.
 
 ### 8. `/docs` solo en development
