@@ -11,14 +11,14 @@
 
 ## 3. Endpoints HTTP y control de acceso por rol
 
-- [ ] 3.1 Implementar el router `app/api/profesionales.py` con `GET /profesionales`, `POST /profesionales` (`201`) y `PATCH /profesionales/{id}` (`200` / `404`) integrando las dependencias `usuario_actual` y `requiere_rol("administracion")` de `C-03` y montarlo en `app/main.py`, verificando con tests en `tests/api/test_profesionales.py`: alta válida con y sin matrícula (`201`), `nombre` o `apellido` vacío (`422`), edición y desactivación con `activo=false` (`200`), profesional desactivado que sigue listándose como inactivo en `GET /profesionales` (`200`) y `PATCH` de `id` inexistente (`404`)
-- [ ] 3.2 Verificar en `tests/api/test_profesionales.py` las reglas de acceso `RN-ACC-01` y `RN-ACC-02`: request sin token devuelve `401`, rol `recepcion` u `odontologo` intentando `POST /profesionales` o `PATCH /profesionales/{id}` devuelve `403`, y los tres roles autenticados pueden consultar `GET /profesionales` (`200`)
+- [x] 3.1 Implementar el router `app/api/profesionales.py` con `GET /profesionales`, `POST /profesionales` (`201`) y `PATCH /profesionales/{id}` (`200` / `404`) integrando las dependencias `usuario_actual` y `requiere_rol("administracion")` de `C-03` y montarlo en `app/main.py`, verificando con tests en `tests/api/test_profesionales.py`: alta válida con y sin matrícula (`201`), `nombre` o `apellido` vacío (`422`), edición y desactivación con `activo=false` (`200`), profesional desactivado que sigue listándose como inactivo en `GET /profesionales` (`200`) y `PATCH` de `id` inexistente (`404`)
+- [x] 3.2 Verificar en `tests/api/test_profesionales.py` las reglas de acceso `RN-ACC-01` y `RN-ACC-02`: request sin token devuelve `401`, rol `recepcion` u `odontologo` intentando `POST /profesionales` o `PATCH /profesionales/{id}` devuelve `403`, y los tres roles autenticados pueden consultar `GET /profesionales` (`200`)
 
 ## 4. Verificación integral del change
 
-- [ ] 4.1 Ejecutar `pytest tests` completo y verificar que pasan todos los tests existentes y los nuevos de dominio y API de `C-04`
-- [ ] 4.2 Verificar que `app/domain/` no importa `fastapi` ni `app.db`/`app.api` y que todas las consultas de `app/db/repositorio_profesionales.py` usan parámetros `?`
-- [ ] 4.3 Ejecutar `openspec validate c-04-profesionales --strict` y verificar que no reporta errores
+- [x] 4.1 Ejecutar `pytest tests` completo y verificar que pasan todos los tests existentes y los nuevos de dominio y API de `C-04`
+- [x] 4.2 Verificar que `app/domain/` no importa `fastapi` ni `app.db`/`app.api` y que todas las consultas de `app/db/repositorio_profesionales.py` usan parámetros `?`
+- [x] 4.3 Ejecutar `openspec validate c-04-profesionales --strict` y verificar que no reporta errores
 
 ## Workflow follow-up
 
