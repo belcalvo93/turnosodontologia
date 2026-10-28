@@ -156,7 +156,7 @@
   - `SEED_ADMIN_PASSWORD=<definir-localmente>`
 
   Verificar que `git diff .env.example` muestra solo placeholders y que `git status` no lista ningún `.env`.
-- [ ] 8.2 Actualizar `README.md`:
+- [x] 8.2 Actualizar `README.md`:
   - las variables nuevas en la tabla y en los ejemplos de PowerShell y bash;
   - que sin `JWT_SECRET` fuera de development/test la app no arranca;
   - cómo crear `admin_demo` en desarrollo;
@@ -166,6 +166,16 @@
   - la sección "Estructura" con los archivos nuevos.
 
   Verificar que el ejemplo de login documentado funciona contra `uvicorn app.main:app` con `admin_demo`.
+
+  > **Nota para el verify:**
+  > - Los dos ejemplos de login del README (curl y PowerShell) se ejecutaron tal como están escritos contra `uvicorn app.main:app` en el puerto 8000, con `APP_ENV=development` y `SEED_ADMIN_PASSWORD=clave-demo-ficticia`. Respondieron `200` y `token_type` `bearer`.
+  > - También se comprobaron contra la app real:
+  >   - el `401` con `WWW-Authenticate: Bearer`;
+  >   - el `422` con `detalles`;
+  >   - `/docs` en `200` con development y en `404` con test;
+  >   - el fallo de arranque sin `JWT_SECRET` con `APP_ENV=production`.
+  > - El ejemplo de `Authorization: Bearer` usa `<ruta-protegida>` y **no se pudo ejecutar**, porque `app/` todavía no tiene rutas protegidas (llegan desde C-04). El mecanismo lo cubren los tests de las tareas 6.5 a 6.7.
+  > - Fuera de la lista de la tarea, también actualicé "Estado actual": sumé C-03 y cambié `44 passed` por `194 passed`, que estaba desactualizado.
 
 ## 9. Verificación del change
 
