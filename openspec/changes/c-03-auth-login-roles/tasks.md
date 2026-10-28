@@ -28,7 +28,7 @@
 ## 4. Usuarios en dominio y persistencia
 
 - [x] 4.1 Escribir tests en `tests/domain/test_usuarios.py` de que `Rol` tiene exactamente `administracion`, `recepcion` y `odontologo`, y de que `Usuario` es inmutable y no tiene atributo `password_hash`. Implementar `app/domain/usuarios.py` en Python puro, verificando que los tests pasan y que el módulo no importa `fastapi`, `app.db` ni `app.api`.
-- [ ] 4.2 Escribir tests en `tests/api/test_esquema_usuario.py` (base temporal + `inicializar_esquema`):
+- [x] 4.2 Escribir tests en `tests/api/test_esquema_usuario.py` (base temporal + `inicializar_esquema`):
   - la tabla `usuario` existe después del arranque;
   - un `username` duplicado lanza `IntegrityError`;
   - el rol `paciente` lanza `IntegrityError`;
