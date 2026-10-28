@@ -27,7 +27,11 @@ def registrar_manejadores(aplicacion: FastAPI) -> None:
 
 
 async def _manejar_error_dominio(_: Request, exc: Exception) -> JSONResponse:
-    status, codigo = MAPEO_DOMINIO[type(exc)]
+    mapeo = MAPEO_DOMINIO.get(type(exc))
+    if mapeo is None:
+        # Red de seguridad: un error de dominio sin mapeo no expone su mensaje interno.
+        return _respuesta_error(500, "error_interno", "Error interno.")
+    status, codigo = mapeo
     return _respuesta_error(status, codigo, str(exc))
 
 

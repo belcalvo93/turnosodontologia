@@ -1,8 +1,13 @@
 """Tests del formato global de errores {codigo, mensaje, detalles?} (C-03, RN-GLO-01)."""
 
 import pytest
+from fastapi import APIRouter
 from fastapi.testclient import TestClient
 
+from app.api.errores import MAPEO_DOMINIO
+from app.config import Config
+from app.domain.errores import ErrorDominio
+from app.main import create_app
 from tests.api.rutas_prueba import (
     MENSAJE_CONFLICTO_AGENDA,
     MENSAJE_DATO_INVALIDO,
@@ -27,3 +32,40 @@ def test_error_de_dominio_responde_su_status_con_codigo_y_mensaje(
 
     assert respuesta.status_code == status
     assert respuesta.json() == {"codigo": codigo, "mensaje": mensaje}
+
+
+class ErrorDominioSinMapeo(ErrorDominio):
+    """Error de dominio definido solo en el test, sin entrada en la tabla de mapeo."""
+
+
+def _subclases(clase: type[ErrorDominio]) -> set[type[ErrorDominio]]:
+    """Todas las subclases de `clase`, a cualquier profundidad."""
+    directas = set(clase.__subclasses__())
+    return directas.union(*(_subclases(subclase) for subclase in directas))
+
+
+def test_todo_error_de_dominio_de_la_app_tiene_entrada_en_el_mapeo() -> None:
+    # Se excluyen las subclases definidas en los tests (como ErrorDominioSinMapeo).
+    subclases_de_la_app = {
+        subclase for subclase in _subclases(ErrorDominio) if subclase.__module__.startswith("app.")
+    }
+
+    assert subclases_de_la_app
+    assert subclases_de_la_app - MAPEO_DOMINIO.keys() == set()
+
+
+def test_error_de_dominio_sin_mapeo_responde_500_error_interno(config: Config) -> None:
+    router = APIRouter()
+
+    @router.get("/prueba/error/sin-mapeo")
+    def lanzar_error_sin_mapeo() -> None:
+        raise ErrorDominioSinMapeo("Detalle interno que no debe filtrarse (ficticio).")
+
+    aplicacion = create_app(config)
+    aplicacion.include_router(router)
+
+    with TestClient(aplicacion) as cliente_http:
+        respuesta = cliente_http.get("/prueba/error/sin-mapeo")
+
+    assert respuesta.status_code == 500
+    assert respuesta.json() == {"codigo": "error_interno", "mensaje": "Error interno."}
