@@ -1,14 +1,14 @@
 """Tests de las dependencias de la API sobre rutas de prueba (C-03)."""
 
 import sqlite3
-from datetime import UTC, datetime
+from datetime import UTC, datetime, tzinfo
 
 import pytest
 from fastapi.testclient import TestClient
 
 from app.config import Config
 from app.main import create_app
-from tests.conftest import RelojFijo
+from tests.conftest import INSTANTE_INICIAL, RelojFijo
 
 
 def _conexion_usada(cliente: TestClient) -> sqlite3.Connection:
@@ -79,11 +79,19 @@ def test_el_cliente_sin_rutas_de_prueba_tambien_usa_el_reloj_fijo(
     assert cliente.app.state.reloj is reloj  # type: ignore[attr-defined]
 
 
-def test_sin_reloj_inyectado_la_app_usa_la_hora_real_en_utc(config: Config) -> None:
-    # Único test que toca la hora real: acota el resultado entre dos lecturas, sin esperar.
-    antes = datetime.now(UTC)
-    ahora = create_app(config).state.reloj()
-    despues = datetime.now(UTC)
+def test_sin_reloj_inyectado_la_app_usa_datetime_now_en_utc(
+    config: Config, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    # Un doble de `datetime` en app.main: verifica el reloj por defecto sin leer la hora real.
+    zonas_pedidas: list[tzinfo | None] = []
 
-    assert ahora.tzinfo is UTC
-    assert antes <= ahora <= despues
+    class DatetimeFalso(datetime):
+        @classmethod
+        def now(cls, tz: tzinfo | None = None) -> datetime:
+            zonas_pedidas.append(tz)
+            return INSTANTE_INICIAL
+
+    monkeypatch.setattr("app.main.datetime", DatetimeFalso)
+
+    assert create_app(config).state.reloj() == INSTANTE_INICIAL
+    assert zonas_pedidas == [UTC]

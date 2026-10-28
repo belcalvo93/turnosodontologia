@@ -219,7 +219,16 @@
   > - En `tests/`, todos los valores dicen `ficticia`: `clave-ficticia-123`, `otra-clave-ficticia`, `clave-demo-ficticia`, `otra-clave-demo-ficticia` y las variantes de `test_seguridad.py`. Las excepciones son `""` y `123`, los casos de validación de la 6.4, que no son contraseñas.
   >
   > **Usuarios:** todos los de los tests dicen `ficticio`/`ficticia` (`recepcion_ficticia`, `odontologo_ficticio`, `administracion_ficticia`, `admin_ficticio`, `inactivo_ficticio`, `fantasma_ficticio` y `otro_fantasma_ficticio`), salvo `admin_demo`. Ese nombre lo fija el spec del seed. Es un usuario de demostración y su contraseña sí está rotulada (`clave-demo-ficticia`).
-- [ ] 9.4 Verificar con una búsqueda en `tests/` que ningún test usa `time.sleep`, `datetime.now`, `datetime.utcnow`, `date.today` ni `time.time`, y en `app/` que la única lectura de la hora real es el default del `reloj` en `create_app`.
+- [x] 9.4 Verificar con una búsqueda en `tests/` que ningún test usa `time.sleep`, `datetime.now`, `datetime.utcnow`, `date.today` ni `time.time`, y en `app/` que la única lectura de la hora real es el default del `reloj` en `create_app`.
+
+  > **Resultado de la 9.4:**
+  > - **`app/`:** la única lectura de la hora real es `_hora_real()` en `app/main.py`, que devuelve `datetime.now(UTC)`. Es el reloj por defecto de `create_app`.
+  > - **`tests/`:** ninguna llamada a `time.sleep`, `sleep(`, `datetime.now`, `datetime.utcnow`, `date.today`, `time.time`, `.now(`, `.utcnow(` ni `.today(`. Tampoco hay imports de `time` ni de `freezegun`.
+  >
+  > **Corrección hecha en esta tarea, acordada con el equipo:** la primera búsqueda encontró `datetime.now(UTC)` en el test de la 6.1b `test_sin_reloj_inyectado_la_app_usa_la_hora_real_en_utc` (`tests/api/test_dependencias.py`). Ese test acotaba el reloj por defecto entre dos lecturas de la hora real.
+  > - Se reescribió como `test_sin_reloj_inyectado_la_app_usa_datetime_now_en_utc`. Usa un doble de `datetime` en `app.main` (con `monkeypatch`) que devuelve `INSTANTE_INICIAL` y registra la zona pedida.
+  > - Verifica que el reloj por defecto devuelve lo que da `datetime.now` y que lo pide en `UTC`.
+  > - Prueba de mutación manual: cambié `datetime.now(UTC)` por `datetime.now()` en `_hora_real()`, y el test falló (`[None] == [UTC]`). Restauré la línea editando el archivo y `git diff app/` quedó vacío.
 - [ ] 9.5 Correr `openspec validate c-03-auth-login-roles --strict`, verificando que no reporta errores.
 
 ## Workflow follow-up
