@@ -29,7 +29,7 @@ El sistema SHALL construir su configuración desde las variables de entorno `APP
 
 ### Requirement: Conexión SQLite transaccional
 
-El sistema SHALL proveer una función que abra conexiones SQLite sobre la base configurada con `PRAGMA foreign_keys=ON` y `busy_timeout` definido, cerrables por quien las usa, y un context manager de transacción que haga `BEGIN IMMEDIATE`, `commit` al salir sin excepción y `rollback` si se lanza una excepción dentro del bloque.
+El sistema SHALL proveer una función que abra conexiones SQLite sobre la base configurada con `PRAGMA foreign_keys=ON` y `busy_timeout` definido, cerrables por quien las usa, y un context manager de transacción que haga `BEGIN IMMEDIATE`, `commit` al salir sin excepción y `rollback` si se lanza una excepción dentro del bloque. Una conexión SHALL poder usarse desde un hilo distinto al que la abrió, siempre que no se comparta entre requests concurrentes.
 
 #### Scenario: Claves foráneas activas
 
@@ -49,15 +49,21 @@ El sistema SHALL proveer una función que abra conexiones SQLite sobre la base c
 - **Cuando** el bloque lanza una excepción después del `INSERT`
 - **Entonces** la excepción se propaga y la fila no queda persistida
 
+#### Scenario: Uso desde otro hilo
+
+- **Dado** una conexión del sistema abierta en el hilo principal
+- **Cuando** se ejecuta una consulta y se cierra la conexión desde otro hilo
+- **Entonces** la consulta devuelve su resultado y el cierre termina sin error de hilo
+
 ### Requirement: Esquema aplicado al arrancar
 
-El sistema SHALL aplicar `app/db/esquema.sql` sobre la base configurada al iniciar la aplicación, antes de atender requests, y SHALL poder repetir esa aplicación en arranques sucesivos sin error. En este change el archivo solo contiene comentarios: no crea tablas.
+El sistema SHALL aplicar `app/db/esquema.sql` sobre la base configurada al iniciar la aplicación, antes de atender requests, y SHALL poder repetir esa aplicación en arranques sucesivos sin error. Cada tabla del esquema SHALL declararse de forma idempotente.
 
 #### Scenario: Arranque con esquema vacío
 
-- **Dado** el `esquema.sql` de este change, que no declara tablas, y una base temporal
+- **Dado** una base temporal vacía, sin ninguna tabla
 - **Cuando** la aplicación arranca
-- **Entonces** el arranque termina sin error y la aplicación queda lista para atender requests
+- **Entonces** el arranque termina sin error, la tabla `usuario` existe y la aplicación queda lista para atender requests
 
 #### Scenario: Aplicación repetida del esquema
 
@@ -74,3 +80,59 @@ El sistema SHALL exponer `GET /health` sin autenticación, respondiendo `200` co
 - **Dado** la aplicación iniciada con una base temporal
 - **Cuando** se hace `GET /health` sin cabecera de autenticación
 - **Entonces** responde `200` con `{"status": "ok"}`
+
+### Requirement: Configuración de autenticación
+
+El sistema SHALL leer `JWT_SECRET`, `JWT_ALGORITHM` (default `HS256`, solo HMAC), `ACCESS_TOKEN_EXPIRE_MINUTES` (default `60`, entero positivo) y `SEED_ADMIN_PASSWORD` (opcional). Sin `JWT_SECRET`, en `development` o `test` SHALL generar un secreto aleatorio por proceso; en cualquier otro entorno la aplicación MUST NOT arrancar. El código MUST NOT contener un secreto por defecto.
+
+#### Scenario: Defaults de autenticación en desarrollo
+
+- **Dado** un entorno vacío
+- **Cuando** se carga la configuración
+- **Entonces** el algoritmo es `HS256`, la duración del token es `60` minutos, no hay contraseña de seed y hay un secreto no vacío
+
+#### Scenario: Secreto aleatorio por proceso
+
+- **Dado** un entorno con `APP_ENV=test` sin `JWT_SECRET`
+- **Cuando** se carga la configuración dos veces
+- **Entonces** las dos cargas tienen secretos no vacíos y distintos entre sí
+
+#### Scenario: Secreto explícito
+
+- **Dado** un entorno con `JWT_SECRET` definido con un valor ficticio de 32 caracteres o más
+- **Cuando** se carga la configuración
+- **Entonces** el secreto de la configuración es exactamente ese valor
+
+#### Scenario: Falta JWT_SECRET fuera de development y test
+
+- **Dado** un entorno con `APP_ENV=production` sin `JWT_SECRET`
+- **Cuando** se carga la configuración para crear la aplicación
+- **Entonces** falla con un error de configuración cuyo mensaje nombra `JWT_SECRET`, y la aplicación no se crea
+
+#### Scenario: Duración del token inválida
+
+- **Dado** un entorno con `ACCESS_TOKEN_EXPIRE_MINUTES=abc` (o `0`)
+- **Cuando** se carga la configuración
+- **Entonces** falla con un error de configuración cuyo mensaje nombra `ACCESS_TOKEN_EXPIRE_MINUTES`
+
+#### Scenario: Algoritmo no admitido
+
+- **Dado** un entorno con `JWT_ALGORITHM=none`
+- **Cuando** se carga la configuración
+- **Entonces** falla con un error de configuración cuyo mensaje nombra `JWT_ALGORITHM`
+
+### Requirement: Documentación OpenAPI solo en development
+
+El sistema SHALL exponer `/docs` y `/openapi.json` sin autenticación solo cuando `APP_ENV` es `development`. En cualquier otro entorno ambas rutas SHALL responder `404` (03 §Rutas públicas).
+
+#### Scenario: Docs disponibles en development
+
+- **Dado** la aplicación iniciada con `APP_ENV=development`
+- **Cuando** se hace `GET /docs` y `GET /openapi.json`
+- **Entonces** ambas responden `200`
+
+#### Scenario: Docs ocultas fuera de development
+
+- **Dado** la aplicación iniciada con `APP_ENV=test`
+- **Cuando** se hace `GET /docs` y `GET /openapi.json`
+- **Entonces** ambas responden `404`

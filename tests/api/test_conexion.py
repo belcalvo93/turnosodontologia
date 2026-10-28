@@ -46,6 +46,23 @@ def test_abrir_conexion_se_puede_usar_desde_otro_hilo(tmp_path: Path) -> None:
     assert total == 1
 
 
+def test_abrir_conexion_se_puede_cerrar_desde_otro_hilo(tmp_path: Path) -> None:
+    """FastAPI puede cerrar la conexión de un request en otro hilo del pool (C-03)."""
+    conexion = abrir_conexion(tmp_path / "cierre_hilos.db")
+
+    def consultar_y_cerrar() -> int:
+        total = conexion.execute("SELECT 1").fetchone()[0]
+        conexion.close()
+        return total
+
+    with ThreadPoolExecutor(max_workers=1) as ejecutor:
+        total = ejecutor.submit(consultar_y_cerrar).result()
+
+    assert total == 1
+    with pytest.raises(sqlite3.ProgrammingError, match="closed"):
+        conexion.execute("SELECT 1")
+
+
 def test_transaccion_confirma_al_salir_sin_excepcion(tmp_path: Path) -> None:
     ruta = tmp_path / "commit.db"
 
