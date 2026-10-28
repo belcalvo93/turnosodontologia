@@ -74,7 +74,11 @@
   > - `test_el_hash_ficticio_se_calcula_una_sola_vez` y `test_usuario_inactivo_igual_verifica_su_contrasena`: son tests de triangulación escritos después del GREEN, y pasaron en el primer intento.
   >
   > Con RED propio: `test_login_de_usuario_inactivo_responde_credenciales_invalidas` (respondía `200`) y `test_usuario_inexistente_igual_verifica_contra_un_hash_ficticio` (`verificar` no se llamaba).
-- [ ] 6.4 Escribir tests de que `POST /auth/login` con `{}`, con `password` faltante y con `password` numérico responde `422` `dato_invalido` con `detalles` del campo correspondiente. Verificar que pasan con el handler del grupo 3 y el modelo Pydantic con `min_length=1`.
+- [x] 6.4 Escribir tests de que `POST /auth/login` con `{}`, con `password` faltante y con `password` numérico responde `422` `dato_invalido` con `detalles` del campo correspondiente. Verificar que pasan con el handler del grupo 3 y el modelo Pydantic con `min_length=1`.
+
+  > **Nota para el verify: ningún test de la 6.4 tiene fase RED propia.** Es una tarea de verificación. El handler de validación es del grupo 3 y el modelo con `min_length=1` es de la 6.2. Los cuatro tests de `tests/api/test_auth.py` pasaron en el primer intento: body vacío, `password` faltante, `password` numérico y, como triangulación, `username` y `password` vacíos.
+  >
+  > Para comprobar que el último test detecta la falta de `min_length`, hice una prueba de mutación manual: saqué `Field(min_length=1)` de `CredencialesEntrada`, el test falló (`1 failed, 15 passed`), y restauré el archivo con `git checkout`.
 - [ ] 6.5 Escribir tests sobre `GET /prueba/autenticado`: sin cabecera, con `Basic ...`, con texto arbitrario y con un token firmado con otra clave, todos `401` `no_autenticado` con la cabecera `WWW-Authenticate: Bearer`. Con un token válido debe responder `200`. Implementar `usuario_actual` con `HTTPBearer(auto_error=False)`, validando el token con `obtener_ahora`, verificando que los tests pasan (RN-ACC-01).
 - [ ] 6.5b Escribir el test de **token vencido moviendo el reloj fijo, sin esperar**:
   - login de `recepcion_ficticia` con el `RelojFijo` en `T` (`ACCESS_TOKEN_EXPIRE_MINUTES=60`);

@@ -191,3 +191,41 @@ def test_usuario_inactivo_igual_verifica_su_contrasena(
 
     assert len(hashes_verificados) == 1
     assert verificar(CLAVE_FICTICIA, hashes_verificados[0]) is True
+
+
+# --- Body de login inválido: 422 dato_invalido con detalles por campo ---
+
+
+def _detalles(respuesta: Response) -> dict[str, str]:
+    assert respuesta.status_code == 422
+    cuerpo = respuesta.json()
+    assert cuerpo["codigo"] == "dato_invalido"
+    return {detalle["campo"]: detalle["mensaje"] for detalle in cuerpo["detalles"]}
+
+
+def test_login_con_body_vacio_detalla_username_y_password(cliente: TestClient) -> None:
+    detalles = _detalles(cliente.post("/auth/login", json={}))
+
+    assert detalles == {"username": "Campo obligatorio.", "password": "Campo obligatorio."}
+
+
+def test_login_sin_password_detalla_password(cliente: TestClient) -> None:
+    detalles = _detalles(cliente.post("/auth/login", json={"username": "recepcion_ficticia"}))
+
+    assert detalles == {"password": "Campo obligatorio."}
+
+
+def test_login_con_password_numerico_detalla_password(cliente: TestClient) -> None:
+    detalles = _detalles(
+        cliente.post("/auth/login", json={"username": "recepcion_ficticia", "password": 123})
+    )
+
+    assert detalles == {"password": "Debe ser un texto."}
+
+
+def test_login_con_username_y_password_vacios_responde_que_no_pueden_estar_vacios(
+    cliente: TestClient,
+) -> None:
+    detalles = _detalles(cliente.post("/auth/login", json={"username": "", "password": ""}))
+
+    assert detalles == {"username": "No puede estar vacío.", "password": "No puede estar vacío."}
