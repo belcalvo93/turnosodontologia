@@ -1,6 +1,7 @@
 """Tests de la conexión SQLite: PRAGMAs, transacciones y esquema (C-01)."""
 
 import sqlite3
+from concurrent.futures import ThreadPoolExecutor
 from contextlib import closing
 from pathlib import Path
 
@@ -30,6 +31,19 @@ def test_abrir_conexion_hace_cumplir_las_claves_foraneas(tmp_path: Path) -> None
             conexion.execute("INSERT INTO hija (id, padre_id) VALUES (2, 99)")
 
         assert conexion.execute("SELECT COUNT(*) FROM hija").fetchone()[0] == 1
+
+
+def test_abrir_conexion_se_puede_usar_desde_otro_hilo(tmp_path: Path) -> None:
+    """FastAPI ejecuta los endpoints síncronos en un pool de hilos."""
+    ruta = tmp_path / "hilos.db"
+
+    with closing(abrir_conexion(ruta)) as conexion:
+        with ThreadPoolExecutor(max_workers=1) as ejecutor:
+            total = ejecutor.submit(
+                lambda: conexion.execute("SELECT 1").fetchone()[0]
+            ).result()
+
+    assert total == 1
 
 
 def test_transaccion_confirma_al_salir_sin_excepcion(tmp_path: Path) -> None:

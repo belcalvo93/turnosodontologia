@@ -19,8 +19,12 @@ def abrir_conexion(ruta: Path) -> sqlite3.Connection:
 
     `isolation_level=None` deja la conexión en autocommit: sqlite3 no abre
     transacciones implícitas y las controla `transaccion()` con BEGIN IMMEDIATE.
+
+    `check_same_thread=False` permite usar la conexión desde el hilo del pool que
+    atiende el endpoint síncrono de FastAPI. Es seguro porque cada request abre
+    su propia conexión y no se comparte entre requests.
     """
-    conexion = sqlite3.connect(ruta, isolation_level=None)
+    conexion = sqlite3.connect(ruta, isolation_level=None, check_same_thread=False)
     conexion.execute(_PRAGMA_FOREIGN_KEYS)
     conexion.execute(_PRAGMA_BUSY_TIMEOUT)
     return conexion
