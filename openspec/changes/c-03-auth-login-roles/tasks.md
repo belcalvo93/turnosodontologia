@@ -99,8 +99,14 @@
   > Para comprobar que detecta el borde del vencimiento, hice una prueba de mutación manual: cambié `exp <= instante` por `exp < instante` en `decodificar_token`, y el test falló en T+60 (`200 == 401`). Restauré el archivo editándolo y `git diff app/` quedó vacío.
   >
   > Una búsqueda en el test de `sleep`, `datetime.now` y `time.time` no encontró ningún uso. La única coincidencia es el comentario que lo aclara. El token vence en `2026-01-05T13:00Z`, así que el resultado no depende de la hora de la máquina.
-- [ ] 6.6 Escribir tests de que un token válido de un usuario desactivado después del login responde `401` `no_autenticado`, y de que un usuario cuyo rol cambió de `recepcion` a `odontologo` después del login recibe `403` en `GET /prueba/solo-recepcion`. Verificar que `usuario_actual` recarga el usuario desde la base y usa el rol guardado, no el del token.
-- [ ] 6.7 Escribir tests de que `recepcion_ficticia` recibe `403` `sin_permiso` en `GET /prueba/solo-admin` y `200` en `GET /prueba/admin-o-recepcion`, y de que un `administracion_ficticia` recibe `200` en `solo-admin`. Implementar `requiere_rol(*roles)`, verificando que los tests pasan (RN-ACC-02, mecanismo).
+- [x] 6.6 Escribir tests de que un token válido de un usuario desactivado después del login responde `401` `no_autenticado`, y de que un usuario cuyo rol cambió de `recepcion` a `odontologo` después del login recibe `403` en `GET /prueba/solo-recepcion`. Verificar que `usuario_actual` recarga el usuario desde la base y usa el rol guardado, no el del token.
+
+  > **División acordada con el equipo:** el test del `403` en `GET /prueba/solo-recepcion` necesita `requiere_rol`, que llega en la 6.7, así que **se movió a la 6.7**. En la 6.6 quedó el test del usuario desactivado. Que se usa el rol guardado y no el del token se verifica sin `requiere_rol`: `GET /prueba/autenticado` devuelve el rol de la base.
+  >
+  > **Nota para el verify: RED de la 6.6** (todos en `tests/api/test_usuario_actual.py`):
+  > - Con RED propio: `test_token_valido_de_un_usuario_desactivado_despues_del_login_responde_no_autenticado`, que respondía `200`.
+  > - Sin RED propio, porque son de triangulación y pasaron en el primer intento: `test_usuario_actual_usa_el_rol_guardado_y_no_el_del_token` (desde la 6.5, `usuario_actual` ya recargaba el usuario desde la base) y `test_usuario_reactivado_vuelve_a_ser_aceptado_con_el_mismo_token`.
+- [ ] 6.7 Escribir tests de que `recepcion_ficticia` recibe `403` `sin_permiso` en `GET /prueba/solo-admin` y `200` en `GET /prueba/admin-o-recepcion`, y de que un `administracion_ficticia` recibe `200` en `solo-admin`. Implementar `requiere_rol(*roles)`, verificando que los tests pasan (RN-ACC-02, mecanismo). **Movido desde la 6.6:** escribir también el test de que un usuario cuyo rol cambió de `recepcion` a `odontologo` después del login recibe `403` en `GET /prueba/solo-recepcion`.
 - [ ] 6.8 Escribir un test de punta a punta: crear `recepcion_ficticia` y loguearse; verificar que la fila de `usuario` no contiene `clave-ficticia-123` en ninguna columna y que la respuesta del login tampoco la contiene (RN-ACC-04). Verificar también que `GET /health` sigue respondiendo `200` sin token.
 
 ## 7. Seed de desarrollo

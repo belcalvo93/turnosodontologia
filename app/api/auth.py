@@ -76,7 +76,8 @@ def usuario_actual(
         id_usuario = int(claims["sub"])  # un `sub` que no es un id también es un token inválido
     except (TokenInvalido, ValueError) as error:
         raise NoAutenticado() from error
+    # Se recarga en cada request: una baja o un cambio de rol se aplican en el acto (design §1).
     usuario = buscar_usuario_por_id(conexion, id_usuario)
-    if usuario is None:
+    if usuario is None or not usuario.activo:
         raise NoAutenticado()
     return usuario

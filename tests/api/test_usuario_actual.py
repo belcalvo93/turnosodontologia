@@ -9,6 +9,7 @@ from httpx import Response
 
 from app.api.seguridad import emitir_token
 from app.config import Config
+from app.db.conexion import abrir_conexion
 from app.domain.usuarios import Rol, Usuario
 from tests.conftest import CLAVE_FICTICIA, INSTANTE_INICIAL, RelojFijo
 
@@ -148,3 +149,64 @@ def test_el_token_vence_al_mover_el_reloj_fijo_sin_esperar(
 
     reloj.avanzar(minutes=1)
     _assert_no_autenticado(cliente_con_rutas_prueba.get(RUTA, headers=cabeceras))
+
+
+# --- El usuario se recarga desde la base en cada request (design §1) ---
+
+
+def _actualizar_en_la_base(config: Config, id_usuario: int, *, rol: str, activo: int) -> None:
+    """Cambia el usuario directamente en la base, como si lo hubiera editado un administrador."""
+    conexion = abrir_conexion(config.database_path)
+    try:
+        conexion.execute(
+            "UPDATE usuario SET rol = ?, activo = ? WHERE id = ?", (rol, activo, id_usuario)
+        )
+    finally:
+        conexion.close()
+
+
+def test_token_valido_de_un_usuario_desactivado_despues_del_login_responde_no_autenticado(
+    cliente_con_rutas_prueba: TestClient,
+    config: Config,
+    crear_usuario: Callable[..., Usuario],
+    token_de: Callable[[Usuario], str],
+) -> None:
+    recepcion = crear_usuario("recepcion_ficticia")
+    cabeceras = {"Authorization": f"Bearer {token_de(recepcion)}"}
+    assert cliente_con_rutas_prueba.get(RUTA, headers=cabeceras).status_code == 200
+
+    _actualizar_en_la_base(config, recepcion.id, rol="recepcion", activo=0)
+
+    _assert_no_autenticado(cliente_con_rutas_prueba.get(RUTA, headers=cabeceras))
+
+
+def test_usuario_actual_usa_el_rol_guardado_y_no_el_del_token(
+    cliente_con_rutas_prueba: TestClient,
+    config: Config,
+    crear_usuario: Callable[..., Usuario],
+    token_de: Callable[[Usuario], str],
+) -> None:
+    recepcion = crear_usuario("recepcion_ficticia")
+    cabeceras = {"Authorization": f"Bearer {token_de(recepcion)}"}
+
+    _actualizar_en_la_base(config, recepcion.id, rol="odontologo", activo=1)
+
+    respuesta = cliente_con_rutas_prueba.get(RUTA, headers=cabeceras)
+    assert respuesta.status_code == 200
+    assert respuesta.json() == {"id": recepcion.id, "rol": "odontologo"}
+
+
+def test_usuario_reactivado_vuelve_a_ser_aceptado_con_el_mismo_token(
+    cliente_con_rutas_prueba: TestClient,
+    config: Config,
+    crear_usuario: Callable[..., Usuario],
+    token_de: Callable[[Usuario], str],
+) -> None:
+    recepcion = crear_usuario("recepcion_ficticia")
+    cabeceras = {"Authorization": f"Bearer {token_de(recepcion)}"}
+    _actualizar_en_la_base(config, recepcion.id, rol="recepcion", activo=0)
+    _assert_no_autenticado(cliente_con_rutas_prueba.get(RUTA, headers=cabeceras))
+
+    _actualizar_en_la_base(config, recepcion.id, rol="recepcion", activo=1)
+
+    assert cliente_con_rutas_prueba.get(RUTA, headers=cabeceras).status_code == 200
