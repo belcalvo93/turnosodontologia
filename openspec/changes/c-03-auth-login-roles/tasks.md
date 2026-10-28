@@ -111,7 +111,17 @@
   > **Nota para el verify: RED de la 6.7** (todos en `tests/api/test_requiere_rol.py`):
   > - Los 4 tests de la tarea fallaron juntos por un mismo motivo: `ImportError`, porque `requiere_rol` no existía. Es un RED compartido; ninguno falló por su comportamiento particular. Son: recepción en `solo-admin`, recepción en `admin-o-recepcion`, administración en `solo-admin`, y el cambio de rol en `solo-recepcion`, que vino de la 6.6.
   > - Sin RED propio, porque son de triangulación y pasaron en el primer intento: `test_sin_token_una_ruta_con_rol_responde_401_y_no_403`, `test_odontologo_no_entra_a_una_ruta_de_admin_o_recepcion` (que también verifica que el 403 no lleva `WWW-Authenticate`) y `test_administracion_tambien_entra_a_una_ruta_de_admin_o_recepcion`.
-- [ ] 6.8 Escribir un test de punta a punta: crear `recepcion_ficticia` y loguearse; verificar que la fila de `usuario` no contiene `clave-ficticia-123` en ninguna columna y que la respuesta del login tampoco la contiene (RN-ACC-04). Verificar también que `GET /health` sigue respondiendo `200` sin token.
+- [x] 6.8 Escribir un test de punta a punta: crear `recepcion_ficticia` y loguearse; verificar que la fila de `usuario` no contiene `clave-ficticia-123` en ninguna columna y que la respuesta del login tampoco la contiene (RN-ACC-04). Verificar también que `GET /health` sigue respondiendo `200` sin token.
+
+  > **Nota para el verify: ningún test de la 6.8 tiene fase RED propia.** Es una tarea de verificación de punta a punta sobre piezas que ya existían. Los cuatro tests de `tests/api/test_auth.py` pasaron en el primer intento:
+  > - `test_la_contrasena_no_queda_en_la_base_ni_en_la_respuesta_del_login`;
+  > - `test_health_sigue_respondiendo_200_sin_token`;
+  > - `test_la_contrasena_no_aparece_en_ningun_byte_del_archivo_de_la_base` (triangulación);
+  > - `test_health_ignora_un_token_invalido` (triangulación).
+  >
+  > Para comprobar que el primero detecta una fuga, hice una prueba de mutación manual: hice que el login devolviera `access_token=credenciales.password`, y el test falló (`'clave-ficticia-123' not in '{"access_to...'`). Restauré la línea editando el archivo y `git diff app/` quedó vacío.
+  >
+  > Límite conocido: hoy ningún código de `app/` inserta usuarios, porque los tests los crean con la fixture `crear_usuario`, que ya hashea. Por eso no hay una mutación de `app/` que haga que la contraseña se guarde en texto plano. Ese camino aparece con el seed (grupo 7), y lo cubren las tareas 7.x.
 
 ## 7. Seed de desarrollo
 

@@ -9,6 +9,7 @@ from httpx import Response
 
 from app.api.seguridad import decodificar_token, verificar
 from app.config import Config
+from app.db.conexion import abrir_conexion
 from app.domain.usuarios import Rol, Usuario
 from tests.conftest import CLAVE_FICTICIA, INSTANTE_INICIAL, RelojFijo
 
@@ -229,3 +230,47 @@ def test_login_con_username_y_password_vacios_responde_que_no_pueden_estar_vacio
     detalles = _detalles(cliente.post("/auth/login", json={"username": "", "password": ""}))
 
     assert detalles == {"username": "No puede estar vacío.", "password": "No puede estar vacío."}
+
+
+# --- Punta a punta: la contraseña nunca queda guardada ni se devuelve (RN-ACC-04) ---
+
+
+def test_la_contrasena_no_queda_en_la_base_ni_en_la_respuesta_del_login(
+    cliente: TestClient, config: Config, crear_usuario: Callable[..., Usuario]
+) -> None:
+    crear_usuario("recepcion_ficticia")
+
+    respuesta = _login(cliente, "recepcion_ficticia", CLAVE_FICTICIA)
+
+    assert respuesta.status_code == 200
+    assert CLAVE_FICTICIA not in respuesta.text
+    conexion = abrir_conexion(config.database_path)
+    try:
+        fila = conexion.execute(
+            "SELECT * FROM usuario WHERE username = ?", ("recepcion_ficticia",)
+        ).fetchone()
+    finally:
+        conexion.close()
+    assert fila is not None
+    assert all(CLAVE_FICTICIA not in str(columna) for columna in fila)
+
+
+def test_health_sigue_respondiendo_200_sin_token(cliente: TestClient) -> None:
+    respuesta = cliente.get("/health")
+
+    assert respuesta.status_code == 200
+
+
+def test_la_contrasena_no_aparece_en_ningun_byte_del_archivo_de_la_base(
+    cliente: TestClient, config: Config, crear_usuario: Callable[..., Usuario]
+) -> None:
+    crear_usuario("recepcion_ficticia")
+    _login(cliente, "recepcion_ficticia", CLAVE_FICTICIA)
+
+    assert CLAVE_FICTICIA.encode() not in config.database_path.read_bytes()
+
+
+def test_health_ignora_un_token_invalido(cliente: TestClient) -> None:
+    respuesta = cliente.get("/health", headers={"Authorization": "Bearer no-es-un-token"})
+
+    assert respuesta.status_code == 200
