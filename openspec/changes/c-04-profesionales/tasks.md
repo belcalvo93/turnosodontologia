@@ -2,12 +2,12 @@
 
 ## 1. Dominio puro
 
-- [ ] 1.1 Agregar la dataclass `Profesional` (`id`, `nombre`, `apellido`, `matricula=None`, `activo=True`) y la función `validar_datos_profesional(nombre, apellido, matricula=None)` en `app/domain/models.py` (o módulo de dominio), verificando con tests unitarios en `tests/domain/test_profesionales.py` que datos válidos se normalizan con `strip()`, que `matricula` vacía o en blanco pasa a `None`, y que `nombre` o `apellido` vacíos o de solo espacios lanzan `DatoInvalido`
+- [x] 1.1 Agregar la dataclass `Profesional` (`id`, `nombre`, `apellido`, `matricula=None`, `activo=True`) y la función `validar_datos_profesional(nombre, apellido, matricula=None)` en `app/domain/models.py` (o módulo de dominio), verificando con tests unitarios en `tests/domain/test_profesionales.py` que datos válidos se normalizan con `strip()`, que `matricula` vacía o en blanco pasa a `None`, y que `nombre` o `apellido` vacíos o de solo espacios lanzan `DatoInvalido`
 
 ## 2. Esquema y persistencia SQLite
 
-- [ ] 2.1 Agregar `CREATE TABLE IF NOT EXISTS profesional` en `app/db/esquema.sql` con `id`, `nombre`, `apellido`, `matricula` opcional y `activo` con default `1` y `CHECK` de `nombre`/`apellido` no vacíos, verificando con tests que `inicializar_esquema()` crea la tabla de forma idempotente
-- [ ] 2.2 Implementar `app/db/repositorio_profesionales.py` con consultas SQL parametrizadas para `crear_profesional`, `listar_profesionales`, `obtener_profesional_por_id` y `actualizar_profesional`, verificando con tests sobre SQLite temporal el alta, el listado ordenado por `id`, la búsqueda por `id` existente/inexistente y la desactivación lógica (`activo=False`) sin borrar la fila
+- [x] 2.1 Agregar `CREATE TABLE IF NOT EXISTS profesional` en `app/db/esquema.sql` con `id`, `nombre`, `apellido`, `matricula` opcional y `activo` con default `1` y `CHECK` de `nombre`/`apellido` no vacíos, verificando con tests que `inicializar_esquema()` crea la tabla de forma idempotente
+- [x] 2.2 Implementar `app/db/repositorio_profesionales.py` con consultas SQL parametrizadas para `crear_profesional`, `listar_profesionales`, `obtener_profesional_por_id` y `actualizar_profesional`, verificando con tests sobre SQLite temporal el alta, el listado ordenado por `id`, la búsqueda por `id` existente/inexistente y la desactivación lógica (`activo=False`) sin borrar la fila
 
 ## 3. Endpoints HTTP y control de acceso por rol
 
