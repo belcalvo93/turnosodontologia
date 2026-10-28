@@ -110,6 +110,25 @@ def test_duracion_del_token_y_password_de_seed_se_leen_del_entorno() -> None:
     assert config.seed_admin_password == "clave-demo-ficticia"
 
 
+@pytest.mark.parametrize("valor", ["abc", "0", "-5"])
+def test_duracion_del_token_invalida_falla_nombrando_la_variable(valor: str) -> None:
+    with pytest.raises(ConfigInvalida, match="ACCESS_TOKEN_EXPIRE_MINUTES"):
+        cargar_config(entorno={"ACCESS_TOKEN_EXPIRE_MINUTES": valor})
+
+
+@pytest.mark.parametrize("algoritmo", ["none", "RS256"])
+def test_algoritmo_no_hmac_falla_nombrando_la_variable(algoritmo: str) -> None:
+    with pytest.raises(ConfigInvalida, match="JWT_ALGORITHM"):
+        cargar_config(entorno={"JWT_ALGORITHM": algoritmo})
+
+
+@pytest.mark.parametrize("algoritmo", ["HS384", "HS512"])
+def test_algoritmo_hmac_se_acepta(algoritmo: str) -> None:
+    config = cargar_config(entorno={"JWT_ALGORITHM": algoritmo})
+
+    assert config.jwt_algorithm == algoritmo
+
+
 def test_password_de_seed_vacia_equivale_a_no_definida() -> None:
     config = cargar_config(entorno={"SEED_ADMIN_PASSWORD": ""})
 

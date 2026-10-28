@@ -19,6 +19,9 @@ _PREFIJO_SQLITE = "sqlite:///"
 # Entornos donde, sin JWT_SECRET, se admite un secreto aleatorio por proceso.
 _ENTORNOS_CON_SECRETO_ALEATORIO = frozenset({"development", "test"})
 
+# El secreto es simétrico: solo se admiten algoritmos HMAC.
+_ALGORITMOS_JWT_ADMITIDOS = ("HS256", "HS384", "HS512")
+
 
 class ConfigInvalida(ValueError):
     """La configuración del entorno no permite arrancar la aplicación."""
@@ -46,8 +49,10 @@ def cargar_config(entorno: Mapping[str, str] | None = None) -> Config:
         database_path=_normalizar_database_url(_valor(valores, "DATABASE_URL")),
         clinic_timezone=_valor(valores, "CLINIC_TIMEZONE"),
         jwt_secret=_jwt_secret(valores, app_env),
-        jwt_algorithm=_valor(valores, "JWT_ALGORITHM"),
-        access_token_expire_minutes=int(_valor(valores, "ACCESS_TOKEN_EXPIRE_MINUTES")),
+        jwt_algorithm=_jwt_algorithm(_valor(valores, "JWT_ALGORITHM")),
+        access_token_expire_minutes=_minutos_de_expiracion(
+            _valor(valores, "ACCESS_TOKEN_EXPIRE_MINUTES")
+        ),
         seed_admin_password=valores.get("SEED_ADMIN_PASSWORD") or None,
     )
 
@@ -70,6 +75,28 @@ def _jwt_secret(valores: Mapping[str, str], app_env: str) -> str:
     raise ConfigInvalida(
         f"Falta la variable de entorno JWT_SECRET (obligatoria con APP_ENV={app_env})."
     )
+
+
+def _jwt_algorithm(valor: str) -> str:
+    """Valida que JWT_ALGORITHM sea un algoritmo HMAC admitido."""
+    if valor not in _ALGORITMOS_JWT_ADMITIDOS:
+        admitidos = ", ".join(_ALGORITMOS_JWT_ADMITIDOS)
+        raise ConfigInvalida(f"JWT_ALGORITHM inválido: {valor!r}. Valores admitidos: {admitidos}.")
+    return valor
+
+
+def _minutos_de_expiracion(valor: str) -> int:
+    """Convierte ACCESS_TOKEN_EXPIRE_MINUTES a un entero mayor que 0."""
+    error = ConfigInvalida(
+        f"ACCESS_TOKEN_EXPIRE_MINUTES debe ser un entero mayor que 0 (recibido: {valor!r})."
+    )
+    try:
+        minutos = int(valor)
+    except ValueError:
+        raise error from None
+    if minutos <= 0:
+        raise error
+    return minutos
 
 
 def _normalizar_database_url(valor: str) -> Path:
