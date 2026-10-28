@@ -202,7 +202,23 @@
   > - `app/db/`: no importa `fastapi`, `starlette` ni `app.api`. De `app.domain` importa solo los tipos `Rol` y `Usuario` (`repositorio.py` y `seed.py`), como permite la regla dura 1.
   > - En los dos directorios: no hay imports relativos, ni dinámicos (`importlib`/`__import__`), ni de la forma `from app import api/db`.
   > - Control del patrón: la misma búsqueda sobre `app/api/` encuentra 16 imports, así que el "ninguno" es un resultado real y no un patrón roto.
-- [ ] 9.3 Verificar que no hay secretos versionados (búsqueda de `JWT_SECRET=` con valores reales y de contraseñas en `app/` y `tests/`), y que todos los usuarios y contraseñas de los tests están rotulados como ficticios.
+- [x] 9.3 Verificar que no hay secretos versionados (búsqueda de `JWT_SECRET=` con valores reales y de contraseñas en `app/` y `tests/`), y que todos los usuarios y contraseñas de los tests están rotulados como ficticios.
+
+  > **Resultado de la 9.3:** no hay secretos versionados.
+  >
+  > **`.env`:** no está versionado (`.gitignore:4`). El único archivo `.env*` en git es `.env.example`.
+  >
+  > **`JWT_SECRET`:**
+  > - En `app/` no hay ningún valor asignado. El secreto sale del entorno o, en development/test, de `secrets.token_urlsafe`.
+  > - En `tests/`, los 5 secretos literales dicen `ficticio` en su propio texto: `secreto-ficticio-de-test-...`, `secreto-ficticio-de-produccion-...` y `otra-clave-ficticia-...`.
+  > - En el README y en este `tasks.md` solo aparecen los placeholders `cambiar-por-...`.
+  > - En el historial `main..HEAD` (fuera de `openspec/`), las únicas líneas agregadas con `JWT_SECRET=` o `SEED_ADMIN_PASSWORD=` son esos placeholders y los de `.env.example`: `<cambiar-por-un-valor-largo-...>` y `<definir-localmente>`.
+  >
+  > **Contraseñas:**
+  > - En `app/` no hay ningún literal de contraseña. El hash ficticio sale de `secrets.token_urlsafe`.
+  > - En `tests/`, todos los valores dicen `ficticia`: `clave-ficticia-123`, `otra-clave-ficticia`, `clave-demo-ficticia`, `otra-clave-demo-ficticia` y las variantes de `test_seguridad.py`. Las excepciones son `""` y `123`, los casos de validación de la 6.4, que no son contraseñas.
+  >
+  > **Usuarios:** todos los de los tests dicen `ficticio`/`ficticia` (`recepcion_ficticia`, `odontologo_ficticio`, `administracion_ficticia`, `admin_ficticio`, `inactivo_ficticio`, `fantasma_ficticio` y `otro_fantasma_ficticio`), salvo `admin_demo`. Ese nombre lo fija el spec del seed. Es un usuario de demostración y su contraseña sí está rotulada (`clave-demo-ficticia`).
 - [ ] 9.4 Verificar con una búsqueda en `tests/` que ningún test usa `time.sleep`, `datetime.now`, `datetime.utcnow`, `date.today` ni `time.time`, y en `app/` que la única lectura de la hora real es el default del `reloj` en `create_app`.
 - [ ] 9.5 Correr `openspec validate c-03-auth-login-roles --strict`, verificando que no reporta errores.
 
