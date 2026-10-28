@@ -140,6 +140,44 @@ def test_body_que_no_es_un_objeto_usa_campo_body_y_valor_invalido(
     assert respuesta.json()["detalles"] == [{"campo": "body", "mensaje": "Valor inválido."}]
 
 
+@pytest.mark.parametrize(
+    ("ruta", "codigo", "mensaje"),
+    [
+        (
+            "/prueba/error/no-autenticado",
+            "no_autenticado",
+            "Se requiere un token de acceso válido.",
+        ),
+        (
+            "/prueba/error/credenciales-invalidas",
+            "credenciales_invalidas",
+            "Usuario o contraseña incorrectos.",
+        ),
+    ],
+)
+def test_errores_de_autenticacion_responden_401_con_www_authenticate(
+    cliente_con_rutas_prueba: TestClient, ruta: str, codigo: str, mensaje: str
+) -> None:
+    respuesta = cliente_con_rutas_prueba.get(ruta)
+
+    assert respuesta.status_code == 401
+    assert respuesta.headers["www-authenticate"] == "Bearer"
+    assert respuesta.json() == {"codigo": codigo, "mensaje": mensaje}
+
+
+def test_sin_permiso_responde_403_sin_www_authenticate(
+    cliente_con_rutas_prueba: TestClient,
+) -> None:
+    respuesta = cliente_con_rutas_prueba.get("/prueba/error/sin-permiso")
+
+    assert respuesta.status_code == 403
+    assert "www-authenticate" not in respuesta.headers
+    assert respuesta.json() == {
+        "codigo": "sin_permiso",
+        "mensaje": "Tu rol no tiene permiso para esta operación.",
+    }
+
+
 class ErrorDominioSinMapeo(ErrorDominio):
     """Error de dominio definido solo en el test, sin entrada en la tabla de mapeo."""
 

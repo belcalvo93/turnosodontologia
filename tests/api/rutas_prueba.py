@@ -7,6 +7,7 @@ las monta sobre una app de test.
 from fastapi import APIRouter
 from pydantic import BaseModel
 
+from app.api.errores import CredencialesInvalidas, NoAutenticado, SinPermiso
 from app.domain.errores import ConflictoAgenda, DatoInvalido, DentroDeBloqueo, FueraDeHorario
 
 MENSAJE_CONFLICTO_AGENDA = "El profesional ya tiene un turno en ese horario (ficticio)."
@@ -35,6 +36,21 @@ def lanzar_dentro_de_bloqueo() -> None:
 @router.get("/error/dato-invalido")
 def lanzar_dato_invalido() -> None:
     raise DatoInvalido(MENSAJE_DATO_INVALIDO)
+
+
+@router.get("/error/no-autenticado")
+def lanzar_no_autenticado() -> None:
+    raise NoAutenticado()
+
+
+@router.get("/error/credenciales-invalidas")
+def lanzar_credenciales_invalidas() -> None:
+    raise CredencialesInvalidas()
+
+
+@router.get("/error/sin-permiso")
+def lanzar_sin_permiso() -> None:
+    raise SinPermiso()
 
 
 class CuerpoPrueba(BaseModel):

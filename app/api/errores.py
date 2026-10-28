@@ -1,6 +1,7 @@
 """Mapeo global de errores a JSON `{codigo, mensaje, detalles?}` (C-03, RN-GLO-01)."""
 
-from collections.abc import Sequence
+from collections.abc import Mapping, Sequence
+from types import MappingProxyType
 
 from fastapi import FastAPI, Request
 from fastapi.exceptions import RequestValidationError
@@ -14,6 +15,49 @@ from app.domain.errores import (
     ErrorDominio,
     FueraDeHorario,
 )
+
+# Los 401 indican el esquema de autenticación esperado (RFC 6750). Solo lectura: se comparte.
+_CABECERAS_BEARER: Mapping[str, str] = MappingProxyType({"WWW-Authenticate": "Bearer"})
+_SIN_CABECERAS: Mapping[str, str] = MappingProxyType({})
+
+
+class ErrorApi(Exception):
+    """Base de los errores propios de la capa API (autenticación y permisos), no de dominio."""
+
+    status: int
+    codigo: str
+    mensaje: str
+    cabeceras: Mapping[str, str] = _SIN_CABECERAS
+
+    def __init__(self) -> None:
+        super().__init__(self.mensaje)
+
+
+class NoAutenticado(ErrorApi):
+    """Falta el token, o no es válido o venció (401)."""
+
+    status = 401
+    codigo = "no_autenticado"
+    mensaje = "Se requiere un token de acceso válido."
+    cabeceras = _CABECERAS_BEARER
+
+
+class CredencialesInvalidas(ErrorApi):
+    """Login fallido: usuario inexistente o inactivo, o contraseña incorrecta (401)."""
+
+    status = 401
+    codigo = "credenciales_invalidas"
+    mensaje = "Usuario o contraseña incorrectos."
+    cabeceras = _CABECERAS_BEARER
+
+
+class SinPermiso(ErrorApi):
+    """El rol del usuario autenticado no puede hacer la operación (403)."""
+
+    status = 403
+    codigo = "sin_permiso"
+    mensaje = "Tu rol no tiene permiso para esta operación."
+
 
 # Cada error de dominio se traduce a (status HTTP, codigo); el mensaje es str(exc),
 # que el dominio ya trae en español.
@@ -46,6 +90,7 @@ _CAMPO_CUERPO = "body"
 
 def registrar_manejadores(aplicacion: FastAPI) -> None:
     """Registra los handlers que convierten las excepciones en el formato de error."""
+    aplicacion.add_exception_handler(ErrorApi, _manejar_error_api)
     aplicacion.add_exception_handler(ErrorDominio, _manejar_error_dominio)
     aplicacion.add_exception_handler(StarletteHTTPException, _manejar_error_http)
     aplicacion.add_exception_handler(RequestValidationError, _manejar_error_validacion)
@@ -81,6 +126,12 @@ async def _manejar_error_http(_: Request, exc: StarletteHTTPException) -> JSONRe
     respuesta = _respuesta_error(exc.status_code, codigo, mensaje)
     # Conserva cabeceras como `Allow` en el 405.
     respuesta.headers.update(exc.headers or {})
+    return respuesta
+
+
+async def _manejar_error_api(_: Request, exc: ErrorApi) -> JSONResponse:
+    respuesta = _respuesta_error(exc.status, exc.codigo, exc.mensaje)
+    respuesta.headers.update(exc.cabeceras)
     return respuesta
 
 
