@@ -216,7 +216,7 @@ El MVP es solo backend (el frontend React es etapa posterior, D.3), así que no 
 > Con `C-03` listo, `C-04`, `C-05` y `C-06` son paralelos. Con `C-04` listo, `C-07`, `C-08` y `C-09` son paralelos.
 
 ### [C-04] `profesionales`
-- **Estado**: `[ ]` pendiente
+- **Estado**: `[x]` completado
 - **Scope**:
   - Tabla `profesional` (`nombre`, `apellido`, `matricula` opcional, `activo`)
   - `GET/POST /profesionales`, `PATCH /profesionales/{id}` (incluye desactivar con `activo=false`)
