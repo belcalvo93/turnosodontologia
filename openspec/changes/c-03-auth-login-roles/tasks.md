@@ -183,7 +183,9 @@
 
   > **Resultado de la 9.1:** `pytest tests` dio `194 passed`, con 0 tests fallidos, con error, salteados o `xfail`. El único warning es el conocido `StarletteDeprecationWarning` de `httpx`.
   >
-  > **Baseline:** extraje `app/` y `tests/` del merge-base con `main` (`d2041ee`) con `git archive`, a una carpeta temporal. Ahí la suite da `44 passed`. Los **44 IDs de ese baseline** están todos entre los aprobados de la suite actual, sin renombres ni bajas. Los otros **150 tests** son nuevos de C-03.
+  > **Baseline:** extraje `app/` y `tests/` del merge-base con `main` (`d2041ee`) con `git archive`, a una carpeta temporal. Ahí la suite da `44 passed`. Los **44 IDs de ese baseline** están todos entre los aprobados de la suite actual, sin renombres ni bajas. Los otros **150 tests** no estaban en el baseline:
+  > - **149 son de C-03.**
+  > - **1 es de Belén**, del PR #31: `tests/api/test_conexion.py::test_abrir_conexion_se_puede_usar_desde_otro_hilo`, del commit `9507573`. Llegó a la rama después del merge-base, por eso no figura en el baseline.
   >
   > **Cobertura de las RN:**
   >
@@ -193,7 +195,13 @@
   > | RN-ACC-02 (mecanismo) | `tests/api/test_requiere_rol.py` | 7 | Con un rol no admitido responde 403 `sin_permiso`, y sin token responde 401. Autoriza el rol guardado en la base y no el del token. |
   > | RN-ACC-04 | `tests/api/test_seguridad.py`, `tests/api/test_auth.py` y `tests/api/test_seed.py` | 18 relevantes | Argon2id con sal, y el hash no contiene la contraseña. La contraseña no queda en la fila, en los bytes del `.db` ni en la respuesta del login, ni siquiera la del seed. Hay hash ficticio para usuarios inexistentes. |
   > | RN-GLO-01 | `tests/api/test_errores.py` | 17 | Formato `{codigo, mensaje, detalles?}` en español para 401, 403, 404, 405, 409, 422 y 500. |
-- [ ] 9.2 Verificar con una búsqueda de imports que `app/domain/` no importa `fastapi`, `jwt`, `pwdlib`, `app.db` ni `app.api`, y que `app/db/` no importa `fastapi` ni `app.api`.
+- [x] 9.2 Verificar con una búsqueda de imports que `app/domain/` no importa `fastapi`, `jwt`, `pwdlib`, `app.db` ni `app.api`, y que `app/db/` no importa `fastapi` ni `app.api`.
+
+  > **Resultado de la 9.2:** no se encontró ningún import prohibido.
+  > - `app/domain/`: no importa `fastapi`, `starlette`, `jwt`, `pwdlib`, `app.db` ni `app.api`. Solo usa la biblioteca estándar y módulos de `app.domain`.
+  > - `app/db/`: no importa `fastapi`, `starlette` ni `app.api`. De `app.domain` importa solo los tipos `Rol` y `Usuario` (`repositorio.py` y `seed.py`), como permite la regla dura 1.
+  > - En los dos directorios: no hay imports relativos, ni dinámicos (`importlib`/`__import__`), ni de la forma `from app import api/db`.
+  > - Control del patrón: la misma búsqueda sobre `app/api/` encuentra 16 imports, así que el "ninguno" es un resultado real y no un patrón roto.
 - [ ] 9.3 Verificar que no hay secretos versionados (búsqueda de `JWT_SECRET=` con valores reales y de contraseñas en `app/` y `tests/`), y que todos los usuarios y contraseñas de los tests están rotulados como ficticios.
 - [ ] 9.4 Verificar con una búsqueda en `tests/` que ningún test usa `time.sleep`, `datetime.now`, `datetime.utcnow`, `date.today` ni `time.time`, y en `app/` que la única lectura de la hora real es el default del `reloj` en `create_app`.
 - [ ] 9.5 Correr `openspec validate c-03-auth-login-roles --strict`, verificando que no reporta errores.
