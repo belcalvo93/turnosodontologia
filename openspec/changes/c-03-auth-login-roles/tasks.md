@@ -36,7 +36,7 @@
   - aplicar el esquema dos veces no falla.
 
   Agregar la tabla a `esquema.sql` con el comentario sobre la ausencia de FK, verificando que los tests pasan.
-- [ ] 4.3 Escribir tests en `tests/api/test_repositorio.py`:
+- [x] 4.3 Escribir tests en `tests/api/test_repositorio.py`:
   - `insertar_usuario` devuelve el id;
   - `buscar_credenciales` devuelve `(Usuario, hash)` para un username existente y `None` para uno inexistente;
   - `buscar_usuario_por_id` devuelve el usuario con su `activo` y su `rol` actuales.
