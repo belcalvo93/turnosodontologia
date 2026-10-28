@@ -79,7 +79,14 @@
   > **Nota para el verify: ningún test de la 6.4 tiene fase RED propia.** Es una tarea de verificación. El handler de validación es del grupo 3 y el modelo con `min_length=1` es de la 6.2. Los cuatro tests de `tests/api/test_auth.py` pasaron en el primer intento: body vacío, `password` faltante, `password` numérico y, como triangulación, `username` y `password` vacíos.
   >
   > Para comprobar que el último test detecta la falta de `min_length`, hice una prueba de mutación manual: saqué `Field(min_length=1)` de `CredencialesEntrada`, el test falló (`1 failed, 15 passed`), y restauré el archivo con `git checkout`.
-- [ ] 6.5 Escribir tests sobre `GET /prueba/autenticado`: sin cabecera, con `Basic ...`, con texto arbitrario y con un token firmado con otra clave, todos `401` `no_autenticado` con la cabecera `WWW-Authenticate: Bearer`. Con un token válido debe responder `200`. Implementar `usuario_actual` con `HTTPBearer(auto_error=False)`, validando el token con `obtener_ahora`, verificando que los tests pasan (RN-ACC-01).
+- [x] 6.5 Escribir tests sobre `GET /prueba/autenticado`: sin cabecera, con `Basic ...`, con texto arbitrario y con un token firmado con otra clave, todos `401` `no_autenticado` con la cabecera `WWW-Authenticate: Bearer`. Con un token válido debe responder `200`. Implementar `usuario_actual` con `HTTPBearer(auto_error=False)`, validando el token con `obtener_ahora`, verificando que los tests pasan (RN-ACC-01).
+
+  > **Nota para el verify: RED de la 6.5** (todos en `tests/api/test_usuario_actual.py`):
+  > - Los 6 tests de la tarea fallaron juntos por un mismo motivo: `ImportError`, porque `usuario_actual` no existía. Es un RED compartido; ninguno falló por su comportamiento particular. Son: sin cabecera, `Basic`, texto arbitrario sin esquema, texto arbitrario como `Bearer`, otra clave y token válido.
+  > - Sin RED propio, porque pasaron en el primer intento: `test_token_con_algoritmo_none_responde_no_autenticado`, `test_token_valido_de_un_usuario_que_no_existe_responde_no_autenticado` y `test_cada_token_valido_identifica_a_su_propio_usuario`. Son de triangulación.
+  > - Con RED propio: `test_token_firmado_por_el_sistema_con_sub_no_numerico_responde_no_autenticado`. Falló con `ValueError`, que en producción habría sido un 500, y se corrigió capturando el `ValueError` de `int(sub)`.
+  > - Uso de `obtener_ahora`: no tiene un test aparte. Lo cubre `test_token_valido_responde_200_con_el_usuario`, porque el token vence en `2026-01-05T13:00Z` y con la hora real de la máquina ya estaría vencido.
+  > - `usuario_actual` todavía no rechaza a los usuarios inactivos: lo agrega la 6.6, con su propio RED.
 - [ ] 6.5b Escribir el test de **token vencido moviendo el reloj fijo, sin esperar**:
   - login de `recepcion_ficticia` con el `RelojFijo` en `T` (`ACCESS_TOKEN_EXPIRE_MINUTES=60`);
   - `reloj.avanzar(minutes=59)` → `GET /prueba/autenticado` responde `200`;

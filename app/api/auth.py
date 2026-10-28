@@ -7,12 +7,14 @@ from functools import cache
 from typing import Annotated, Literal
 
 from fastapi import APIRouter, Depends, Request
+from fastapi.security import HTTPAuthorizationCredentials, HTTPBearer
 from pydantic import BaseModel, Field
 
 from app.api.dependencias import obtener_ahora, obtener_conexion
-from app.api.errores import CredencialesInvalidas
-from app.api.seguridad import emitir_token, hashear, verificar
-from app.db.repositorio import buscar_credenciales
+from app.api.errores import CredencialesInvalidas, NoAutenticado
+from app.api.seguridad import TokenInvalido, decodificar_token, emitir_token, hashear, verificar
+from app.db.repositorio import buscar_credenciales, buscar_usuario_por_id
+from app.domain.usuarios import Usuario
 
 router = APIRouter(prefix="/auth", tags=["auth"])
 
@@ -53,3 +55,28 @@ def login(
     if not verificar(credenciales.password, password_hash) or not usuario.activo:
         raise CredencialesInvalidas()
     return TokenSalida(access_token=emitir_token(usuario, request.app.state.config, ahora))
+
+
+# Con auto_error=False, una cabecera ausente o que no es "Bearer" llega como None y la
+# convertimos en nuestro NoAutenticado, en vez del 401/403 en inglés de FastAPI (design §4).
+_esquema_bearer = HTTPBearer(auto_error=False)
+
+
+def usuario_actual(
+    request: Request,
+    credencial: Annotated[HTTPAuthorizationCredentials | None, Depends(_esquema_bearer)],
+    conexion: Annotated[sqlite3.Connection, Depends(obtener_conexion)],
+    ahora: Annotated[datetime, Depends(obtener_ahora)],
+) -> Usuario:
+    """Valida el token bearer contra `ahora` y devuelve el usuario guardado en la base."""
+    if credencial is None:
+        raise NoAutenticado()
+    try:
+        claims = decodificar_token(credencial.credentials, request.app.state.config, ahora)
+        id_usuario = int(claims["sub"])  # un `sub` que no es un id también es un token inválido
+    except (TokenInvalido, ValueError) as error:
+        raise NoAutenticado() from error
+    usuario = buscar_usuario_por_id(conexion, id_usuario)
+    if usuario is None:
+        raise NoAutenticado()
+    return usuario

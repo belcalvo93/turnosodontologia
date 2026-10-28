@@ -11,9 +11,11 @@ from typing import Annotated
 from fastapi import APIRouter, Depends, Request
 from pydantic import BaseModel
 
+from app.api.auth import usuario_actual
 from app.api.dependencias import obtener_ahora, obtener_conexion
 from app.api.errores import CredencialesInvalidas, NoAutenticado, SinPermiso
 from app.domain.errores import ConflictoAgenda, DatoInvalido, DentroDeBloqueo, FueraDeHorario
+from app.domain.usuarios import Usuario
 
 MENSAJE_CONFLICTO_AGENDA = "El profesional ya tiene un turno en ese horario (ficticio)."
 MENSAJE_FUERA_DE_HORARIO = "El turno no encaja en una franja de atención (ficticio)."
@@ -90,3 +92,8 @@ def usar_conexion_y_fallar(request: Request, conexion: Conexion) -> None:
 @router.get("/ahora")
 def devolver_ahora(ahora: Annotated[datetime, Depends(obtener_ahora)]) -> dict[str, str]:
     return {"ahora": ahora.isoformat()}
+
+
+@router.get("/autenticado")
+def solo_autenticado(usuario: Annotated[Usuario, Depends(usuario_actual)]) -> dict[str, object]:
+    return {"id": usuario.id, "rol": usuario.rol.value}
