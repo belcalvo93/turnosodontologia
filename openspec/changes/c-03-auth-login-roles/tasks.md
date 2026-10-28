@@ -51,7 +51,7 @@
   - `verificar` acepta la contraseña correcta y rechaza `otra-clave-ficticia`.
 
   Implementar `hashear` y `verificar` con `pwdlib` Argon2id, verificando que los tests pasan (RN-ACC-04).
-- [ ] 5.2 Escribir tests de `emitir_token(..., ahora)` y `decodificar_token(..., ahora)`, con `ahora` como **parámetro obligatorio** y un instante fijo `T` (por ejemplo `2026-01-05T12:00:00+00:00`):
+- [x] 5.2 Escribir tests de `emitir_token(..., ahora)` y `decodificar_token(..., ahora)`, con `ahora` como **parámetro obligatorio** y un instante fijo `T` (por ejemplo `2026-01-05T12:00:00+00:00`):
   - la ida y vuelta en `T` conserva `sub` (string) y `rol`;
   - `exp - iat` es igual a `ACCESS_TOKEN_EXPIRE_MINUTES` minutos;
   - un token emitido en `T`, decodificado con `ahora = T + 59 min`, es válido;
