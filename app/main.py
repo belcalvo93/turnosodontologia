@@ -5,6 +5,7 @@ from contextlib import asynccontextmanager
 
 from fastapi import FastAPI
 
+from app.api.errores import registrar_manejadores
 from app.api.salud import router as router_salud
 from app.config import Config, cargar_config
 from app.db.conexion import inicializar_esquema
@@ -30,6 +31,7 @@ def create_app(config: Config | None = None) -> FastAPI:
         openapi_url="/openapi.json" if con_docs else None,
     )
     aplicacion.state.config = config_app
+    registrar_manejadores(aplicacion)
     aplicacion.include_router(router_salud)
     return aplicacion
 
