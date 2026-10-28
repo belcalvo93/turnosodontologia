@@ -6,7 +6,7 @@
 
 ## 1. Red de seguridad y dependencias
 
-- [ ] 1.1 Correr `pytest tests` antes de tocar nada y registrar el baseline, verificando que todos los tests actuales (dominio de C-10 y API de C-01) pasan. Si alguno falla, se reporta como falla previa y no se corrige en este change.
+- [x] 1.1 Correr `pytest tests` antes de tocar nada y registrar el baseline, verificando que todos los tests actuales (dominio de C-10 y API de C-01) pasan. Si alguno falla, se reporta como falla previa y no se corrige en este change.
 - [ ] 1.2 Agregar `PyJWT>=2.10` y `pwdlib[argon2]>=0.2` a `requirements.txt` e instalarlas en el `.venv`, verificando que `pip install -r requirements.txt` termina sin error, que `python -c "import jwt, pwdlib; from pwdlib.hashers.argon2 import Argon2Hasher"` funciona y que `pytest tests` sigue en verde.
 
 ## 2. Ajustes a la base técnica de C-01
