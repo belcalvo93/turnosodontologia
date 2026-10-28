@@ -1,12 +1,16 @@
-"""Router solo de test: rutas que lanzan errores para probar el mapeo a JSON (C-03).
+"""Router solo de test: rutas para probar el mapeo de errores y las dependencias (C-03).
 
 Ninguna de estas rutas existe en `app/`; la fixture `cliente_con_rutas_prueba`
 las monta sobre una app de test.
 """
 
-from fastapi import APIRouter
+import sqlite3
+from typing import Annotated
+
+from fastapi import APIRouter, Depends, Request
 from pydantic import BaseModel
 
+from app.api.dependencias import obtener_conexion
 from app.api.errores import CredencialesInvalidas, NoAutenticado, SinPermiso
 from app.domain.errores import ConflictoAgenda, DatoInvalido, DentroDeBloqueo, FueraDeHorario
 
@@ -63,3 +67,20 @@ class CuerpoPrueba(BaseModel):
 @router.post("/validacion")
 def validar_cuerpo(cuerpo: CuerpoPrueba) -> dict[str, str]:
     return {"username": cuerpo.username}
+
+
+Conexion = Annotated[sqlite3.Connection, Depends(obtener_conexion)]
+_TABLAS = "SELECT name FROM sqlite_master WHERE type = 'table' ORDER BY name"
+
+
+# Las rutas guardan la conexión en `app.state` para que el test verifique que quedó cerrada.
+@router.get("/conexion")
+def usar_conexion(request: Request, conexion: Conexion) -> dict[str, list[str]]:
+    request.app.state.conexion_prueba = conexion
+    return {"tablas": [nombre for (nombre,) in conexion.execute(_TABLAS)]}
+
+
+@router.get("/conexion/error")
+def usar_conexion_y_fallar(request: Request, conexion: Conexion) -> None:
+    request.app.state.conexion_prueba = conexion
+    raise SinPermiso()
