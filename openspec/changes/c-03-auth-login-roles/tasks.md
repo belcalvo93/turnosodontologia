@@ -229,7 +229,9 @@
   > - Se reescribió como `test_sin_reloj_inyectado_la_app_usa_datetime_now_en_utc`. Usa un doble de `datetime` en `app.main` (con `monkeypatch`) que devuelve `INSTANTE_INICIAL` y registra la zona pedida.
   > - Verifica que el reloj por defecto devuelve lo que da `datetime.now` y que lo pide en `UTC`.
   > - Prueba de mutación manual: cambié `datetime.now(UTC)` por `datetime.now()` en `_hora_real()`, y el test falló (`[None] == [UTC]`). Restauré la línea editando el archivo y `git diff app/` quedó vacío.
-- [ ] 9.5 Correr `openspec validate c-03-auth-login-roles --strict`, verificando que no reporta errores.
+- [x] 9.5 Correr `openspec validate c-03-auth-login-roles --strict`, verificando que no reporta errores.
+
+  > **Resultado de la 9.5:** `openspec validate c-03-auth-login-roles --strict` respondió `Change 'c-03-auth-login-roles' is valid` (exit 0). La salida `--json` da `"valid": true`, `"issues": []`, 1 ítem validado y 0 fallidos.
 
 ## Workflow follow-up
 
