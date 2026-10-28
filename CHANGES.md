@@ -190,7 +190,7 @@ El MVP es solo backend (el frontend React es etapa posterior, D.3), así que no 
   - `knowledge-base/10_preguntas_abiertas.md` §SE-05, §SE-10
 
 ### [C-03] `auth-login-roles`
-- **Estado**: `[ ]` pendiente
+- **Estado**: `[x]` completado
 - **Scope**:
   - Tabla `usuario` (`id`, `username` único, `password_hash`, `rol`, `profesional_id` nullable, `activo`)
   - Hash con sal (bcrypt o argon2); nunca se guarda la contraseña (RN-ACC-04)
