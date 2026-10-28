@@ -149,7 +149,7 @@
 
 ## 8. Documentación
 
-- [ ] 8.1 **Edición manual de un integrante** (los permisos del agente no permiten leer ni escribir `.env.example`): agregar a `.env.example` los placeholders
+- [x] 8.1 **Edición manual de un integrante** (los permisos del agente no permiten leer ni escribir `.env.example`): agregar a `.env.example` los placeholders
   - `JWT_SECRET=<cambiar-por-un-valor-largo-y-aleatorio-de-32-caracteres-o-mas>`
   - `JWT_ALGORITHM=HS256`
   - `ACCESS_TOKEN_EXPIRE_MINUTES=60`
