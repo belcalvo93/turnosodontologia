@@ -21,3 +21,12 @@ CREATE TABLE IF NOT EXISTS usuario (
     profesional_id INTEGER NULL,
     activo         INTEGER NOT NULL DEFAULT 1 CHECK (activo IN (0, 1))
 );
+
+-- Profesionales del consultorio (C-04, KB 04 §Profesional). Baja lógica con activo = 0.
+CREATE TABLE IF NOT EXISTS profesional (
+    id        INTEGER PRIMARY KEY AUTOINCREMENT,
+    nombre    TEXT    NOT NULL CHECK (length(trim(nombre)) > 0),
+    apellido  TEXT    NOT NULL CHECK (length(trim(apellido)) > 0),
+    matricula TEXT    NULL,
+    activo    INTEGER NOT NULL DEFAULT 1 CHECK (activo IN (0, 1))
+);
