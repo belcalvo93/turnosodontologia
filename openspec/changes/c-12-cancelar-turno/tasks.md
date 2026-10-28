@@ -1,0 +1,26 @@
+# Tasks — C-12 cancelar-turno
+
+## 1. Dominio puro (`RN-TUR-09`, `RN-TUR-10`)
+
+- [ ] 1.1 Implementar `validar_cancelacion(turno: Turno, ahora: datetime) -> Turno` en `app/domain/reglas_turno.py` usando `es_futuro(turno, ahora)` y `TurnoNoModificable`, verificando con tests unitarios en `tests/domain/test_reglas_turno.py` (con reloj fijo `ahora = 09:00`): turno a las `10:00` devuelve turno con `estado="cancelado"`, turno a las `08:30` lanza `TurnoNoModificable`, turno a las `09:00` exactas lanza `TurnoNoModificable`, y turno ya `cancelado` lanza `TurnoNoModificable`
+
+## 2. Persistencia transaccional y auditoría (`RN-AUD-01`, `RN-AUD-03`)
+
+- [ ] 2.1 Agregar la función transaccional de cancelación en el repositorio de turnos (`app/db/`) que dentro de `with transaccion(conexion):` cargue el turno, invoque `validar_cancelacion`, actualice `estado = 'cancelado'` e inserte el registro en `auditoria_turno` con `accion = 'cancelar'`, `usuario_id`, `ocurrio_en`, `antes` y `despues`, verificando con tests que si la validación falla no se modifica el turno ni se agrega fila en `auditoria_turno`
+
+## 3. Endpoint HTTP y liberación de agenda (`RN-TUR-06`, `RN-ACC-02`)
+
+- [ ] 3.1 Implementar `POST /turnos/{id}/cancelar` en `app/api/turnos.py` para los roles `administracion` y `recepcion` con reloj inyectado, verificando con tests en `tests/api/test_cancelar_turno.py`: cancelación de turno futuro (`200` con `estado = "cancelado"` y registro en `auditoria_turno`), turno en el instante exacto o pasado (`409`), segunda cancelación (`409` sin nuevo registro de auditoría) y turno inexistente (`404`)
+- [ ] 3.2 Verificar en `tests/api/test_cancelar_turno.py` que tras cancelar un turno de `10:00` a `10:30`, reservar un nuevo turno en el mismo intervalo con el mismo profesional, sillón y paciente responde `201` (`RN-TUR-06`), y que un usuario con rol `odontologo` recibe `403` (`RN-ACC-02`) y una petición sin token recibe `401` (`RN-ACC-01`)
+
+## 4. Verificación integral del change
+
+- [ ] 4.1 Ejecutar `pytest tests` completo y verificar que toda la suite pasa en verde
+- [ ] 4.2 Verificar que `app/domain/` no llama a `datetime.now()` ni importa `fastapi`/`app.db`/`app.api`
+- [ ] 4.3 Ejecutar `openspec validate c-12-cancelar-turno --strict` y verificar que no reporta errores
+
+## Workflow follow-up
+
+- Esperar a que `C-11` (`crear-turno`) esté mergeado en `main` antes de ejecutar `/opsx:apply c-12-cancelar-turno`.
+- Verificar el change con toda la suite en verde.
+- Archivar con `/opsx:archive c-12-cancelar-turno` y marcar `C-12` como `[x]` en `CHANGES.md` solo con autorización explícita del usuario (regla dura 14).
