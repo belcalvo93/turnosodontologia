@@ -45,7 +45,7 @@
 
 ## 5. Hash y token (sin HTTP)
 
-- [ ] 5.1 Escribir tests en `tests/api/test_seguridad.py`:
+- [x] 5.1 Escribir tests en `tests/api/test_seguridad.py`:
   - `hashear("clave-ficticia-123")` no es igual a la contraseña ni la contiene;
   - dos hashes de la misma contraseña son distintos;
   - `verificar` acepta la contraseña correcta y rechaza `otra-clave-ficticia`.
