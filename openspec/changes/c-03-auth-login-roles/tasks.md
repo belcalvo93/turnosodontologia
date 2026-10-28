@@ -87,12 +87,18 @@
   > - Con RED propio: `test_token_firmado_por_el_sistema_con_sub_no_numerico_responde_no_autenticado`. Falló con `ValueError`, que en producción habría sido un 500, y se corrigió capturando el `ValueError` de `int(sub)`.
   > - Uso de `obtener_ahora`: no tiene un test aparte. Lo cubre `test_token_valido_responde_200_con_el_usuario`, porque el token vence en `2026-01-05T13:00Z` y con la hora real de la máquina ya estaría vencido.
   > - `usuario_actual` todavía no rechaza a los usuarios inactivos: lo agrega la 6.6, con su propio RED.
-- [ ] 6.5b Escribir el test de **token vencido moviendo el reloj fijo, sin esperar**:
+- [x] 6.5b Escribir el test de **token vencido moviendo el reloj fijo, sin esperar**:
   - login de `recepcion_ficticia` con el `RelojFijo` en `T` (`ACCESS_TOKEN_EXPIRE_MINUTES=60`);
   - `reloj.avanzar(minutes=59)` → `GET /prueba/autenticado` responde `200`;
   - `reloj.avanzar(minutes=1)` (en `T + 60`) → responde `401` `no_autenticado` con `WWW-Authenticate: Bearer`.
 
   Verificar que el test pasa, que no usa `sleep` y que su resultado no cambia con la hora real de la máquina.
+
+  > **Nota para el verify: el test de la 6.5b no tiene fase RED propia.** Es `test_el_token_vence_al_mover_el_reloj_fijo_sin_esperar`, en `tests/api/test_usuario_actual.py`, y pasó en el primer intento, porque el login (6.2), el reloj (6.1b) y `usuario_actual` (6.5) ya existían.
+  >
+  > Para comprobar que detecta el borde del vencimiento, hice una prueba de mutación manual: cambié `exp <= instante` por `exp < instante` en `decodificar_token`, y el test falló en T+60 (`200 == 401`). Restauré el archivo editándolo y `git diff app/` quedó vacío.
+  >
+  > Una búsqueda en el test de `sleep`, `datetime.now` y `time.time` no encontró ningún uso. La única coincidencia es el comentario que lo aclara. El token vence en `2026-01-05T13:00Z`, así que el resultado no depende de la hora de la máquina.
 - [ ] 6.6 Escribir tests de que un token válido de un usuario desactivado después del login responde `401` `no_autenticado`, y de que un usuario cuyo rol cambió de `recepcion` a `odontologo` después del login recibe `403` en `GET /prueba/solo-recepcion`. Verificar que `usuario_actual` recarga el usuario desde la base y usa el rol guardado, no el del token.
 - [ ] 6.7 Escribir tests de que `recepcion_ficticia` recibe `403` `sin_permiso` en `GET /prueba/solo-admin` y `200` en `GET /prueba/admin-o-recepcion`, y de que un `administracion_ficticia` recibe `200` en `solo-admin`. Implementar `requiere_rol(*roles)`, verificando que los tests pasan (RN-ACC-02, mecanismo).
 - [ ] 6.8 Escribir un test de punta a punta: crear `recepcion_ficticia` y loguearse; verificar que la fila de `usuario` no contiene `clave-ficticia-123` en ninguna columna y que la respuesta del login tampoco la contiene (RN-ACC-04). Verificar también que `GET /health` sigue respondiendo `200` sin token.

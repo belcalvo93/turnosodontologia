@@ -10,7 +10,7 @@ from httpx import Response
 from app.api.seguridad import emitir_token
 from app.config import Config
 from app.domain.usuarios import Rol, Usuario
-from tests.conftest import INSTANTE_INICIAL
+from tests.conftest import CLAVE_FICTICIA, INSTANTE_INICIAL, RelojFijo
 
 RUTA = "/prueba/autenticado"
 
@@ -127,3 +127,24 @@ def test_cada_token_valido_identifica_a_su_propio_usuario(
     )
 
     assert respuesta.json() == {"id": admin.id, "rol": "administracion"}
+
+
+def test_el_token_vence_al_mover_el_reloj_fijo_sin_esperar(
+    cliente_con_rutas_prueba: TestClient,
+    config: Config,
+    reloj: RelojFijo,
+    crear_usuario: Callable[..., Usuario],
+) -> None:
+    # Sin sleep ni hora real: el tiempo solo avanza con `reloj.avanzar(...)`.
+    assert config.access_token_expire_minutes == 60
+    crear_usuario("recepcion_ficticia")
+    login = cliente_con_rutas_prueba.post(
+        "/auth/login", json={"username": "recepcion_ficticia", "password": CLAVE_FICTICIA}
+    )
+    cabeceras = {"Authorization": f"Bearer {login.json()['access_token']}"}
+
+    reloj.avanzar(minutes=59)
+    assert cliente_con_rutas_prueba.get(RUTA, headers=cabeceras).status_code == 200
+
+    reloj.avanzar(minutes=1)
+    _assert_no_autenticado(cliente_con_rutas_prueba.get(RUTA, headers=cabeceras))
