@@ -1,7 +1,7 @@
 """Tests del formato global de errores {codigo, mensaje, detalles?} (C-03, RN-GLO-01)."""
 
 import pytest
-from fastapi import APIRouter
+from fastapi import APIRouter, HTTPException
 from fastapi.testclient import TestClient
 
 from app.api.errores import MAPEO_DOMINIO
@@ -32,6 +32,56 @@ def test_error_de_dominio_responde_su_status_con_codigo_y_mensaje(
 
     assert respuesta.status_code == status
     assert respuesta.json() == {"codigo": codigo, "mensaje": mensaje}
+
+
+def test_ruta_inexistente_responde_404_no_encontrado(cliente: TestClient) -> None:
+    respuesta = cliente.get("/no-existe")
+
+    assert respuesta.status_code == 404
+    cuerpo = respuesta.json()
+    assert cuerpo.keys() == {"codigo", "mensaje"}
+    assert cuerpo["codigo"] == "no_encontrado"
+    assert cuerpo["mensaje"]
+
+
+def test_metodo_no_admitido_responde_405_metodo_no_permitido(
+    cliente_con_rutas_prueba: TestClient,
+) -> None:
+    respuesta = cliente_con_rutas_prueba.post("/prueba/error/conflicto-agenda")
+
+    assert respuesta.status_code == 405
+    cuerpo = respuesta.json()
+    assert cuerpo.keys() == {"codigo", "mensaje"}
+    assert cuerpo["codigo"] == "metodo_no_permitido"
+    assert cuerpo["mensaje"]
+    assert respuesta.headers["allow"] == "GET"
+
+
+def test_docs_fuera_de_development_responde_el_404_propio(cliente: TestClient) -> None:
+    respuesta = cliente.get("/docs")
+
+    assert respuesta.status_code == 404
+    assert respuesta.json()["codigo"] == "no_encontrado"
+
+
+def test_otro_error_http_conserva_su_status_con_codigo_error_http(config: Config) -> None:
+    router = APIRouter()
+
+    @router.get("/prueba/error/http-400")
+    def lanzar_http_400() -> None:
+        raise HTTPException(status_code=400, detail="Detalle en inglés que no debe salir.")
+
+    aplicacion = create_app(config)
+    aplicacion.include_router(router)
+
+    with TestClient(aplicacion) as cliente_http:
+        respuesta = cliente_http.get("/prueba/error/http-400")
+
+    assert respuesta.status_code == 400
+    cuerpo = respuesta.json()
+    assert cuerpo.keys() == {"codigo", "mensaje"}
+    assert cuerpo["codigo"] == "error_http"
+    assert cuerpo["mensaje"] != "Detalle en inglés que no debe salir."
 
 
 class ErrorDominioSinMapeo(ErrorDominio):
