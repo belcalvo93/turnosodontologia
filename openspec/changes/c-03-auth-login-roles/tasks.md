@@ -125,7 +125,13 @@
 
 ## 7. Seed de desarrollo
 
-- [ ] 7.1 Escribir tests en `tests/api/test_seed.py` de `sembrar_admin_demo` sobre una base temporal: la primera llamada crea un único `admin_demo` activo con rol `administracion`, y la segunda llamada con otro hash no crea duplicados ni cambia el `password_hash`. Implementar `app/db/seed.py` con `INSERT ... ON CONFLICT(username) DO NOTHING` dentro de `transaccion()`, verificando que los tests pasan y que `app/db/seed.py` no importa `app.api`.
+- [x] 7.1 Escribir tests en `tests/api/test_seed.py` de `sembrar_admin_demo` sobre una base temporal: la primera llamada crea un único `admin_demo` activo con rol `administracion`, y la segunda llamada con otro hash no crea duplicados ni cambia el `password_hash`. Implementar `app/db/seed.py` con `INSERT ... ON CONFLICT(username) DO NOTHING` dentro de `transaccion()`, verificando que los tests pasan y que `app/db/seed.py` no importa `app.api`.
+
+  > **Nota para el verify: RED de la 7.1** (todos en `tests/api/test_seed.py`):
+  > - Los 2 tests de la tarea fallaron juntos por un mismo motivo: `ModuleNotFoundError`, porque `app.db.seed` no existía. Es un RED compartido; ninguno falló por su comportamiento particular.
+  > - Sin RED propio, porque son de triangulación y pasaron en el primer intento: `test_no_modifica_un_admin_demo_existente_aunque_este_inactivo_y_con_otro_rol`, `test_agrega_admin_demo_sin_tocar_a_los_demas_usuarios` y `test_el_seed_queda_confirmado_y_lo_ve_otra_conexion`.
+  > - Límite conocido: que la escritura va "dentro de `transaccion()`" se verifica leyendo `app/db/seed.py`, no con un test. Como la conexión está en autocommit, el test de "otra conexión la ve" pasaría igual sin la transacción.
+  > - Una búsqueda de `app.api` en `app/db/seed.py` no encontró ningún import.
 - [ ] 7.2 Escribir tests de arranque:
   - con `APP_ENV=development` y `SEED_ADMIN_PASSWORD=clave-demo-ficticia` existe `admin_demo`, y `POST /auth/login` con esas credenciales responde `200`;
   - dos arranques sobre la misma base dejan un solo `admin_demo`;
