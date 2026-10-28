@@ -15,7 +15,7 @@
 - [x] 2.2 Escribir tests en `tests/api/test_config.py` para los defaults de autenticación (entorno vacío → `HS256`, `60` minutos, sin contraseña de seed, secreto no vacío) y para un `JWT_SECRET` explícito, que se respeta tal cual. Sumar los campos a `Config` y a `cargar_config`, verificando que los tests nuevos y los 3 existentes pasan.
 - [x] 2.3 Escribir tests de que `APP_ENV=test` sin `JWT_SECRET` produce dos secretos distintos en dos cargas, y de que `APP_ENV=production` sin `JWT_SECRET` lanza `ConfigInvalida` con un mensaje que nombra `JWT_SECRET`. Implementar el secreto aleatorio solo para `development`/`test`, verificando que ningún secreto queda escrito en el código (búsqueda en `app/config.py`).
 - [x] 2.4 Escribir tests de que `ACCESS_TOKEN_EXPIRE_MINUTES=abc` y `=0`, y `JWT_ALGORITHM=none`, lanzan `ConfigInvalida` con un mensaje que nombra la variable, y de que `HS512` se acepta. Implementar las validaciones, verificando que los tests pasan.
-- [ ] 2.5 Escribir tests de que `GET /docs` y `GET /openapi.json` responden `200` con `APP_ENV=development` y `404` con `APP_ENV=test`. Condicionar `docs_url`, `redoc_url` y `openapi_url` en `create_app`, verificando que los tests pasan y que `tests/api/test_main.py` sigue en verde.
+- [x] 2.5 Escribir tests de que `GET /docs` y `GET /openapi.json` responden `200` con `APP_ENV=development` y `404` con `APP_ENV=test`. Condicionar `docs_url`, `redoc_url` y `openapi_url` en `create_app`, verificando que los tests pasan y que `tests/api/test_main.py` sigue en verde.
 
 ## 3. Formato global de errores (RN-GLO-01)
 

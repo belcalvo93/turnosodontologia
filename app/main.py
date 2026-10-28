@@ -1,4 +1,4 @@
-"""Aplicación FastAPI: crea la app, aplica el esquema y monta los routers (C-01)."""
+"""Aplicación FastAPI: crea la app, aplica el esquema y monta los routers (C-01, C-03)."""
 
 from collections.abc import AsyncIterator
 from contextlib import asynccontextmanager
@@ -20,7 +20,15 @@ def create_app(config: Config | None = None) -> FastAPI:
         inicializar_esquema(config_app.database_path)
         yield
 
-    aplicacion = FastAPI(title="Turnos Odontológicos", lifespan=lifespan)
+    # /docs y /openapi.json solo en development (03 §Rutas públicas); con None no se registran.
+    con_docs = config_app.app_env == "development"
+    aplicacion = FastAPI(
+        title="Turnos Odontológicos",
+        lifespan=lifespan,
+        docs_url="/docs" if con_docs else None,
+        redoc_url="/redoc" if con_docs else None,
+        openapi_url="/openapi.json" if con_docs else None,
+    )
     aplicacion.state.config = config_app
     aplicacion.include_router(router_salud)
     return aplicacion
