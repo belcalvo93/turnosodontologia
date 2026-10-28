@@ -6,6 +6,7 @@ from datetime import UTC, datetime
 
 from fastapi import FastAPI
 
+from app.api.auth import router as router_auth
 from app.api.errores import registrar_manejadores
 from app.api.salud import router as router_salud
 from app.config import Config, cargar_config
@@ -42,6 +43,7 @@ def create_app(
     aplicacion.state.reloj = reloj if reloj is not None else _hora_real
     registrar_manejadores(aplicacion)
     aplicacion.include_router(router_salud)
+    aplicacion.include_router(router_auth)
     return aplicacion
 
 
