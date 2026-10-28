@@ -1,7 +1,8 @@
 """Aplicación FastAPI: crea la app, aplica el esquema y monta los routers (C-01, C-03)."""
 
-from collections.abc import AsyncIterator
+from collections.abc import AsyncIterator, Callable
 from contextlib import asynccontextmanager
+from datetime import UTC, datetime
 
 from fastapi import FastAPI
 
@@ -11,8 +12,15 @@ from app.config import Config, cargar_config
 from app.db.conexion import inicializar_esquema
 
 
-def create_app(config: Config | None = None) -> FastAPI:
-    """Crea la app con su configuración y los routers de la API."""
+def _hora_real() -> datetime:
+    # Único lugar de app/ que lee la hora real; los tests inyectan un reloj fijo (design §11).
+    return datetime.now(UTC)
+
+
+def create_app(
+    config: Config | None = None, reloj: Callable[[], datetime] | None = None
+) -> FastAPI:
+    """Crea la app con su configuración, su reloj y los routers de la API."""
     config_app = config if config is not None else cargar_config()
 
     @asynccontextmanager
@@ -31,6 +39,7 @@ def create_app(config: Config | None = None) -> FastAPI:
         openapi_url="/openapi.json" if con_docs else None,
     )
     aplicacion.state.config = config_app
+    aplicacion.state.reloj = reloj if reloj is not None else _hora_real
     registrar_manejadores(aplicacion)
     aplicacion.include_router(router_salud)
     return aplicacion

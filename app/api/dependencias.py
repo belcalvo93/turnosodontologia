@@ -2,6 +2,7 @@
 
 import sqlite3
 from collections.abc import Iterator
+from datetime import datetime
 
 from fastapi import Request
 
@@ -19,3 +20,9 @@ def obtener_conexion(request: Request) -> Iterator[sqlite3.Connection]:
         yield conexion
     finally:
         conexion.close()
+
+
+def obtener_ahora(request: Request) -> datetime:
+    """Devuelve el instante actual según el reloj de la app (inyectable en los tests)."""
+    ahora: datetime = request.app.state.reloj()
+    return ahora

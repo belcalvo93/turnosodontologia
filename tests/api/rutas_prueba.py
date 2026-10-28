@@ -5,12 +5,13 @@ las monta sobre una app de test.
 """
 
 import sqlite3
+from datetime import datetime
 from typing import Annotated
 
 from fastapi import APIRouter, Depends, Request
 from pydantic import BaseModel
 
-from app.api.dependencias import obtener_conexion
+from app.api.dependencias import obtener_ahora, obtener_conexion
 from app.api.errores import CredencialesInvalidas, NoAutenticado, SinPermiso
 from app.domain.errores import ConflictoAgenda, DatoInvalido, DentroDeBloqueo, FueraDeHorario
 
@@ -84,3 +85,8 @@ def usar_conexion(request: Request, conexion: Conexion) -> dict[str, list[str]]:
 def usar_conexion_y_fallar(request: Request, conexion: Conexion) -> None:
     request.app.state.conexion_prueba = conexion
     raise SinPermiso()
+
+
+@router.get("/ahora")
+def devolver_ahora(ahora: Annotated[datetime, Depends(obtener_ahora)]) -> dict[str, str]:
+    return {"ahora": ahora.isoformat()}
