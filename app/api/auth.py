@@ -1,7 +1,8 @@
-"""Login con usuario y contraseña (C-03, RN-ACC-01, RN-ACC-04)."""
+"""Login, usuario autenticado y chequeo de rol (C-03, RN-ACC-01, RN-ACC-02, RN-ACC-04)."""
 
 import secrets
 import sqlite3
+from collections.abc import Callable
 from datetime import datetime
 from functools import cache
 from typing import Annotated, Literal
@@ -11,10 +12,10 @@ from fastapi.security import HTTPAuthorizationCredentials, HTTPBearer
 from pydantic import BaseModel, Field
 
 from app.api.dependencias import obtener_ahora, obtener_conexion
-from app.api.errores import CredencialesInvalidas, NoAutenticado
+from app.api.errores import CredencialesInvalidas, NoAutenticado, SinPermiso
 from app.api.seguridad import TokenInvalido, decodificar_token, emitir_token, hashear, verificar
 from app.db.repositorio import buscar_credenciales, buscar_usuario_por_id
-from app.domain.usuarios import Usuario
+from app.domain.usuarios import Rol, Usuario
 
 router = APIRouter(prefix="/auth", tags=["auth"])
 
@@ -81,3 +82,18 @@ def usuario_actual(
     if usuario is None or not usuario.activo:
         raise NoAutenticado()
     return usuario
+
+
+def requiere_rol(*roles: Rol) -> Callable[[Usuario], Usuario]:
+    """Dependencia que deja pasar solo a los roles indicados (403 `sin_permiso` al resto).
+
+    Uso en un router: `usuario: Annotated[Usuario, Depends(requiere_rol(Rol.RECEPCION))]`.
+    """
+    permitidos = frozenset(roles)
+
+    def _verificar_rol(usuario: Annotated[Usuario, Depends(usuario_actual)]) -> Usuario:
+        if usuario.rol not in permitidos:
+            raise SinPermiso()
+        return usuario
+
+    return _verificar_rol

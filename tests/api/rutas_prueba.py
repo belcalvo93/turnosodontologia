@@ -11,11 +11,11 @@ from typing import Annotated
 from fastapi import APIRouter, Depends, Request
 from pydantic import BaseModel
 
-from app.api.auth import usuario_actual
+from app.api.auth import requiere_rol, usuario_actual
 from app.api.dependencias import obtener_ahora, obtener_conexion
 from app.api.errores import CredencialesInvalidas, NoAutenticado, SinPermiso
 from app.domain.errores import ConflictoAgenda, DatoInvalido, DentroDeBloqueo, FueraDeHorario
-from app.domain.usuarios import Usuario
+from app.domain.usuarios import Rol, Usuario
 
 MENSAJE_CONFLICTO_AGENDA = "El profesional ya tiene un turno en ese horario (ficticio)."
 MENSAJE_FUERA_DE_HORARIO = "El turno no encaja en una franja de atención (ficticio)."
@@ -97,3 +97,24 @@ def devolver_ahora(ahora: Annotated[datetime, Depends(obtener_ahora)]) -> dict[s
 @router.get("/autenticado")
 def solo_autenticado(usuario: Annotated[Usuario, Depends(usuario_actual)]) -> dict[str, object]:
     return {"id": usuario.id, "rol": usuario.rol.value}
+
+
+@router.get("/solo-admin")
+def solo_admin(
+    usuario: Annotated[Usuario, Depends(requiere_rol(Rol.ADMINISTRACION))],
+) -> dict[str, str]:
+    return {"rol": usuario.rol.value}
+
+
+@router.get("/admin-o-recepcion")
+def admin_o_recepcion(
+    usuario: Annotated[Usuario, Depends(requiere_rol(Rol.ADMINISTRACION, Rol.RECEPCION))],
+) -> dict[str, str]:
+    return {"rol": usuario.rol.value}
+
+
+@router.get("/solo-recepcion")
+def solo_recepcion(
+    usuario: Annotated[Usuario, Depends(requiere_rol(Rol.RECEPCION))],
+) -> dict[str, str]:
+    return {"rol": usuario.rol.value}
