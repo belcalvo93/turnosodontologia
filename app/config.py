@@ -16,6 +16,13 @@ _DEFAULTS = {
 
 _PREFIJO_SQLITE = "sqlite:///"
 
+# Entornos donde, sin JWT_SECRET, se admite un secreto aleatorio por proceso.
+_ENTORNOS_CON_SECRETO_ALEATORIO = frozenset({"development", "test"})
+
+
+class ConfigInvalida(ValueError):
+    """La configuración del entorno no permite arrancar la aplicación."""
+
 
 @dataclass(frozen=True)
 class Config:
@@ -33,11 +40,12 @@ class Config:
 def cargar_config(entorno: Mapping[str, str] | None = None) -> Config:
     """Construye la config desde el entorno; usa os.environ si no se inyecta."""
     valores = os.environ if entorno is None else entorno
+    app_env = _valor(valores, "APP_ENV")
     return Config(
-        app_env=_valor(valores, "APP_ENV"),
+        app_env=app_env,
         database_path=_normalizar_database_url(_valor(valores, "DATABASE_URL")),
         clinic_timezone=_valor(valores, "CLINIC_TIMEZONE"),
-        jwt_secret=_jwt_secret(valores),
+        jwt_secret=_jwt_secret(valores, app_env),
         jwt_algorithm=_valor(valores, "JWT_ALGORITHM"),
         access_token_expire_minutes=int(_valor(valores, "ACCESS_TOKEN_EXPIRE_MINUTES")),
         seed_admin_password=valores.get("SEED_ADMIN_PASSWORD") or None,
@@ -49,9 +57,19 @@ def _valor(valores: Mapping[str, str], clave: str) -> str:
     return valores.get(clave) or _DEFAULTS[clave]
 
 
-def _jwt_secret(valores: Mapping[str, str]) -> str:
-    """Devuelve JWT_SECRET o, si falta, uno aleatorio por carga (nunca un valor fijo en el código)."""
-    return valores.get("JWT_SECRET") or secrets.token_urlsafe(32)
+def _jwt_secret(valores: Mapping[str, str], app_env: str) -> str:
+    """Devuelve JWT_SECRET; si falta, uno aleatorio en development/test o falla.
+
+    Nunca hay un secreto fijo en el código (regla dura 9).
+    """
+    secreto = valores.get("JWT_SECRET")
+    if secreto:
+        return secreto
+    if app_env in _ENTORNOS_CON_SECRETO_ALEATORIO:
+        return secrets.token_urlsafe(32)
+    raise ConfigInvalida(
+        f"Falta la variable de entorno JWT_SECRET (obligatoria con APP_ENV={app_env})."
+    )
 
 
 def _normalizar_database_url(valor: str) -> Path:

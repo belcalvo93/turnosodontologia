@@ -2,7 +2,10 @@
 
 from pathlib import Path
 
-from app.config import cargar_config
+import pytest
+
+from app.config import ConfigInvalida, cargar_config
+from app.main import create_app
 
 
 def test_entorno_vacio_usa_defaults_de_desarrollo() -> None:
@@ -49,6 +52,50 @@ def test_jwt_secret_explicito_se_respeta_tal_cual() -> None:
     config = cargar_config(entorno={"JWT_SECRET": secreto})
 
     assert config.jwt_secret == secreto
+
+
+def test_sin_jwt_secret_en_test_genera_un_secreto_aleatorio_por_carga() -> None:
+    primera = cargar_config(entorno={"APP_ENV": "test"})
+    segunda = cargar_config(entorno={"APP_ENV": "test"})
+
+    assert primera.jwt_secret != ""
+    assert segunda.jwt_secret != ""
+    assert primera.jwt_secret != segunda.jwt_secret
+
+
+def test_sin_jwt_secret_en_production_falla_nombrando_la_variable() -> None:
+    with pytest.raises(ConfigInvalida, match="JWT_SECRET"):
+        cargar_config(entorno={"APP_ENV": "production"})
+
+
+@pytest.mark.parametrize(
+    "entorno",
+    [
+        {"APP_ENV": "staging"},
+        {"APP_ENV": "production", "JWT_SECRET": ""},
+    ],
+)
+def test_sin_jwt_secret_fuera_de_development_y_test_falla(entorno: dict[str, str]) -> None:
+    with pytest.raises(ConfigInvalida, match="JWT_SECRET"):
+        cargar_config(entorno=entorno)
+
+
+def test_jwt_secret_definido_en_production_se_acepta() -> None:
+    secreto = "secreto-ficticio-de-produccion-con-32-caracteres"
+
+    config = cargar_config(entorno={"APP_ENV": "production", "JWT_SECRET": secreto})
+
+    assert config.jwt_secret == secreto
+
+
+def test_create_app_no_arranca_sin_jwt_secret_en_production(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    monkeypatch.setenv("APP_ENV", "production")
+    monkeypatch.delenv("JWT_SECRET", raising=False)
+
+    with pytest.raises(ConfigInvalida, match="JWT_SECRET"):
+        create_app()
 
 
 def test_duracion_del_token_y_password_de_seed_se_leen_del_entorno() -> None:
