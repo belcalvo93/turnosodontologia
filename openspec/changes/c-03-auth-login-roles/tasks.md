@@ -132,13 +132,20 @@
   > - Sin RED propio, porque son de triangulación y pasaron en el primer intento: `test_no_modifica_un_admin_demo_existente_aunque_este_inactivo_y_con_otro_rol`, `test_agrega_admin_demo_sin_tocar_a_los_demas_usuarios` y `test_el_seed_queda_confirmado_y_lo_ve_otra_conexion`.
   > - Límite conocido: que la escritura va "dentro de `transaccion()`" se verifica leyendo `app/db/seed.py`, no con un test. Como la conexión está en autocommit, el test de "otra conexión la ve" pasaría igual sin la transacción.
   > - Una búsqueda de `app.api` en `app/db/seed.py` no encontró ningún import.
-- [ ] 7.2 Escribir tests de arranque:
+- [x] 7.2 Escribir tests de arranque:
   - con `APP_ENV=development` y `SEED_ADMIN_PASSWORD=clave-demo-ficticia` existe `admin_demo`, y `POST /auth/login` con esas credenciales responde `200`;
   - dos arranques sobre la misma base dejan un solo `admin_demo`;
   - con `APP_ENV=test` y la variable definida, la tabla queda vacía;
   - con `development` sin la variable, el arranque no falla y la tabla queda vacía.
 
   Conectar el seed en el `lifespan`, verificando que los tests pasan.
+
+  > **Nota para el verify: RED de la 7.2** (todos en `tests/api/test_seed.py`):
+  > - Con RED propio: `test_en_development_con_la_variable_crea_admin_demo_y_permite_el_login` (el login daba `401`) y `test_dos_arranques_sobre_la_misma_base_dejan_un_solo_admin_demo` (`0 == 1`).
+  > - Sin RED propio: `test_en_test_con_la_variable_no_crea_usuarios` y `test_en_development_sin_la_variable_arranca_y_no_crea_usuarios`. Son de la tarea, pero verifican que el seed *no* ocurre, así que pasaban antes de conectarlo.
+  > - Sin RED propio, porque son de triangulación y pasaron en el primer intento: `test_en_production_con_la_variable_no_crea_usuarios`, `test_la_contrasena_del_seed_no_queda_en_el_archivo_de_la_base` y `test_rearrancar_con_otra_contrasena_no_cambia_la_de_admin_demo`.
+  >
+  > Prueba de mutación manual: hice que el `lifespan` pasara `seed_admin_password` sin hashear, y fallaron 3 tests (el login, el de los bytes del archivo y el de rearrancar). Restauré la línea editando el archivo. Este es el caso de "guardar la contraseña en texto plano" que en la 6.8 no se podía mutar desde `app/`.
 
 ## 8. Documentación
 
