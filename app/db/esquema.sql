@@ -30,3 +30,17 @@ CREATE TABLE IF NOT EXISTS profesional (
     matricula TEXT    NULL,
     activo    INTEGER NOT NULL DEFAULT 1 CHECK (activo IN (0, 1))
 );
+
+-- Bloqueos horarios de profesional o sillón (C-09, KB 04 §Bloqueo, RN-REC-02).
+CREATE TABLE IF NOT EXISTS bloqueo (
+    id         INTEGER PRIMARY KEY AUTOINCREMENT,
+    alcance    TEXT    NOT NULL CHECK (alcance IN ('profesional', 'sillon')),
+    recurso_id INTEGER NOT NULL,
+    inicio     TEXT    NOT NULL,
+    fin        TEXT    NOT NULL,
+    motivo     TEXT    NOT NULL DEFAULT '',
+    CHECK (inicio < fin)
+);
+
+CREATE INDEX IF NOT EXISTS idx_bloqueo_alcance_recurso_inicio
+    ON bloqueo (alcance, recurso_id, inicio);
