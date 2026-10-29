@@ -231,7 +231,7 @@ El MVP es solo backend (el frontend React es etapa posterior, D.3), así que no 
   - `knowledge-base/05_reglas_de_negocio.md` §RN-REC-03
 
 ### [C-05] `sillones-prestaciones`
-- **Estado**: `[ ]` pendiente
+- **Estado**: `[x]` completado
 - **Scope**:
   - Tablas `sillon` (`nombre` único, `activo`) y `prestacion` (`nombre` único, `duracion_minutos > 0`, `activa`)
   - `GET/POST /sillones`, `PATCH /sillones/{id}`; `GET/POST /prestaciones`, `PATCH /prestaciones/{id}`

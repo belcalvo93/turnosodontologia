@@ -1,13 +1,10 @@
 """Tests de API para bloqueos horarios y permisos RBAC (C-09, US-005, RN-REC-02, RN-ACC-01/02)."""
 
 from collections.abc import Callable
-from contextlib import closing
 
 import pytest
 from fastapi.testclient import TestClient
 
-from app.config import Config
-from app.db.conexion import abrir_conexion, transaccion
 from app.domain.usuarios import Rol, Usuario
 
 
@@ -15,28 +12,8 @@ def _headers(token: str) -> dict[str, str]:
     return {"Authorization": f"Bearer {token}"}
 
 
-def _asegurar_sillon_prueba(config: Config, sillon_id: int = 1) -> None:
-    """Crea un sillón de prueba en SQLite si C-05 aún no se integró."""
-    with closing(abrir_conexion(config.database_path)) as conexion:
-        with transaccion(conexion):
-            conexion.execute(
-                """
-                CREATE TABLE IF NOT EXISTS sillon (
-                    id INTEGER PRIMARY KEY AUTOINCREMENT,
-                    nombre TEXT NOT NULL UNIQUE,
-                    activo INTEGER NOT NULL DEFAULT 1
-                )
-                """
-            )
-            conexion.execute(
-                "INSERT OR IGNORE INTO sillon (id, nombre, activo) VALUES (?, ?, 1)",
-                (sillon_id, f"Sillón {sillon_id}"),
-            )
-
-
 def test_post_bloqueos_para_profesional_y_sillon_responde_201(
     cliente: TestClient,
-    config: Config,
     crear_usuario: Callable[..., Usuario],
     token_de: Callable[[Usuario], str],
 ) -> None:
@@ -48,7 +25,11 @@ def test_post_bloqueos_para_profesional_y_sillon_responde_201(
         json={"nombre": "Odontólogo", "apellido": "Ficticio A"},
         headers=cabeceras,
     ).json()
-    _asegurar_sillon_prueba(config, sillon_id=1)
+    sillon = cliente.post(
+        "/sillones",
+        json={"nombre": "Sillón 1"},
+        headers=cabeceras,
+    ).json()
 
     resp_prof = cliente.post(
         "/bloqueos",
@@ -75,7 +56,7 @@ def test_post_bloqueos_para_profesional_y_sillon_responde_201(
         "/bloqueos",
         json={
             "alcance": "sillon",
-            "recurso_id": 1,
+            "recurso_id": sillon["id"],
             "inicio": "2026-11-11T14:00:00",
             "fin": "2026-11-11T16:00:00",
             "motivo": "Mantenimiento",

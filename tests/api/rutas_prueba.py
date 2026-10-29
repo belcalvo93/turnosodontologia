@@ -14,13 +14,20 @@ from pydantic import BaseModel
 from app.api.auth import requiere_rol, usuario_actual
 from app.api.dependencias import obtener_ahora, obtener_conexion
 from app.api.errores import CredencialesInvalidas, NoAutenticado, SinPermiso
-from app.domain.errores import ConflictoAgenda, DatoInvalido, DentroDeBloqueo, FueraDeHorario
+from app.domain.errores import (
+    ConflictoAgenda,
+    DatoInvalido,
+    DentroDeBloqueo,
+    FueraDeHorario,
+    NombreDuplicado,
+)
 from app.domain.usuarios import Rol, Usuario
 
 MENSAJE_CONFLICTO_AGENDA = "El profesional ya tiene un turno en ese horario (ficticio)."
 MENSAJE_FUERA_DE_HORARIO = "El turno no encaja en una franja de atención (ficticio)."
 MENSAJE_DENTRO_DE_BLOQUEO = "El turno cae dentro de un bloqueo (ficticio)."
 MENSAJE_DATO_INVALIDO = "La duración del turno debe ser positiva (ficticio)."
+MENSAJE_NOMBRE_DUPLICADO = "Ya existe un recurso con ese nombre (ficticio)."
 
 router = APIRouter(prefix="/prueba")
 
@@ -43,6 +50,11 @@ def lanzar_dentro_de_bloqueo() -> None:
 @router.get("/error/dato-invalido")
 def lanzar_dato_invalido() -> None:
     raise DatoInvalido(MENSAJE_DATO_INVALIDO)
+
+
+@router.get("/error/nombre-duplicado")
+def lanzar_nombre_duplicado() -> None:
+    raise NombreDuplicado(MENSAJE_NOMBRE_DUPLICADO)
 
 
 @router.get("/error/no-autenticado")

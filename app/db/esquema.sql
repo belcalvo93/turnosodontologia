@@ -31,6 +31,23 @@ CREATE TABLE IF NOT EXISTS profesional (
     activo    INTEGER NOT NULL DEFAULT 1 CHECK (activo IN (0, 1))
 );
 
+-- Sillones/boxes del consultorio (C-05, KB 04 §Sillon). Baja lógica con activo = 0.
+-- RN-REC-01: nombre único.
+CREATE TABLE IF NOT EXISTS sillon (
+    id     INTEGER PRIMARY KEY AUTOINCREMENT,
+    nombre TEXT    NOT NULL UNIQUE CHECK (length(trim(nombre)) > 0),
+    activo INTEGER NOT NULL DEFAULT 1 CHECK (activo IN (0, 1))
+);
+
+-- Prestaciones con duración en minutos (C-05, KB 04 §Prestacion). RN-REC-01:
+-- nombre único y duración entera mayor que cero. Baja lógica con activa = 0.
+CREATE TABLE IF NOT EXISTS prestacion (
+    id               INTEGER PRIMARY KEY AUTOINCREMENT,
+    nombre           TEXT    NOT NULL UNIQUE CHECK (length(trim(nombre)) > 0),
+    duracion_minutos INTEGER NOT NULL CHECK (duracion_minutos > 0),
+    activa           INTEGER NOT NULL DEFAULT 1 CHECK (activa IN (0, 1))
+);
+
 -- Bloqueos horarios de profesional o sillón (C-09, KB 04 §Bloqueo, RN-REC-02).
 CREATE TABLE IF NOT EXISTS bloqueo (
     id         INTEGER PRIMARY KEY AUTOINCREMENT,
