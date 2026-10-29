@@ -12,6 +12,7 @@ from app.domain.errores import (
     ConflictoAgenda,
     DatoInvalido,
     DentroDeBloqueo,
+    DniDuplicado,
     ErrorDominio,
     FueraDeHorario,
     NombreDuplicado,
@@ -64,6 +65,7 @@ class SinPermiso(ErrorApi):
 # que el dominio ya trae en español.
 MAPEO_DOMINIO: dict[type[ErrorDominio], tuple[int, str]] = {
     NombreDuplicado: (409, "nombre_duplicado"),
+    DniDuplicado: (409, "dni_duplicado"),
     ConflictoAgenda: (409, "conflicto_agenda"),
     FueraDeHorario: (409, "fuera_de_horario"),
     DentroDeBloqueo: (409, "dentro_de_bloqueo"),
