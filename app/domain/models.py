@@ -69,6 +69,54 @@ def validar_datos_prestacion(nombre: str, duracion_minutos: int) -> tuple[str, i
 
 
 @dataclass(frozen=True, kw_only=True)
+class Paciente:
+    nombre: str
+    apellido: str
+    dni: str
+    telefono: str | None = None
+    obra_social: str | None = None
+    nro_afiliado: str | None = None
+    id: int | None = None
+
+
+def validar_datos_paciente(
+    nombre: str,
+    apellido: str,
+    dni: str,
+    telefono: str | None = None,
+    obra_social: str | None = None,
+    nro_afiliado: str | None = None,
+) -> tuple[str, str, str, str | None, str | None, str | None]:
+    """Normaliza y valida los datos mínimos del paciente (RN-PAC-01, C-06)."""
+    nombre_limpio = nombre.strip()
+    if not nombre_limpio:
+        raise DatoInvalido("El nombre del paciente no puede estar vacío.")
+    apellido_limpio = apellido.strip()
+    if not apellido_limpio:
+        raise DatoInvalido("El apellido del paciente no puede estar vacío.")
+    dni_limpio = dni.strip()
+    if not dni_limpio:
+        raise DatoInvalido("El DNI del paciente no puede estar vacío.")
+    telefono_limpio = telefono.strip() if telefono is not None else None
+    if telefono_limpio == "":
+        telefono_limpio = None
+    obra_social_limpia = obra_social.strip() if obra_social is not None else None
+    if obra_social_limpia == "":
+        obra_social_limpia = None
+    nro_afiliado_limpio = nro_afiliado.strip() if nro_afiliado is not None else None
+    if nro_afiliado_limpio == "":
+        nro_afiliado_limpio = None
+    return (
+        nombre_limpio,
+        apellido_limpio,
+        dni_limpio,
+        telefono_limpio,
+        obra_social_limpia,
+        nro_afiliado_limpio,
+    )
+
+
+@dataclass(frozen=True, kw_only=True)
 class HorarioAtencion:
     profesional_id: int
     dia_semana: int  # 0 = lunes ... 6 = domingo

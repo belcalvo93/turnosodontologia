@@ -4,7 +4,7 @@
 
 ## 1. Dominio puro y contrato de error 409
 
-- [ ] 1.1 Escribir primero `tests/domain/test_pacientes.py` con un test por regla (normalización de `nombre` con `strip()`, normalización de `apellido` con `strip()`, normalización de `dni` con `strip()`, `nombre` vacío → `DatoInvalido`, `apellido` vacío → `DatoInvalido`, `dni` vacío → `DatoInvalido`, `telefono` con `strip()`, `obra_social` con `strip()`, `nro_afiliado` con `strip()`, opcionales en `""` → `None`, opcionales omitidos → `None`, `Paciente` con `id` opcional) y luego implementar `Paciente` y `validar_datos_paciente()` en `app/domain/models.py`; verificar con `pytest tests/domain/test_pacientes.py -v`
+- [x] 1.1 Escribir primero `tests/domain/test_pacientes.py` con un test por regla (normalización de `nombre` con `strip()`, normalización de `apellido` con `strip()`, normalización de `dni` con `strip()`, `nombre` vacío → `DatoInvalido`, `apellido` vacío → `DatoInvalido`, `dni` vacío → `DatoInvalido`, `telefono` con `strip()`, `obra_social` con `strip()`, `nro_afiliado` con `strip()`, opcionales en `""` → `None`, opcionales omitidos → `None`, `Paciente` con `id` opcional) y luego implementar `Paciente` y `validar_datos_paciente()` en `app/domain/models.py`; verificar con `pytest tests/domain/test_pacientes.py -v`
 - [ ] 1.2 Agregar `DniDuplicado` en `app/domain/errores.py` y su entrada `(409, "dni_duplicado")` en `MAPEO_DOMINIO` de `app/api/errores.py`; verificar sumando la ruta de prueba y el caso parametrizado en `tests/api/test_errores.py` que comprueban `409` con `{"codigo": "dni_duplicado", "mensaje": <español sin el DNI>}` mediante `pytest tests/api/test_errores.py -v`
 
 ## 2. Esquema SQLite y repositorio
