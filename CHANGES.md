@@ -333,7 +333,7 @@ El MVP es solo backend (el frontend React es etapa posterior, D.3), así que no 
   - `knowledge-base/10_preguntas_abiertas.md` §SE-02, §SE-03, §SE-04, §SE-10
 
 ### [C-11] `crear-turno`
-- **Estado**: `[ ]` pendiente
+- **Estado**: `[x]` completado
 - **Scope**:
   - Tablas `turno` (con índices por profesional, sillón y paciente + `inicio`) y `auditoria_turno` (solo inserción)
   - `POST /turnos` (administración y recepción): carga contexto, llama a `validar_alta`, inserta turno `reservado` + auditoría `crear` en una sola transacción
