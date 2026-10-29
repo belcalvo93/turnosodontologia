@@ -3,6 +3,10 @@ fastapi>=0.115
 uvicorn>=0.30
 pydantic>=2.7
 
+# Autenticación (C-03): token JWT y hash Argon2id de contraseñas
+PyJWT>=2.10
+pwdlib[argon2]>=0.2
+
 # Tests (httpx provee el TestClient de FastAPI)
 httpx>=0.27
 pytest>=8.0
