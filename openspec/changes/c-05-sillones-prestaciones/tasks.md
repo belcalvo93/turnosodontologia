@@ -3,7 +3,7 @@
 ## 1. Dominio puro y contrato de error 409
 
 - [x] 1.1 Escribir primero `tests/domain/test_sillones.py` y `tests/domain/test_prestaciones.py` (nombre con `strip()`, nombre vacío/de espacios → `DatoInvalido`, duración `0` y negativa → `DatoInvalido`, duración válida devuelta, default `activo`/`activa` en `True`) y luego implementar `Sillon` y `validar_datos_sillon()` / `validar_datos_prestacion()` en `app/domain/models.py`; verificar con `pytest tests/domain/test_sillones.py tests/domain/test_prestaciones.py`
-- [ ] 1.2 Agregar `NombreDuplicado` en `app/domain/errores.py` y su entrada `(409, "nombre_duplicado")` en `MAPEO_DOMINIO` de `app/api/errores.py`; verificar sumando la ruta de prueba y el caso parametrizado en `tests/api/test_errores.py` que comprueban `409` con `{"codigo": "nombre_duplicado", "mensaje": <español>}` mediante `pytest tests/api/test_errores.py`
+- [x] 1.2 Agregar `NombreDuplicado` en `app/domain/errores.py` y su entrada `(409, "nombre_duplicado")` en `MAPEO_DOMINIO` de `app/api/errores.py`; verificar sumando la ruta de prueba y el caso parametrizado en `tests/api/test_errores.py` que comprueban `409` con `{"codigo": "nombre_duplicado", "mensaje": <español>}` mediante `pytest tests/api/test_errores.py`
 
 ## 2. Esquema SQLite y repositorios
 

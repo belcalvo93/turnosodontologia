@@ -9,6 +9,10 @@ class DatoInvalido(ErrorDominio):
     """Dato de entrada inválido (se mapea a 422)."""
 
 
+class NombreDuplicado(ErrorDominio):
+    """El nombre ya lo usa otro registro del mismo recurso (se mapea a 409)."""
+
+
 class ConflictoAgenda(ErrorDominio):
     """Solapamiento con otro turno activo (se mapea a 409)."""
 
