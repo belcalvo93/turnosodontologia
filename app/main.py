@@ -1,4 +1,4 @@
-"""Aplicación FastAPI: crea la app, aplica el esquema y monta los routers (C-01, C-03, C-04)."""
+"""Aplicación FastAPI: crea la app, aplica el esquema y monta los routers (C-01, C-03, C-04, C-08)."""
 
 from collections.abc import AsyncIterator, Callable
 from contextlib import asynccontextmanager
@@ -8,6 +8,7 @@ from fastapi import FastAPI
 
 from app.api.auth import router as router_auth
 from app.api.errores import registrar_manejadores
+from app.api.horarios import router as router_horarios
 from app.api.pacientes import router as router_pacientes
 from app.api.profesionales import router as router_profesionales
 from app.api.prestaciones import router as router_prestaciones
@@ -58,6 +59,7 @@ def create_app(
     aplicacion.include_router(router_salud)
     aplicacion.include_router(router_auth)
     aplicacion.include_router(router_profesionales)
+    aplicacion.include_router(router_horarios)
     aplicacion.include_router(router_sillones)
     aplicacion.include_router(router_prestaciones)
     aplicacion.include_router(router_pacientes)

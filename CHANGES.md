@@ -277,7 +277,7 @@ El MVP es solo backend (el frontend React es etapa posterior, D.3), así que no 
   - `knowledge-base/02_descripcion_general.md` §API REST
 
 ### [C-08] `horarios-atencion`
-- **Estado**: `[ ]` pendiente
+- **Estado**: `[x]` completado
 - **Scope**:
   - Tabla `horario_atencion` (`profesional_id`, `dia_semana` 0-6, `hora_desde`, `hora_hasta`) con índice (`profesional_id`, `dia_semana`)
   - Dominio: validar `hora_desde < hora_hasta` y que las franjas del mismo día no se superpongan

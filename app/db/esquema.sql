@@ -60,3 +60,16 @@ CREATE TABLE IF NOT EXISTS paciente (
     obra_social   TEXT NULL,
     nro_afiliado  TEXT NULL
 );
+
+-- Horarios de atención de profesionales (C-08, KB 04 §HorarioAtencion, RN-PRO-01/02).
+CREATE TABLE IF NOT EXISTS horario_atencion (
+    id             INTEGER PRIMARY KEY AUTOINCREMENT,
+    profesional_id INTEGER NOT NULL REFERENCES profesional(id),
+    dia_semana     INTEGER NOT NULL CHECK (dia_semana BETWEEN 0 AND 6),
+    hora_desde     TEXT    NOT NULL,
+    hora_hasta     TEXT    NOT NULL,
+    CHECK (hora_desde < hora_hasta)
+);
+
+CREATE INDEX IF NOT EXISTS idx_horario_profesional_dia
+    ON horario_atencion (profesional_id, dia_semana);
