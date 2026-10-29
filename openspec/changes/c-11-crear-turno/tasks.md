@@ -22,18 +22,18 @@
 
 ## 3. Esquema SQLite (D11)
 
-- [ ] 3.1 RED: en `tests/api/test_repositorio_turnos.py` escribir tests de esquema sobre SQLite temporal y ejecutarlos en rojo: `inicializar_esquema` crea `turno`, `auditoria_turno`, los índices `idx_turno_profesional_inicio`, `idx_turno_sillon_inicio`, `idx_turno_paciente_inicio` y los dos triggers, y es idempotente. GREEN: agregar el DDL de design D11 a `app/db/esquema.sql`
-- [ ] 3.2 TRIANGULATE restricciones: `INSERT` con `inicio >= fin` → `IntegrityError`; `estado = 'confirmado'` → `IntegrityError`; `accion = 'borrar'` → `IntegrityError`; `sillon_id` nulo → `IntegrityError` (RN-TUR-02); `profesional_id` inexistente → error de clave foránea
-- [ ] 3.3 RN-AUD-02: tests de que `UPDATE` y `DELETE` sobre un registro de `auditoria_turno` lanzan `sqlite3.IntegrityError` y el registro queda igual; verificar en verde
+- [x] 3.1 RED: en `tests/api/test_repositorio_turnos.py` escribir tests de esquema sobre SQLite temporal y ejecutarlos en rojo: `inicializar_esquema` crea `turno`, `auditoria_turno`, los índices `idx_turno_profesional_inicio`, `idx_turno_sillon_inicio`, `idx_turno_paciente_inicio` y los dos triggers, y es idempotente. GREEN: agregar el DDL de design D11 a `app/db/esquema.sql`
+- [x] 3.2 TRIANGULATE restricciones: `INSERT` con `inicio >= fin` → `IntegrityError`; `estado = 'confirmado'` → `IntegrityError`; `accion = 'borrar'` → `IntegrityError`; `sillon_id` nulo → `IntegrityError` (RN-TUR-02); `profesional_id` inexistente → error de clave foránea
+- [x] 3.3 RN-AUD-02: tests de que `UPDATE` y `DELETE` sobre un registro de `auditoria_turno` lanzan `sqlite3.IntegrityError` y el registro queda igual; verificar en verde
 
 ## 4. Repositorios (D2, D4, D8)
 
-- [ ] 4.1 RED: test de `turno_desde_fila` + `obtener_turno` (fila insertada → `Turno` con `datetime` naive; id inexistente → `None`). GREEN: crear `app/db/repositorio_turnos.py` con `COLUMNAS_TURNO`, `turno_desde_fila` y `obtener_turno` (SQL parametrizado, regla dura 4)
-- [ ] 4.2 RED: test de `snapshot_turno`: JSON con exactamente las 8 claves de D2, en orden, fechas `YYYY-MM-DDTHH:MM:SS`. GREEN: implementar. TRIANGULATE: turno `cancelado` con otros ids y horario de tarde
-- [ ] 4.3 RED: test de `crear_turno` dentro de `transaccion`: devuelve el `Turno` con `id`; la fila guarda `creado_por` y `creado_en` (`isoformat` segundos, sin offset); hay un único registro `auditoria_turno` con `accion='crear'`, `usuario_id`, `ocurrio_en == creado_en`, `antes IS NULL` y `despues == snapshot_turno(turno_creado)` (RN-AUD-01). GREEN: implementar `registrar_auditoria` y `crear_turno`. TRIANGULATE: dos altas seguidas → ids y auditorías distintas
-- [ ] 4.4 RN-AUD-03: test de atomicidad — dentro de `transaccion`, `crear_turno` con un `creado_por` inexistente (falla la FK de la auditoría o del turno) → la excepción se propaga y al reabrir la base no hay ni turno ni auditoría
-- [ ] 4.5 RED: tests de `listar_turnos_activos_del_dia`: devuelve los `reservado` del día que comparten profesional, sillón **o** paciente; excluye `cancelado`, otro día y turnos sin recurso compartido. GREEN: implementar con la ventana `[dia, dia+1)`
-- [ ] 4.6 Safety net de `tests/api/test_repositorio_bloqueos.py`; RED: tests de `listar_bloqueos_de_recursos` — incluye bloqueo del profesional y del sillón que intersectan la ventana, incluye un bloqueo de varios días que la cubre, excluye bloqueos de otro recurso, de otro alcance con el mismo id y contiguos a la ventana (semiabierto). GREEN: implementar en `app/db/repositorio_bloqueos.py` — **[CHECKPOINT 2: grupos 3 y 4]**
+- [x] 4.1 RED: test de `turno_desde_fila` + `obtener_turno` (fila insertada → `Turno` con `datetime` naive; id inexistente → `None`). GREEN: crear `app/db/repositorio_turnos.py` con `COLUMNAS_TURNO`, `turno_desde_fila` y `obtener_turno` (SQL parametrizado, regla dura 4)
+- [x] 4.2 RED: test de `snapshot_turno`: JSON con exactamente las 8 claves de D2, en orden, fechas `YYYY-MM-DDTHH:MM:SS`. GREEN: implementar. TRIANGULATE: turno `cancelado` con otros ids y horario de tarde
+- [x] 4.3 RED: test de `crear_turno` dentro de `transaccion`: devuelve el `Turno` con `id`; la fila guarda `creado_por` y `creado_en` (`isoformat` segundos, sin offset); hay un único registro `auditoria_turno` con `accion='crear'`, `usuario_id`, `ocurrio_en == creado_en`, `antes IS NULL` y `despues == snapshot_turno(turno_creado)` (RN-AUD-01). GREEN: implementar `registrar_auditoria` y `crear_turno`. TRIANGULATE: dos altas seguidas → ids y auditorías distintas
+- [x] 4.4 RN-AUD-03: test de atomicidad — dentro de `transaccion`, `crear_turno` con un `creado_por` inexistente (falla la FK de la auditoría o del turno) → la excepción se propaga y al reabrir la base no hay ni turno ni auditoría
+- [x] 4.5 RED: tests de `listar_turnos_activos_del_dia`: devuelve los `reservado` del día que comparten profesional, sillón **o** paciente; excluye `cancelado`, otro día y turnos sin recurso compartido. GREEN: implementar con la ventana `[dia, dia+1)`
+- [x] 4.6 Safety net de `tests/api/test_repositorio_bloqueos.py`; RED: tests de `listar_bloqueos_de_recursos` — incluye bloqueo del profesional y del sillón que intersectan la ventana, incluye un bloqueo de varios días que la cubre, excluye bloqueos de otro recurso, de otro alcance con el mismo id y contiguos a la ventana (semiabierto). GREEN: implementar en `app/db/repositorio_bloqueos.py` — **[CHECKPOINT 2: grupos 3 y 4]**
 
 ## 5. Router de turnos — POST /turnos (D1, D4, D7)
 
