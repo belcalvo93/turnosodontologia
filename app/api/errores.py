@@ -16,6 +16,7 @@ from app.domain.errores import (
     ErrorDominio,
     FueraDeHorario,
     NombreDuplicado,
+    TurnoNoModificable,
     UsernameDuplicado,
 )
 
@@ -71,6 +72,7 @@ MAPEO_DOMINIO: dict[type[ErrorDominio], tuple[int, str]] = {
     ConflictoAgenda: (409, "conflicto_agenda"),
     FueraDeHorario: (409, "fuera_de_horario"),
     DentroDeBloqueo: (409, "dentro_de_bloqueo"),
+    TurnoNoModificable: (409, "turno_no_modificable"),
     DatoInvalido: (422, "dato_invalido"),
 }
 
