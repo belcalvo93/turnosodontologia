@@ -174,7 +174,7 @@ El MVP es solo backend (el frontend React es etapa posterior, D.3), así que no 
   - `knowledge-base/10_preguntas_abiertas.md` §IN-01
 
 ### [C-02] `dominio-base`
-- **Estado**: `[ ]` pendiente
+- **Estado**: `[x]` completado
 - **Scope**:
   - `app/domain/models.py`: dataclasses `Turno`, `Prestacion`, `HorarioAtencion`, `Bloqueo` (sin dependencias de FastAPI ni DB)
   - `app/domain/intervalos.py`: `solapan(a, b)` con intervalos semiabiertos `[inicio, fin)` (RN-TUR-04)

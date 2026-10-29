@@ -21,12 +21,14 @@ from app.domain.errores import (
     DniDuplicado,
     FueraDeHorario,
     NombreDuplicado,
+    TurnoNoModificable,
 )
 from app.domain.usuarios import Rol, Usuario
 
 MENSAJE_CONFLICTO_AGENDA = "El profesional ya tiene un turno en ese horario (ficticio)."
 MENSAJE_FUERA_DE_HORARIO = "El turno no encaja en una franja de atención (ficticio)."
 MENSAJE_DENTRO_DE_BLOQUEO = "El turno cae dentro de un bloqueo (ficticio)."
+MENSAJE_TURNO_NO_MODIFICABLE = "Solo se pueden cancelar o reprogramar turnos futuros (ficticio)."
 MENSAJE_DATO_INVALIDO = "La duración del turno debe ser positiva (ficticio)."
 MENSAJE_NOMBRE_DUPLICADO = "Ya existe un recurso con ese nombre (ficticio)."
 MENSAJE_DNI_DUPLICADO = "Ya existe un paciente con ese DNI (ficticio)."
@@ -47,6 +49,11 @@ def lanzar_fuera_de_horario() -> None:
 @router.get("/error/dentro-de-bloqueo")
 def lanzar_dentro_de_bloqueo() -> None:
     raise DentroDeBloqueo(MENSAJE_DENTRO_DE_BLOQUEO)
+
+
+@router.get("/error/turno-no-modificable")
+def lanzar_turno_no_modificable() -> None:
+    raise TurnoNoModificable(MENSAJE_TURNO_NO_MODIFICABLE)
 
 
 @router.get("/error/dato-invalido")

@@ -6,9 +6,11 @@ Desarrollado con Spec-Driven Development usando OpenSpec y Active Stack (ciclo O
 
 ## Estado actual
 
-Implementados **C-01 `foundation-setup`**, **C-10 `reglas-alta-turno`** y **C-03 `auth-login-roles`**. La suite pasa en verde: `194 passed`.
+Implementados **C-01 `foundation-setup`**, **C-02 `dominio-base`**, **C-10 `reglas-alta-turno`** y **C-03 `auth-login-roles`**. La suite pasa en verde: `194 passed`.
 
 **C-01 — base técnica:** configuración desde variables de entorno, conexión SQLite con transacciones atómicas (`BEGIN IMMEDIATE`, commit y rollback), aplicación del esquema al arrancar y `GET /health` público.
+
+**C-02 — dominio base:** modelos inmutables de agenda (`Turno`, `Prestacion`, `HorarioAtencion`, `Bloqueo`), comparación de intervalos semiabiertos `solapan(a, b)`, evaluación temporal `es_futuro(turno, ahora)` con reloj inyectado y jerarquía de errores de dominio puros (`ErrorDominio`, `DatoInvalido`, `ConflictoAgenda`, `FueraDeHorario`, `DentroDeBloqueo`, `TurnoNoModificable`).
 
 **C-10 — reglas de alta de turno** en dominio puro, sin base de datos ni HTTP:
 
@@ -200,6 +202,7 @@ Body inválido (`422`), por ejemplo un login sin `password`:
 | `409` | `conflicto_agenda` | El turno se superpone con otro |
 | `409` | `fuera_de_horario` | El turno no encaja en el horario de atención |
 | `409` | `dentro_de_bloqueo` | El turno cae dentro de un bloqueo |
+| `409` | `turno_no_modificable` | El turno no se puede modificar (pasado, en curso o cancelado) |
 | `422` | `dato_invalido` | Datos de entrada o de dominio inválidos |
 | otro | `error_http` | Otro error HTTP del framework (conserva su status) |
 | `500` | `error_interno` | Error inesperado |
