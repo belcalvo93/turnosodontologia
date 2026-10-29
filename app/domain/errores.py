@@ -27,3 +27,7 @@ class DentroDeBloqueo(ErrorDominio):
 
 class DniDuplicado(ErrorDominio):
     """El DNI ya lo usa otro paciente (se mapea a 409)."""
+
+
+class UsernameDuplicado(ErrorDominio):
+    """El username ya lo usa otro usuario (se mapea a 409, C-07)."""
