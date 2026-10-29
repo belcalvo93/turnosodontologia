@@ -426,3 +426,380 @@ def test_post_pacientes_sin_token_responde_401(cliente: TestClient) -> None:
 
     assert respuesta.status_code == 401
     assert respuesta.json()["codigo"] == "no_autenticado"
+
+
+def test_patch_pacientes_actualiza_nombre_apellido_y_dni(
+    cliente: TestClient,
+    crear_usuario: Callable[..., Usuario],
+    token_de: Callable[[Usuario], str],
+) -> None:
+    recepcion = crear_usuario("recepcion_ficticia", rol=Rol.RECEPCION)
+    cabeceras = _headers(token_de(recepcion))
+    creado = _crear_paciente(cliente, cabeceras)
+
+    respuesta = cliente.patch(
+        f"/pacientes/{creado['id']}",
+        json={
+            "nombre": "  Ana María  ",
+            "apellido": "  Pérez López  ",
+            "dni": "  30999888 (ficticio)  ",
+        },
+        headers=cabeceras,
+    )
+
+    assert respuesta.status_code == 200
+    assert respuesta.json() == {
+        "id": creado["id"],
+        "nombre": "Ana María",
+        "apellido": "Pérez López",
+        "dni": "30999888 (ficticio)",
+        "telefono": None,
+        "obra_social": None,
+        "nro_afiliado": None,
+    }
+
+
+def test_patch_pacientes_actualiza_telefono_obra_social_y_nro_afiliado(
+    cliente: TestClient,
+    crear_usuario: Callable[..., Usuario],
+    token_de: Callable[[Usuario], str],
+) -> None:
+    recepcion = crear_usuario("recepcion_ficticia", rol=Rol.RECEPCION)
+    cabeceras = _headers(token_de(recepcion))
+    creado = _crear_paciente(cliente, cabeceras)
+
+    respuesta = cliente.patch(
+        f"/pacientes/{creado['id']}",
+        json={
+            "telefono": "  3884123456  ",
+            "obra_social": "  Obra Social Centro (ficticia)  ",
+            "nro_afiliado": "  AF-777 (ficticio)  ",
+        },
+        headers=cabeceras,
+    )
+
+    assert respuesta.status_code == 200
+    assert respuesta.json() == {
+        "id": creado["id"],
+        "nombre": "Ana",
+        "apellido": "Pérez",
+        "dni": "30111222 (ficticio)",
+        "telefono": "3884123456",
+        "obra_social": "Obra Social Centro (ficticia)",
+        "nro_afiliado": "AF-777 (ficticio)",
+    }
+
+
+def test_patch_pacientes_limpia_telefono_con_null(
+    cliente: TestClient,
+    crear_usuario: Callable[..., Usuario],
+    token_de: Callable[[Usuario], str],
+) -> None:
+    recepcion = crear_usuario("recepcion_ficticia", rol=Rol.RECEPCION)
+    cabeceras = _headers(token_de(recepcion))
+    creado = _crear_paciente(
+        cliente,
+        cabeceras,
+        telefono="3884123456",
+        obra_social="Obra Social Centro (ficticia)",
+        nro_afiliado="AF-777 (ficticio)",
+    )
+
+    respuesta = cliente.patch(
+        f"/pacientes/{creado['id']}",
+        json={"telefono": None},
+        headers=cabeceras,
+    )
+
+    assert respuesta.status_code == 200
+    assert respuesta.json()["telefono"] is None
+    assert respuesta.json()["obra_social"] == "Obra Social Centro (ficticia)"
+    assert respuesta.json()["nro_afiliado"] == "AF-777 (ficticio)"
+
+
+def test_patch_pacientes_limpia_obra_social_con_null(
+    cliente: TestClient,
+    crear_usuario: Callable[..., Usuario],
+    token_de: Callable[[Usuario], str],
+) -> None:
+    recepcion = crear_usuario("recepcion_ficticia", rol=Rol.RECEPCION)
+    cabeceras = _headers(token_de(recepcion))
+    creado = _crear_paciente(
+        cliente,
+        cabeceras,
+        telefono="3884123456",
+        obra_social="Obra Social Centro (ficticia)",
+        nro_afiliado="AF-777 (ficticio)",
+    )
+
+    respuesta = cliente.patch(
+        f"/pacientes/{creado['id']}",
+        json={"obra_social": None},
+        headers=cabeceras,
+    )
+
+    assert respuesta.status_code == 200
+    assert respuesta.json()["obra_social"] is None
+    assert respuesta.json()["telefono"] == "3884123456"
+    assert respuesta.json()["nro_afiliado"] == "AF-777 (ficticio)"
+
+
+def test_patch_pacientes_limpia_nro_afiliado_con_null(
+    cliente: TestClient,
+    crear_usuario: Callable[..., Usuario],
+    token_de: Callable[[Usuario], str],
+) -> None:
+    recepcion = crear_usuario("recepcion_ficticia", rol=Rol.RECEPCION)
+    cabeceras = _headers(token_de(recepcion))
+    creado = _crear_paciente(
+        cliente,
+        cabeceras,
+        telefono="3884123456",
+        obra_social="Obra Social Centro (ficticia)",
+        nro_afiliado="AF-777 (ficticio)",
+    )
+
+    respuesta = cliente.patch(
+        f"/pacientes/{creado['id']}",
+        json={"nro_afiliado": None},
+        headers=cabeceras,
+    )
+
+    assert respuesta.status_code == 200
+    assert respuesta.json()["nro_afiliado"] is None
+    assert respuesta.json()["telefono"] == "3884123456"
+    assert respuesta.json()["obra_social"] == "Obra Social Centro (ficticia)"
+
+
+def test_patch_pacientes_con_nombre_null_responde_422_sin_modificar(
+    cliente: TestClient,
+    crear_usuario: Callable[..., Usuario],
+    token_de: Callable[[Usuario], str],
+) -> None:
+    recepcion = crear_usuario("recepcion_ficticia", rol=Rol.RECEPCION)
+    cabeceras = _headers(token_de(recepcion))
+    creado = _crear_paciente(cliente, cabeceras)
+
+    respuesta = cliente.patch(
+        f"/pacientes/{creado['id']}",
+        json={"nombre": None},
+        headers=cabeceras,
+    )
+
+    assert respuesta.status_code == 422
+    assert respuesta.json()["codigo"] == "dato_invalido"
+    assert cliente.get("/pacientes", headers=cabeceras).json() == [creado]
+
+
+def test_patch_pacientes_con_apellido_null_responde_422_sin_modificar(
+    cliente: TestClient,
+    crear_usuario: Callable[..., Usuario],
+    token_de: Callable[[Usuario], str],
+) -> None:
+    recepcion = crear_usuario("recepcion_ficticia", rol=Rol.RECEPCION)
+    cabeceras = _headers(token_de(recepcion))
+    creado = _crear_paciente(cliente, cabeceras)
+
+    respuesta = cliente.patch(
+        f"/pacientes/{creado['id']}",
+        json={"apellido": None},
+        headers=cabeceras,
+    )
+
+    assert respuesta.status_code == 422
+    assert respuesta.json()["codigo"] == "dato_invalido"
+    assert cliente.get("/pacientes", headers=cabeceras).json() == [creado]
+
+
+def test_patch_pacientes_con_dni_null_responde_422_sin_modificar(
+    cliente: TestClient,
+    crear_usuario: Callable[..., Usuario],
+    token_de: Callable[[Usuario], str],
+) -> None:
+    recepcion = crear_usuario("recepcion_ficticia", rol=Rol.RECEPCION)
+    cabeceras = _headers(token_de(recepcion))
+    creado = _crear_paciente(cliente, cabeceras)
+
+    respuesta = cliente.patch(
+        f"/pacientes/{creado['id']}",
+        json={"dni": None},
+        headers=cabeceras,
+    )
+
+    assert respuesta.status_code == 422
+    assert respuesta.json()["codigo"] == "dato_invalido"
+    assert cliente.get("/pacientes", headers=cabeceras).json() == [creado]
+
+
+def test_patch_pacientes_con_nombre_solo_espacios_responde_422_sin_modificar(
+    cliente: TestClient,
+    crear_usuario: Callable[..., Usuario],
+    token_de: Callable[[Usuario], str],
+) -> None:
+    recepcion = crear_usuario("recepcion_ficticia", rol=Rol.RECEPCION)
+    cabeceras = _headers(token_de(recepcion))
+    creado = _crear_paciente(cliente, cabeceras)
+
+    respuesta = cliente.patch(
+        f"/pacientes/{creado['id']}",
+        json={"nombre": "   "},
+        headers=cabeceras,
+    )
+
+    assert respuesta.status_code == 422
+    assert respuesta.json()["codigo"] == "dato_invalido"
+    assert cliente.get("/pacientes", headers=cabeceras).json() == [creado]
+
+
+def test_patch_pacientes_con_apellido_solo_espacios_responde_422_sin_modificar(
+    cliente: TestClient,
+    crear_usuario: Callable[..., Usuario],
+    token_de: Callable[[Usuario], str],
+) -> None:
+    recepcion = crear_usuario("recepcion_ficticia", rol=Rol.RECEPCION)
+    cabeceras = _headers(token_de(recepcion))
+    creado = _crear_paciente(cliente, cabeceras)
+
+    respuesta = cliente.patch(
+        f"/pacientes/{creado['id']}",
+        json={"apellido": "   "},
+        headers=cabeceras,
+    )
+
+    assert respuesta.status_code == 422
+    assert respuesta.json()["codigo"] == "dato_invalido"
+    assert cliente.get("/pacientes", headers=cabeceras).json() == [creado]
+
+
+def test_patch_pacientes_con_dni_solo_espacios_responde_422_sin_modificar(
+    cliente: TestClient,
+    crear_usuario: Callable[..., Usuario],
+    token_de: Callable[[Usuario], str],
+) -> None:
+    recepcion = crear_usuario("recepcion_ficticia", rol=Rol.RECEPCION)
+    cabeceras = _headers(token_de(recepcion))
+    creado = _crear_paciente(cliente, cabeceras)
+
+    respuesta = cliente.patch(
+        f"/pacientes/{creado['id']}",
+        json={"dni": "   "},
+        headers=cabeceras,
+    )
+
+    assert respuesta.status_code == 422
+    assert respuesta.json()["codigo"] == "dato_invalido"
+    assert cliente.get("/pacientes", headers=cabeceras).json() == [creado]
+
+
+def test_patch_pacientes_con_el_mismo_dni_del_paciente_responde_200_sin_conflicto(
+    cliente: TestClient,
+    crear_usuario: Callable[..., Usuario],
+    token_de: Callable[[Usuario], str],
+) -> None:
+    recepcion = crear_usuario("recepcion_ficticia", rol=Rol.RECEPCION)
+    cabeceras = _headers(token_de(recepcion))
+    creado = _crear_paciente(cliente, cabeceras, dni="30111222 (ficticio)")
+
+    respuesta = cliente.patch(
+        f"/pacientes/{creado['id']}",
+        json={"dni": "30111222 (ficticio)"},
+        headers=cabeceras,
+    )
+
+    assert respuesta.status_code == 200
+    assert respuesta.json() == creado
+
+
+def test_patch_pacientes_a_dni_de_otro_paciente_responde_409_sin_repetir_el_dni_y_conserva_el_anterior(
+    cliente: TestClient,
+    crear_usuario: Callable[..., Usuario],
+    token_de: Callable[[Usuario], str],
+) -> None:
+    recepcion = crear_usuario("recepcion_ficticia", rol=Rol.RECEPCION)
+    cabeceras = _headers(token_de(recepcion))
+    dni_ajeno = "30111222 (ficticio)"
+    _crear_paciente(cliente, cabeceras, dni=dni_ajeno)
+    segundo = _crear_paciente(
+        cliente, cabeceras, nombre="Luis", apellido="Gómez", dni="30222333 (ficticio)"
+    )
+
+    respuesta = cliente.patch(
+        f"/pacientes/{segundo['id']}",
+        json={"dni": dni_ajeno},
+        headers=cabeceras,
+    )
+
+    assert respuesta.status_code == 409
+    cuerpo = respuesta.json()
+    assert cuerpo.keys() == {"codigo", "mensaje"}
+    assert cuerpo["codigo"] == "dni_duplicado"
+    assert dni_ajeno not in cuerpo["mensaje"]
+    assert "30111222" not in cuerpo["mensaje"]
+    assert cliente.get("/pacientes", headers=cabeceras).json()[1] == segundo
+
+
+def test_patch_pacientes_inexistente_responde_404(
+    cliente: TestClient,
+    crear_usuario: Callable[..., Usuario],
+    token_de: Callable[[Usuario], str],
+) -> None:
+    recepcion = crear_usuario("recepcion_ficticia", rol=Rol.RECEPCION)
+
+    respuesta = cliente.patch(
+        "/pacientes/9999",
+        json={"nombre": "Ana"},
+        headers=_headers(token_de(recepcion)),
+    )
+
+    assert respuesta.status_code == 404
+    cuerpo = respuesta.json()
+    assert cuerpo["codigo"] == "no_encontrado"
+    assert isinstance(cuerpo["mensaje"], str)
+    assert cuerpo["mensaje"].strip() != ""
+
+
+def test_recepcion_patch_pacientes_responde_200(
+    cliente: TestClient,
+    crear_usuario: Callable[..., Usuario],
+    token_de: Callable[[Usuario], str],
+) -> None:
+    admin = crear_usuario("admin_ficticio", rol=Rol.ADMINISTRACION)
+    creado = _crear_paciente(cliente, _headers(token_de(admin)))
+    recepcion = crear_usuario("recepcion_ficticia", rol=Rol.RECEPCION)
+
+    respuesta = cliente.patch(
+        f"/pacientes/{creado['id']}",
+        json={"telefono": "3884000099"},
+        headers=_headers(token_de(recepcion)),
+    )
+
+    assert respuesta.status_code == 200
+    assert respuesta.json()["telefono"] == "3884000099"
+
+
+def test_odontologo_patch_pacientes_recibe_403_y_no_modifica(
+    cliente: TestClient,
+    crear_usuario: Callable[..., Usuario],
+    token_de: Callable[[Usuario], str],
+) -> None:
+    admin = crear_usuario("admin_ficticio", rol=Rol.ADMINISTRACION)
+    cabeceras_admin = _headers(token_de(admin))
+    creado = _crear_paciente(cliente, cabeceras_admin)
+    odontologo = crear_usuario("odontologo_ficticio", rol=Rol.ODONTOLOGO)
+
+    respuesta = cliente.patch(
+        f"/pacientes/{creado['id']}",
+        json={"nombre": "Modificado"},
+        headers=_headers(token_de(odontologo)),
+    )
+
+    assert respuesta.status_code == 403
+    assert respuesta.json()["codigo"] == "sin_permiso"
+    assert cliente.get("/pacientes", headers=cabeceras_admin).json() == [creado]
+
+
+def test_patch_pacientes_sin_token_responde_401(cliente: TestClient) -> None:
+    respuesta = cliente.patch("/pacientes/1", json={"nombre": "Ana"})
+
+    assert respuesta.status_code == 401
+    assert respuesta.json()["codigo"] == "no_autenticado"
