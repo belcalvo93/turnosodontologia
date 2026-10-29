@@ -1,7 +1,10 @@
-"""Usuarios y roles del sistema (C-03). Python puro: sin DB ni HTTP."""
+"""Usuarios, roles y validaciones de la gestión de cuentas (C-03, C-07). Python puro."""
 
 from dataclasses import dataclass
 from enum import StrEnum
+
+from app.domain.errores import DatoInvalido
+from app.domain.models import Profesional
 
 
 class Rol(StrEnum):
@@ -26,3 +29,70 @@ class Usuario:
     # Sin FK en la base; C-07 valida que el profesional exista para usuarios odontólogo.
     profesional_id: int | None
     activo: bool
+
+
+def validar_username(username: str) -> str:
+    """Normaliza el nombre de usuario y rechaza vacíos (C-07)."""
+    username_limpio = username.strip()
+    if not username_limpio:
+        raise DatoInvalido("El nombre de usuario no puede estar vacío.")
+    return username_limpio
+
+
+def validar_datos_usuario(
+    *,
+    rol: Rol,
+    profesional_id: int | None,
+    profesional: Profesional | None,
+) -> tuple[Rol, int | None]:
+    """Aplica la invariante rol ↔ profesional de un usuario (C-07, US-013).
+
+    Un odontólogo debe estar vinculado a un profesional existente y activo; los
+    demás roles no llevan vínculo. Devuelve los valores normalizados.
+    """
+    if rol is Rol.ODONTOLOGO:
+        if profesional_id is None:
+            raise DatoInvalido("Un usuario odontólogo debe estar vinculado a un profesional.")
+        if profesional is None:
+            raise DatoInvalido("El profesional indicado no existe.")
+        if not profesional.activo:
+            raise DatoInvalido("El profesional indicado está inactivo.")
+        return rol, profesional_id
+    if profesional_id is not None:
+        raise DatoInvalido("Solo los usuarios odontólogos se vinculan a un profesional.")
+    return rol, None
+
+
+# Centinela del dominio para distinguir "campo omitido" de "null explícito" en una edición.
+SIN_CAMBIO = object()
+
+
+def aplicar_cambios_usuario(
+    actual: Usuario,
+    *,
+    rol: Rol | None = None,
+    profesional_id: int | None | object = SIN_CAMBIO,
+    activo: bool | None = None,
+) -> tuple[Rol, int | None, bool]:
+    """Combina una edición parcial con el usuario actual y aplica la limpieza del vínculo.
+
+    Al cambiar el rol a uno distinto de `odontologo`, `profesional_id` se limpia solo
+    para que la transición sea posible en un único request. El resultado todavía debe
+    pasar por `validar_datos_usuario` para comprobar la invariante completa.
+    """
+    rol_candidato = actual.rol if rol is None else rol
+    activo_candidato = actual.activo if activo is None else activo
+
+    profesional_candidato: int | None
+    if rol_candidato is not Rol.ODONTOLOGO:
+        profesional_candidato = None
+    elif profesional_id is SIN_CAMBIO:
+        profesional_candidato = actual.profesional_id
+    elif profesional_id is None:
+        profesional_candidato = None
+    elif isinstance(profesional_id, int):
+        profesional_candidato = profesional_id
+    else:
+        raise TypeError("profesional_id debe ser un entero, None o SIN_CAMBIO.")
+
+    return rol_candidato, profesional_candidato, activo_candidato

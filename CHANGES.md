@@ -174,7 +174,7 @@ El MVP es solo backend (el frontend React es etapa posterior, D.3), así que no 
   - `knowledge-base/10_preguntas_abiertas.md` §IN-01
 
 ### [C-02] `dominio-base`
-- **Estado**: `[ ]` pendiente
+- **Estado**: `[x]` completado
 - **Scope**:
   - `app/domain/models.py`: dataclasses `Turno`, `Prestacion`, `HorarioAtencion`, `Bloqueo` (sin dependencias de FastAPI ni DB)
   - `app/domain/intervalos.py`: `solapan(a, b)` con intervalos semiabiertos `[inicio, fin)` (RN-TUR-04)
@@ -246,7 +246,7 @@ El MVP es solo backend (el frontend React es etapa posterior, D.3), así que no 
   - `knowledge-base/03_actores_y_roles.md` §RBAC
 
 ### [C-06] `pacientes`
-- **Estado**: `[ ]` pendiente
+- **Estado**: `[x]` completado
 - **Scope**:
   - Tabla `paciente` (`nombre`, `apellido`, `dni` único, `telefono`, `obra_social`, `nro_afiliado` opcionales)
   - `GET/POST /pacientes`, `PATCH /pacientes/{id}`; la obra social es solo un dato, sin liquidación (RN-PAC-01)
@@ -262,7 +262,7 @@ El MVP es solo backend (el frontend React es etapa posterior, D.3), así que no 
   - `knowledge-base/10_preguntas_abiertas.md` §IF-02, §SE-15
 
 ### [C-07] `gestion-usuarios`
-- **Estado**: `[ ]` pendiente
+- **Estado**: `[x]` completado
 - **Scope**:
   - `GET/POST /usuarios`, `PATCH /usuarios/{id}` (rol, activo, reset de contraseña) solo para administración
   - Validación: rol odontólogo exige `profesional_id` existente y activo (SE); los demás roles lo dejan nulo
@@ -277,7 +277,7 @@ El MVP es solo backend (el frontend React es etapa posterior, D.3), así que no 
   - `knowledge-base/02_descripcion_general.md` §API REST
 
 ### [C-08] `horarios-atencion`
-- **Estado**: `[ ]` pendiente
+- **Estado**: `[x]` completado
 - **Scope**:
   - Tabla `horario_atencion` (`profesional_id`, `dia_semana` 0-6, `hora_desde`, `hora_hasta`) con índice (`profesional_id`, `dia_semana`)
   - Dominio: validar `hora_desde < hora_hasta` y que las franjas del mismo día no se superpongan
