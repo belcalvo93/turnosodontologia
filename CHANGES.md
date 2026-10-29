@@ -246,7 +246,7 @@ El MVP es solo backend (el frontend React es etapa posterior, D.3), así que no 
   - `knowledge-base/03_actores_y_roles.md` §RBAC
 
 ### [C-06] `pacientes`
-- **Estado**: `[ ]` pendiente
+- **Estado**: `[x]` completado
 - **Scope**:
   - Tabla `paciente` (`nombre`, `apellido`, `dni` único, `telefono`, `obra_social`, `nro_afiliado` opcionales)
   - `GET/POST /pacientes`, `PATCH /pacientes/{id}`; la obra social es solo un dato, sin liquidación (RN-PAC-01)

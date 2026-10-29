@@ -47,3 +47,16 @@ CREATE TABLE IF NOT EXISTS prestacion (
     duracion_minutos INTEGER NOT NULL CHECK (duracion_minutos > 0),
     activa           INTEGER NOT NULL DEFAULT 1 CHECK (activa IN (0, 1))
 );
+
+
+-- Pacientes del consultorio (C-06, KB 04 §Paciente). RN-PAC-01, RN-PAC-02:
+-- nombre, apellido y DNI obligatorios; DNI único; sin baja lógica.
+CREATE TABLE IF NOT EXISTS paciente (
+    id            INTEGER PRIMARY KEY AUTOINCREMENT,
+    nombre        TEXT NOT NULL CHECK (length(trim(nombre)) > 0),
+    apellido      TEXT NOT NULL CHECK (length(trim(apellido)) > 0),
+    dni           TEXT NOT NULL UNIQUE CHECK (length(trim(dni)) > 0),
+    telefono      TEXT NULL,
+    obra_social   TEXT NULL,
+    nro_afiliado  TEXT NULL
+);
