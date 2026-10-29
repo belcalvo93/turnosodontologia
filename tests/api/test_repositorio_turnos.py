@@ -453,7 +453,7 @@ def test_transaccion_de_otra_conexion_espera_el_lock_y_despues_ve_el_turno_confi
     ruta_base: Path, conexion: sqlite3.Connection
 ) -> None:
     with closing(abrir_conexion(ruta_base)) as conexion_b:
-        conexion_b.execute(f"PRAGMA busy_timeout={BUSY_TIMEOUT_CORTO_MS}")
+        conexion_b.execute("PRAGMA busy_timeout = 50")  # 50 ms solo en este test: producción conserva 5000 ms
         with transaccion(conexion):  # A: toma el lock de escritura y reserva el hueco
             assert listar_turnos_activos_del_dia(
                 conexion, dia=DIA, profesional_id=1, sillon_id=1, paciente_id=1
@@ -476,7 +476,7 @@ def test_transaccion_de_otra_conexion_toma_el_lock_cuando_a_revierte(
     ruta_base: Path, conexion: sqlite3.Connection
 ) -> None:
     with closing(abrir_conexion(ruta_base)) as conexion_b:
-        conexion_b.execute(f"PRAGMA busy_timeout={BUSY_TIMEOUT_CORTO_MS}")
+        conexion_b.execute("PRAGMA busy_timeout = 50")  # 50 ms solo en este test: producción conserva 5000 ms
         with pytest.raises(RuntimeError, match="aborta A"):
             with transaccion(conexion):
                 crear_turno(
