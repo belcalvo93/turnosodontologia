@@ -8,6 +8,7 @@ from fastapi import FastAPI
 
 from app.api.auth import router as router_auth
 from app.api.errores import registrar_manejadores
+from app.api.pacientes import router as router_pacientes
 from app.api.profesionales import router as router_profesionales
 from app.api.prestaciones import router as router_prestaciones
 from app.api.salud import router as router_salud
@@ -58,6 +59,7 @@ def create_app(
     aplicacion.include_router(router_profesionales)
     aplicacion.include_router(router_sillones)
     aplicacion.include_router(router_prestaciones)
+    aplicacion.include_router(router_pacientes)
     return aplicacion
 
 
