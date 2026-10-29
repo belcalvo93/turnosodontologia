@@ -12,10 +12,12 @@ from app.domain.errores import (
     ConflictoAgenda,
     DatoInvalido,
     DentroDeBloqueo,
+    DniDuplicado,
     ErrorDominio,
     FueraDeHorario,
     NombreDuplicado,
     TurnoNoModificable,
+    UsernameDuplicado,
 )
 
 # Los 401 indican el esquema de autenticación esperado (RFC 6750). Solo lectura: se comparte.
@@ -65,6 +67,8 @@ class SinPermiso(ErrorApi):
 # que el dominio ya trae en español.
 MAPEO_DOMINIO: dict[type[ErrorDominio], tuple[int, str]] = {
     NombreDuplicado: (409, "nombre_duplicado"),
+    DniDuplicado: (409, "dni_duplicado"),
+    UsernameDuplicado: (409, "username_duplicado"),
     ConflictoAgenda: (409, "conflicto_agenda"),
     FueraDeHorario: (409, "fuera_de_horario"),
     DentroDeBloqueo: (409, "dentro_de_bloqueo"),

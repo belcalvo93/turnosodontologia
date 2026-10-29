@@ -12,8 +12,10 @@ from tests.api.rutas_prueba import (
     MENSAJE_CONFLICTO_AGENDA,
     MENSAJE_DATO_INVALIDO,
     MENSAJE_DENTRO_DE_BLOQUEO,
+    MENSAJE_DNI_DUPLICADO,
     MENSAJE_FUERA_DE_HORARIO,
     MENSAJE_NOMBRE_DUPLICADO,
+    MENSAJE_TURNO_NO_MODIFICABLE,
 )
 
 
@@ -23,8 +25,15 @@ from tests.api.rutas_prueba import (
         ("/prueba/error/conflicto-agenda", 409, "conflicto_agenda", MENSAJE_CONFLICTO_AGENDA),
         ("/prueba/error/fuera-de-horario", 409, "fuera_de_horario", MENSAJE_FUERA_DE_HORARIO),
         ("/prueba/error/dentro-de-bloqueo", 409, "dentro_de_bloqueo", MENSAJE_DENTRO_DE_BLOQUEO),
+        (
+            "/prueba/error/turno-no-modificable",
+            409,
+            "turno_no_modificable",
+            MENSAJE_TURNO_NO_MODIFICABLE,
+        ),
         ("/prueba/error/dato-invalido", 422, "dato_invalido", MENSAJE_DATO_INVALIDO),
         ("/prueba/error/nombre-duplicado", 409, "nombre_duplicado", MENSAJE_NOMBRE_DUPLICADO),
+        ("/prueba/error/dni-duplicado", 409, "dni_duplicado", MENSAJE_DNI_DUPLICADO),
     ],
 )
 def test_error_de_dominio_responde_su_status_con_codigo_y_mensaje(

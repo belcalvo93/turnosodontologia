@@ -47,3 +47,29 @@ CREATE TABLE IF NOT EXISTS prestacion (
     duracion_minutos INTEGER NOT NULL CHECK (duracion_minutos > 0),
     activa           INTEGER NOT NULL DEFAULT 1 CHECK (activa IN (0, 1))
 );
+
+
+-- Pacientes del consultorio (C-06, KB 04 §Paciente). RN-PAC-01, RN-PAC-02:
+-- nombre, apellido y DNI obligatorios; DNI único; sin baja lógica.
+CREATE TABLE IF NOT EXISTS paciente (
+    id            INTEGER PRIMARY KEY AUTOINCREMENT,
+    nombre        TEXT NOT NULL CHECK (length(trim(nombre)) > 0),
+    apellido      TEXT NOT NULL CHECK (length(trim(apellido)) > 0),
+    dni           TEXT NOT NULL UNIQUE CHECK (length(trim(dni)) > 0),
+    telefono      TEXT NULL,
+    obra_social   TEXT NULL,
+    nro_afiliado  TEXT NULL
+);
+
+-- Horarios de atención de profesionales (C-08, KB 04 §HorarioAtencion, RN-PRO-01/02).
+CREATE TABLE IF NOT EXISTS horario_atencion (
+    id             INTEGER PRIMARY KEY AUTOINCREMENT,
+    profesional_id INTEGER NOT NULL REFERENCES profesional(id),
+    dia_semana     INTEGER NOT NULL CHECK (dia_semana BETWEEN 0 AND 6),
+    hora_desde     TEXT    NOT NULL,
+    hora_hasta     TEXT    NOT NULL,
+    CHECK (hora_desde < hora_hasta)
+);
+
+CREATE INDEX IF NOT EXISTS idx_horario_profesional_dia
+    ON horario_atencion (profesional_id, dia_semana);
