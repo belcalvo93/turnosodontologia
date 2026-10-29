@@ -14,6 +14,7 @@ from app.api.prestaciones import router as router_prestaciones
 from app.api.salud import router as router_salud
 from app.api.seguridad import hashear
 from app.api.sillones import router as router_sillones
+from app.api.usuarios import router as router_usuarios
 from app.config import Config, cargar_config
 from app.db.conexion import abrir_conexion, inicializar_esquema
 from app.db.seed import sembrar_admin_demo
@@ -60,6 +61,7 @@ def create_app(
     aplicacion.include_router(router_sillones)
     aplicacion.include_router(router_prestaciones)
     aplicacion.include_router(router_pacientes)
+    aplicacion.include_router(router_usuarios)
     return aplicacion
 
 
