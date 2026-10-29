@@ -1,8 +1,4 @@
-<<<<<<< HEAD
-"""Reglas de alta y cancelación de turno en dominio puro (C-10, C-12)."""
-=======
-"""Reglas de alta y reprogramación de turno en dominio puro (C-10, C-13)."""
->>>>>>> main
+"""Reglas de alta, cancelación y reprogramación de turno en dominio puro (C-10, C-12, C-13)."""
 
 from collections.abc import Sequence
 from dataclasses import replace
