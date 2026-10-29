@@ -95,6 +95,7 @@ Ver `proposal.md` §Why. Estado y restricciones que condicionan el enfoque:
 - **[Doble request de profesionales]** El flujo de edición puede consultar el profesional dos veces (candidato y validación) → Aceptable: son lecturas por id dentro de la misma transacción y el volumen del MVP es mínimo.
 - **[`usuario` con filas existentes]** `admin_demo` ya existe en development → El change no migra ni resiembra; el listado lo incluye y el alta no lo toca.
 - **[Suite de 393 tests]** Un cambio en el mapeo de errores o en `main.py` puede afectar tests globales → Correr la suite completa y agregar los tests nuevos en los mismos módulos por capa.
+- **[Integración con C-09 y C-12]** Las ramas de C-09 (bloqueos) y C-12 (cancelar-turno), aún sin mergear, también modifican `app/main.py`, `app/domain/errores.py` y `app/api/errores.py` → conflicto textual esperable al integrar. Mitigación: `git merge origin/main` antes de cerrar el apply, conservar las entradas de ambos changes y correr la suite completa.
 
 ## Migration Plan
 

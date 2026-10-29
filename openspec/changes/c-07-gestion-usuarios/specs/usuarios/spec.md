@@ -266,7 +266,7 @@ Las tres rutas de `/usuarios` SHALL exigir token válido y SHALL admitir solo el
 - **Cuando** envía `POST /usuarios` con datos válidos
 - **Entonces** el sistema responde `403` con `codigo` `sin_permiso` y no crea el usuario
 
-#### Scenario: Odontología intenta editar un usuario
+#### Scenario: Odontólogo intenta editar un usuario
 
 - **Dado** un usuario existente y un usuario autenticado con rol `odontologo`
 - **Cuando** envía `PATCH /usuarios/{id}` con un cambio válido
