@@ -23,3 +23,7 @@ class FueraDeHorario(ErrorDominio):
 
 class DentroDeBloqueo(ErrorDominio):
     """El turno cae dentro de un bloqueo de profesional o sillón (se mapea a 409)."""
+
+
+class TurnoNoModificable(ErrorDominio):
+    """El turno ya fue cancelado o no es futuro respecto del reloj inyectado (se mapea a 409)."""

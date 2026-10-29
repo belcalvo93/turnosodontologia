@@ -1,10 +1,16 @@
-"""Reglas de alta de turno en dominio puro (C-10)."""
+"""Reglas de alta y cancelación de turno en dominio puro (C-10, C-12)."""
 
 from collections.abc import Sequence
+from dataclasses import replace
 from datetime import datetime, timedelta
 
-from app.domain.errores import ConflictoAgenda, DentroDeBloqueo, FueraDeHorario
-from app.domain.intervalos import solapan
+from app.domain.errores import (
+    ConflictoAgenda,
+    DentroDeBloqueo,
+    FueraDeHorario,
+    TurnoNoModificable,
+)
+from app.domain.intervalos import es_futuro, solapan
 from app.domain.models import Bloqueo, HorarioAtencion, Prestacion, Turno
 
 _MENSAJE_BLOQUEO = {
@@ -51,6 +57,15 @@ def validar_alta(
         if recurso is not None and solapan(candidato, turno):
             raise ConflictoAgenda(_MENSAJE_CONFLICTO[recurso])
     return candidato
+
+
+def validar_cancelacion(turno: Turno, ahora: datetime) -> Turno:
+    """Valida que el turno esté reservado y sea futuro, devolviendo el turno cancelado (RN-TUR-09, RN-TUR-10)."""
+    if turno.estado == "cancelado":
+        raise TurnoNoModificable("El turno ya está cancelado.")
+    if not es_futuro(turno, ahora):
+        raise TurnoNoModificable("Solo se pueden cancelar turnos futuros.")
+    return replace(turno, estado="cancelado")
 
 
 def _recurso_compartido(candidato: Turno, turno: Turno) -> str | None:

@@ -2,7 +2,7 @@
 
 ## 1. Dominio puro (`RN-TUR-09`, `RN-TUR-10`)
 
-- [ ] 1.1 Implementar `validar_cancelacion(turno: Turno, ahora: datetime) -> Turno` en `app/domain/reglas_turno.py` usando `es_futuro(turno, ahora)` y `TurnoNoModificable`, verificando con tests unitarios en `tests/domain/test_reglas_turno.py` (con reloj fijo `ahora = 09:00`): turno a las `10:00` devuelve turno con `estado="cancelado"`, turno a las `08:30` lanza `TurnoNoModificable`, turno a las `09:00` exactas lanza `TurnoNoModificable`, y turno ya `cancelado` lanza `TurnoNoModificable`
+- [x] 1.1 Implementar `validar_cancelacion(turno: Turno, ahora: datetime) -> Turno` en `app/domain/reglas_turno.py` usando `es_futuro(turno, ahora)` y `TurnoNoModificable`, verificando con tests unitarios en `tests/domain/test_cancelar_turno.py` (con reloj fijo `ahora = 09:00`): turno a las `10:00` devuelve turno con `estado="cancelado"`, turno a las `08:30` lanza `TurnoNoModificable`, turno a las `09:00` exactas lanza `TurnoNoModificable`, y turno ya `cancelado` lanza `TurnoNoModificable`
 
 ## 2. Persistencia transaccional y auditoría (`RN-AUD-01`, `RN-AUD-03`)
 
