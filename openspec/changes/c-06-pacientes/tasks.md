@@ -19,9 +19,9 @@
 
 ## 4. Verificación integral del change
 
-- [ ] 4.1 Ejecutar `pytest tests -q` completo y verificar que pasan todos los tests del baseline y los nuevos de dominio, repositorio y API de `C-06`
-- [ ] 4.2 Verificar que `app/domain/models.py` y `app/domain/errores.py` no importan `fastapi`, `sqlite3`, `app.db` ni `app.api`, y que `app/db/repositorio_pacientes.py` solo usa marcadores `?` (sin concatenar ni interpolar SQL)
-- [ ] 4.3 Ejecutar `openspec validate c-06-pacientes --strict` y verificar que no reporta errores
+- [x] 4.1 Ejecutar `pytest tests -q` completo y verificar que pasan todos los tests del baseline y los nuevos de dominio, repositorio y API de `C-06`
+- [x] 4.2 Verificar que `app/domain/models.py` y `app/domain/errores.py` no importan `fastapi`, `sqlite3`, `app.db` ni `app.api`, y que `app/db/repositorio_pacientes.py` solo usa marcadores `?` (sin concatenar ni interpolar SQL)
+- [x] 4.3 Ejecutar `openspec validate c-06-pacientes --strict` y verificar que no reporta errores
 
 ## Workflow follow-up
 
