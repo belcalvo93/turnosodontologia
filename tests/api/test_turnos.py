@@ -531,3 +531,110 @@ def test_post_turnos_tras_un_409_no_cambia_la_cantidad_de_turnos_ni_auditorias(
 
     assert _cantidad(ctx, "turno") == 1
     assert _cantidad(ctx, "auditoria") == 1
+
+
+# --- 6.1 GET /turnos/{id} ---
+
+
+def test_get_turno_recepcion_existente_200(contexto_turnos: ContextoTurnos) -> None:
+    ctx = contexto_turnos
+    creado = ctx.reservar(ctx.cuerpo()).json()
+
+    respuesta = ctx.cliente.get(f"/turnos/{creado['id']}", headers=ctx.cabeceras_recepcion)
+
+    assert respuesta.status_code == 200
+    assert respuesta.json() == creado
+
+
+def test_get_turno_administracion_ve_el_turno_de_la_profesional_b_200(
+    contexto_turnos: ContextoTurnos,
+) -> None:
+    ctx = contexto_turnos
+    creado = ctx.reservar(ctx.cuerpo(profesional_id=ctx.profesional_b)).json()
+
+    respuesta = ctx.cliente.get(f"/turnos/{creado['id']}", headers=ctx.cabeceras_admin)
+
+    assert respuesta.status_code == 200
+    assert respuesta.json()["profesional_id"] == ctx.profesional_b
+
+
+def test_get_turno_inexistente_responde_404_no_encontrado(
+    contexto_turnos: ContextoTurnos,
+) -> None:
+    ctx = contexto_turnos
+
+    respuesta = ctx.cliente.get("/turnos/9999", headers=ctx.cabeceras_recepcion)
+
+    assert respuesta.status_code == 404
+    assert respuesta.json()["codigo"] == "no_encontrado"
+
+
+def test_get_turno_sin_token_responde_401_no_autenticado(
+    contexto_turnos: ContextoTurnos,
+) -> None:
+    ctx = contexto_turnos
+    creado = ctx.reservar(ctx.cuerpo()).json()
+
+    respuesta = ctx.cliente.get(f"/turnos/{creado['id']}")
+
+    assert respuesta.status_code == 401
+    assert respuesta.json()["codigo"] == "no_autenticado"
+
+
+# --- 6.2 RN-ACC-03 ---
+
+
+def test_get_turno_odontologo_ve_su_propio_turno_200(contexto_turnos: ContextoTurnos) -> None:
+    ctx = contexto_turnos
+    creado = ctx.reservar(ctx.cuerpo()).json()  # profesional A
+
+    respuesta = ctx.cliente.get(f"/turnos/{creado['id']}", headers=ctx.cabeceras_odontologo_a)
+
+    assert respuesta.status_code == 200
+    assert respuesta.json() == creado
+
+
+def test_get_turno_odontologo_de_otro_profesional_responde_403_sin_datos_del_turno(
+    contexto_turnos: ContextoTurnos,
+) -> None:
+    ctx = contexto_turnos
+    creado = ctx.reservar(ctx.cuerpo(profesional_id=ctx.profesional_b)).json()
+
+    respuesta = ctx.cliente.get(f"/turnos/{creado['id']}", headers=ctx.cabeceras_odontologo_a)
+
+    assert respuesta.status_code == 403
+    assert respuesta.json()["codigo"] == "sin_permiso"
+    cuerpo = respuesta.text
+    for dato in (creado["inicio"], creado["fin"], "paciente_id", "profesional_id", "reservado"):
+        assert dato not in cuerpo
+
+
+def test_get_turno_inexistente_responde_404_tambien_al_odontologo(
+    contexto_turnos: ContextoTurnos,
+) -> None:
+    ctx = contexto_turnos
+
+    respuesta = ctx.cliente.get("/turnos/9999", headers=ctx.cabeceras_odontologo_a)
+
+    assert respuesta.status_code == 404  # 404 antes que 403 (design D7)
+
+
+# --- 6.3 RN-AUD-02 a nivel API: sin rutas de escritura sobre turnos ni auditoría ---
+
+
+@pytest.mark.parametrize("metodo", ["put", "patch", "delete"])
+@pytest.mark.parametrize("ruta", ["/turnos/{id}", "/auditoria/turnos/{id}"])
+def test_no_hay_rutas_para_modificar_o_borrar_turnos_ni_auditoria(
+    contexto_turnos: ContextoTurnos, metodo: str, ruta: str
+) -> None:
+    ctx = contexto_turnos
+    creado = ctx.reservar(ctx.cuerpo()).json()
+    antes = _auditorias(ctx)
+
+    respuesta = getattr(ctx.cliente, metodo)(
+        ruta.format(id=creado["id"]), headers=ctx.cabeceras_admin
+    )
+
+    assert respuesta.status_code in (404, 405)
+    assert _auditorias(ctx) == antes
+    assert _cantidad(ctx, "turno") == 1

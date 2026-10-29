@@ -1,4 +1,4 @@
-"""Router de turnos: alta con POST /turnos (C-11, design D1).
+"""Router de turnos: alta con POST /turnos y consulta con GET /turnos/{id} (C-11, design D1, D5, D7).
 
 El router solo orquesta: valida la forma de la entrada (Pydantic), abre la transacción,
 carga el contexto desde los repositorios y delega las reglas en `app/domain/`.
@@ -8,11 +8,12 @@ import sqlite3
 from datetime import datetime, time, timedelta
 from typing import Annotated
 
-from fastapi import APIRouter, Depends
+from fastapi import APIRouter, Depends, HTTPException, Path
 from pydantic import BaseModel, NaiveDatetime
 
-from app.api.auth import requiere_rol
+from app.api.auth import requiere_rol, usuario_actual
 from app.api.dependencias import obtener_ahora_local, obtener_conexion
+from app.api.errores import SinPermiso
 from app.db.conexion import transaccion
 from app.db.repositorio_bloqueos import listar_bloqueos_de_recursos
 from app.db.repositorio_horarios import listar_horarios_por_profesional_y_dia
@@ -20,15 +21,16 @@ from app.db.repositorio_pacientes import obtener_paciente_por_id
 from app.db.repositorio_prestaciones import obtener_prestacion_por_id
 from app.db.repositorio_profesionales import obtener_profesional_por_id
 from app.db.repositorio_sillones import obtener_sillon_por_id
-from app.db.repositorio_turnos import crear_turno, listar_turnos_activos_del_dia
+from app.db.repositorio_turnos import crear_turno, listar_turnos_activos_del_dia, obtener_turno
 from app.domain.models import EstadoTurno, Turno
 from app.domain.reglas_turno import validar_alta, validar_recursos_alta
-from app.domain.usuarios import Rol, Usuario
+from app.domain.usuarios import Rol, Usuario, puede_ver_turno
 
 router = APIRouter(prefix="/turnos", tags=["turnos"])
 
 ConexionDep = Annotated[sqlite3.Connection, Depends(obtener_conexion)]
 AhoraLocalDep = Annotated[datetime, Depends(obtener_ahora_local)]
+UsuarioDep = Annotated[Usuario, Depends(usuario_actual)]
 CreadorDep = Annotated[Usuario, Depends(requiere_rol(Rol.ADMINISTRACION, Rol.RECEPCION))]
 
 
@@ -113,3 +115,18 @@ def post_turno(
         )
         creado = crear_turno(conexion, candidato, creado_por=usuario.id, creado_en=ahora_local)
     return turno_a_response(creado)
+
+
+@router.get("/{turno_id}")
+def get_turno(
+    turno_id: Annotated[int, Path(ge=1)],
+    conexion: ConexionDep,
+    usuario: UsuarioDep,
+) -> TurnoResponse:
+    """Devuelve un turno por id: 404 si no existe (para todos los roles) y luego 403 por rol."""
+    turno = obtener_turno(conexion, turno_id)
+    if turno is None:
+        raise HTTPException(status_code=404)
+    if not puede_ver_turno(usuario, turno):
+        raise SinPermiso()
+    return turno_a_response(turno)

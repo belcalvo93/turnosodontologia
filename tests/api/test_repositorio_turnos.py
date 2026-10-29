@@ -442,3 +442,50 @@ def test_listar_turnos_activos_devuelve_turnos_de_dominio_con_fechas_naive(
     )
 
     assert turnos == [obtener_turno(conexion, turno_id)]
+
+
+# --- 5.8 SE-06 con concurrencia real (dos conexiones, sin hilos ni sleep) ---
+
+BUSY_TIMEOUT_CORTO_MS = 50  # solo en este test: la conexión de producción conserva 5000 ms
+
+
+def test_transaccion_de_otra_conexion_espera_el_lock_y_despues_ve_el_turno_confirmado(
+    ruta_base: Path, conexion: sqlite3.Connection
+) -> None:
+    with closing(abrir_conexion(ruta_base)) as conexion_b:
+        conexion_b.execute(f"PRAGMA busy_timeout={BUSY_TIMEOUT_CORTO_MS}")
+        with transaccion(conexion):  # A: toma el lock de escritura y reserva el hueco
+            assert listar_turnos_activos_del_dia(
+                conexion, dia=DIA, profesional_id=1, sillon_id=1, paciente_id=1
+            ) == []
+            crear_turno(conexion, _candidato(), creado_por=1, creado_en=datetime(2026, 1, 5, 9, 0))
+
+            with pytest.raises(sqlite3.OperationalError, match="locked"):
+                with transaccion(conexion_b):  # B no puede leer el contexto mientras A no confirma
+                    pytest.fail("B no debería obtener el lock de escritura")
+
+        # A confirmó: B toma el lock y ve el turno de A (una segunda alta daría ConflictoAgenda)
+        with transaccion(conexion_b):
+            vistos = listar_turnos_activos_del_dia(
+                conexion_b, dia=DIA, profesional_id=1, sillon_id=1, paciente_id=1
+            )
+        assert [(t.profesional_id, t.inicio) for t in vistos] == [(1, datetime(2026, 1, 12, 10, 0))]
+
+
+def test_transaccion_de_otra_conexion_toma_el_lock_cuando_a_revierte(
+    ruta_base: Path, conexion: sqlite3.Connection
+) -> None:
+    with closing(abrir_conexion(ruta_base)) as conexion_b:
+        conexion_b.execute(f"PRAGMA busy_timeout={BUSY_TIMEOUT_CORTO_MS}")
+        with pytest.raises(RuntimeError, match="aborta A"):
+            with transaccion(conexion):
+                crear_turno(
+                    conexion, _candidato(), creado_por=1, creado_en=datetime(2026, 1, 5, 9, 0)
+                )
+                raise RuntimeError("aborta A")
+
+        with transaccion(conexion_b):
+            vistos = listar_turnos_activos_del_dia(
+                conexion_b, dia=DIA, profesional_id=1, sillon_id=1, paciente_id=1
+            )
+        assert vistos == []
