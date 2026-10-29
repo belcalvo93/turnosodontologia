@@ -262,7 +262,7 @@ El MVP es solo backend (el frontend React es etapa posterior, D.3), así que no 
   - `knowledge-base/10_preguntas_abiertas.md` §IF-02, §SE-15
 
 ### [C-07] `gestion-usuarios`
-- **Estado**: `[ ]` pendiente
+- **Estado**: `[x]` completado
 - **Scope**:
   - `GET/POST /usuarios`, `PATCH /usuarios/{id}` (rol, activo, reset de contraseña) solo para administración
   - Validación: rol odontólogo exige `profesional_id` existente y activo (SE); los demás roles lo dejan nulo

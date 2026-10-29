@@ -60,7 +60,7 @@
 |---|---|---|
 | Alta de un usuario con username ya existente | `tests/api/test_usuarios.py::test_post_usuarios_username_duplicado_responde_409`, `tests/api/test_repositorio_usuarios.py::test_crear_usuario_username_duplicado_lanza_username_duplicado` | PASSED |
 
-> Los 40 escenarios de `usuarios` y el único de `errores-api` tienen al menos un test que los cubre. Las validaciones puras de los requirements de alta y edición también están cubiertas por los 19 tests de `tests/domain/test_usuarios_gestion.py` (`validar_username`, `validar_datos_usuario`, `aplicar_cambios_usuario`).
+> Los 42 escenarios de `usuarios` y el único de `errores-api` tienen al menos un test que los cubre. Las validaciones puras de los requirements de alta y edición también están cubiertas por los 19 tests de `tests/domain/test_usuarios_gestion.py` (`validar_username`, `validar_datos_usuario`, `aplicar_cambios_usuario`).
 
 ## Chequeos adicionales
 
