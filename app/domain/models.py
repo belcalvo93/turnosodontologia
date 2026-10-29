@@ -2,7 +2,7 @@
 
 from dataclasses import dataclass
 from datetime import datetime, time
-from typing import Literal
+from typing import Literal, cast
 
 from app.domain.errores import DatoInvalido
 
@@ -58,6 +58,30 @@ class Bloqueo:
     inicio: datetime
     fin: datetime
     motivo: str = ""
+    id: int | None = None
+
+
+def validar_datos_bloqueo(
+    alcance: str,
+    recurso_id: int,
+    inicio: datetime,
+    fin: datetime,
+    motivo: str = "",
+) -> Bloqueo:
+    """Valida las invariantes de negocio de un bloqueo (C-09, RN-REC-02)."""
+    if alcance not in ("profesional", "sillon"):
+        raise DatoInvalido("El alcance del bloqueo debe ser 'profesional' o 'sillon'.")
+    if inicio.tzinfo is not None or fin.tzinfo is not None:
+        raise DatoInvalido("Las fechas del bloqueo deben ser hora local sin zona horaria.")
+    if inicio >= fin:
+        raise DatoInvalido("El inicio del bloqueo debe ser anterior al fin.")
+    return Bloqueo(
+        alcance=cast(AlcanceBloqueo, alcance),
+        recurso_id=recurso_id,
+        inicio=inicio,
+        fin=fin,
+        motivo=motivo.strip(),
+    )
 
 
 @dataclass(frozen=True, kw_only=True)
