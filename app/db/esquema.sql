@@ -48,7 +48,6 @@ CREATE TABLE IF NOT EXISTS prestacion (
     activa           INTEGER NOT NULL DEFAULT 1 CHECK (activa IN (0, 1))
 );
 
-
 -- Pacientes del consultorio (C-06, KB 04 §Paciente). RN-PAC-01, RN-PAC-02:
 -- nombre, apellido y DNI obligatorios; DNI único; sin baja lógica.
 CREATE TABLE IF NOT EXISTS paciente (
@@ -73,3 +72,17 @@ CREATE TABLE IF NOT EXISTS horario_atencion (
 
 CREATE INDEX IF NOT EXISTS idx_horario_profesional_dia
     ON horario_atencion (profesional_id, dia_semana);
+
+-- Bloqueos horarios de profesional o sillón (C-09, KB 04 §Bloqueo, RN-REC-02).
+CREATE TABLE IF NOT EXISTS bloqueo (
+    id         INTEGER PRIMARY KEY AUTOINCREMENT,
+    alcance    TEXT    NOT NULL CHECK (alcance IN ('profesional', 'sillon')),
+    recurso_id INTEGER NOT NULL,
+    inicio     TEXT    NOT NULL,
+    fin        TEXT    NOT NULL,
+    motivo     TEXT    NOT NULL DEFAULT '',
+    CHECK (inicio < fin)
+);
+
+CREATE INDEX IF NOT EXISTS idx_bloqueo_alcance_recurso_inicio
+    ON bloqueo (alcance, recurso_id, inicio);
