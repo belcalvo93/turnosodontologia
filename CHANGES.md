@@ -292,7 +292,7 @@ El MVP es solo backend (el frontend React es etapa posterior, D.3), así que no 
   - `knowledge-base/10_preguntas_abiertas.md` §SE-14
 
 ### [C-09] `bloqueos`
-- **Estado**: `[ ]` pendiente
+- **Estado**: `[x]` completado
 - **Scope**:
   - Tabla `bloqueo` (`alcance` profesional|sillón, `recurso_id`, `inicio`, `fin`, `motivo`) con índice (`alcance`, `recurso_id`, `inicio`)
   - Dominio: `inicio < fin` (RN-REC-02)
