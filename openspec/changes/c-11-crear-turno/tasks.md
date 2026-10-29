@@ -6,19 +6,19 @@
 
 ## 0. Safety net
 
-- [ ] 0.1 Correr `pytest tests` completo en la rama y verificar el baseline de 524 tests en verde; si algo falla, PARAR y reportarlo como falla previa (no arreglarla)
+- [x] 0.1 Correr `pytest tests` completo en la rama y verificar el baseline de 524 tests en verde; si algo falla, PARAR y reportarlo como falla previa (no arreglarla)
 
 ## 1. Dependencia y hora local del consultorio (D3, D4)
 
-- [ ] 1.1 Agregar `tzdata` a `requirements.txt`, instalarlo y verificar que `python -c "import zoneinfo; zoneinfo.ZoneInfo('America/Argentina/Buenos_Aires')"` termina sin error
-- [ ] 1.2 RED: en `tests/api/test_hora_local.py` escribir `test_a_hora_local_convierte_utc_a_buenos_aires_sin_tzinfo` (`2026-01-05T12:00Z` → `2026-01-05T09:00`, `tzinfo is None`) y ejecutarlo en rojo. GREEN: implementar `a_hora_local(instante, zona)` en `app/api/dependencias.py`. TRIANGULATE: `test_a_hora_local_cambia_de_dia_al_convertir` (`2026-01-06T02:30Z` → `2026-01-05T23:30`) y un instante con otra zona de origen; verificar en verde
-- [ ] 1.3 RED: test de la dependencia `obtener_ahora_local` sobre una ruta de `tests/api/rutas_prueba.py` (nueva ruta `/prueba/ahora-local`) con `RelojFijo`: devuelve `"2026-01-05T09:00:00"` y, tras `reloj.avanzar(minutes=90)`, `"2026-01-05T10:30:00"`. GREEN: implementar `obtener_ahora_local` con `Depends(obtener_ahora)` y `config.clinic_timezone`; verificar que los tests de `test_auth.py` y `test_dependencias.py` siguen en verde (`obtener_ahora` sin cambios)
+- [x] 1.1 Agregar `tzdata` a `requirements.txt`, instalarlo y verificar que `python -c "import zoneinfo; zoneinfo.ZoneInfo('America/Argentina/Buenos_Aires')"` termina sin error
+- [x] 1.2 RED: en `tests/api/test_hora_local.py` escribir `test_a_hora_local_convierte_utc_a_buenos_aires_sin_tzinfo` (`2026-01-05T12:00Z` → `2026-01-05T09:00`, `tzinfo is None`) y ejecutarlo en rojo. GREEN: implementar `a_hora_local(instante, zona)` en `app/api/dependencias.py`. TRIANGULATE: `test_a_hora_local_cambia_de_dia_al_convertir` (`2026-01-06T02:30Z` → `2026-01-05T23:30`) y un instante con otra zona de origen; verificar en verde
+- [x] 1.3 RED: test de la dependencia `obtener_ahora_local` sobre una ruta de `tests/api/rutas_prueba.py` (nueva ruta `/prueba/ahora-local`) con `RelojFijo`: devuelve `"2026-01-05T09:00:00"` y, tras `reloj.avanzar(minutes=90)`, `"2026-01-05T10:30:00"`. GREEN: implementar `obtener_ahora_local` con `Depends(obtener_ahora)` y `config.clinic_timezone`; verificar que los tests de `test_auth.py` y `test_dependencias.py` siguen en verde (`obtener_ahora` sin cambios)
 
 ## 2. Reglas de dominio nuevas (D7, D10) — sin DB ni HTTP
 
-- [ ] 2.1 RED: en `tests/domain/test_recursos_alta.py` escribir `test_validar_recursos_alta_con_todo_activo_devuelve_la_prestacion` y ejecutarlo en rojo. GREEN: implementar `validar_recursos_alta(prestacion, profesional, sillon, paciente)` en `app/domain/reglas_turno.py` sin tocar `validar_alta`. TRIANGULATE (RN-REC-03, RN-GLO-01): un test por caso que lanza `DatoInvalido` con mensaje en español — prestación inexistente, prestación inactiva, profesional inexistente, profesional inactivo, sillón inexistente, sillón inactivo, paciente inexistente; verificar que `tests/domain/test_reglas_turno.py` y `test_reprogramar_turno.py` siguen en verde
-- [ ] 2.2 RED: en `tests/domain/test_permisos_turno.py` escribir `test_puede_ver_turno_odontologo_de_otro_profesional_devuelve_false` y ejecutarlo en rojo. GREEN: implementar `puede_ver_turno(usuario, turno)` en `app/domain/usuarios.py`. TRIANGULATE (RN-ACC-03): odontólogo del mismo profesional → `True`; odontólogo con `profesional_id=None` → `False`; administración y recepción → `True` para cualquier profesional
-- [ ] 2.3 Verificar que `tests/domain/test_estructura.py` sigue en verde (`app/domain/` no importa FastAPI ni `app.db`/`app.api`, y no llama a `datetime.now()`/`date.today()`) — **[CHECKPOINT 1: grupos 1 y 2]**
+- [x] 2.1 RED: en `tests/domain/test_recursos_alta.py` escribir `test_validar_recursos_alta_con_todo_activo_devuelve_la_prestacion` y ejecutarlo en rojo. GREEN: implementar `validar_recursos_alta(prestacion, profesional, sillon, paciente)` en `app/domain/reglas_turno.py` sin tocar `validar_alta`. TRIANGULATE (RN-REC-03, RN-GLO-01): un test por caso que lanza `DatoInvalido` con mensaje en español — prestación inexistente, prestación inactiva, profesional inexistente, profesional inactivo, sillón inexistente, sillón inactivo, paciente inexistente; verificar que `tests/domain/test_reglas_turno.py` y `test_reprogramar_turno.py` siguen en verde
+- [x] 2.2 RED: en `tests/domain/test_permisos_turno.py` escribir `test_puede_ver_turno_odontologo_de_otro_profesional_devuelve_false` y ejecutarlo en rojo. GREEN: implementar `puede_ver_turno(usuario, turno)` en `app/domain/usuarios.py`. TRIANGULATE (RN-ACC-03): odontólogo del mismo profesional → `True`; odontólogo con `profesional_id=None` → `False`; administración y recepción → `True` para cualquier profesional
+- [x] 2.3 Verificar que `tests/domain/test_estructura.py` sigue en verde (`app/domain/` no importa FastAPI ni `app.db`/`app.api`, y no llama a `datetime.now()`/`date.today()`) — **[CHECKPOINT 1: grupos 1 y 2]**
 
 ## 3. Esquema SQLite (D11)
 

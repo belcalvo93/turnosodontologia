@@ -6,12 +6,21 @@ from datetime import datetime, timedelta
 
 from app.domain.errores import (
     ConflictoAgenda,
+    DatoInvalido,
     DentroDeBloqueo,
     FueraDeHorario,
     TurnoNoModificable,
 )
 from app.domain.intervalos import es_futuro, solapan
-from app.domain.models import Bloqueo, HorarioAtencion, Prestacion, Turno
+from app.domain.models import (
+    Bloqueo,
+    HorarioAtencion,
+    Paciente,
+    Prestacion,
+    Profesional,
+    Sillon,
+    Turno,
+)
 
 _MENSAJE_BLOQUEO = {
     "profesional": "El profesional está bloqueado en ese horario.",
@@ -22,6 +31,34 @@ _MENSAJE_CONFLICTO = {
     "sillon": "El sillón ya está ocupado en ese horario.",
     "paciente": "El paciente ya tiene un turno en ese horario.",
 }
+
+
+def validar_recursos_alta(
+    prestacion: Prestacion | None,
+    profesional: Profesional | None,
+    sillon: Sillon | None,
+    paciente: Paciente | None,
+) -> Prestacion:
+    """Exige que los recursos de un alta existan y estén activos (RN-REC-03, C-11).
+
+    Informa el primer problema en este orden: prestación, profesional, sillón, paciente.
+    Devuelve la prestación (no nula) para pasarla a `validar_alta`.
+    """
+    if prestacion is None:
+        raise DatoInvalido("La prestación indicada no existe.")
+    if not prestacion.activa:
+        raise DatoInvalido("La prestación indicada está inactiva.")
+    if profesional is None:
+        raise DatoInvalido("El profesional indicado no existe.")
+    if not profesional.activo:
+        raise DatoInvalido("El profesional indicado está inactivo.")
+    if sillon is None:
+        raise DatoInvalido("El sillón indicado no existe.")
+    if not sillon.activo:
+        raise DatoInvalido("El sillón indicado está inactivo.")
+    if paciente is None:
+        raise DatoInvalido("El paciente indicado no existe.")
+    return prestacion
 
 
 def validar_alta(
