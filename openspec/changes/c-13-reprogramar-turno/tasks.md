@@ -2,7 +2,7 @@
 
 ## 0. Baseline
 
-- [x] 0.1 Baseline: 625 tests en main.
+- [x] 0.1 Baseline: 650 tests en main.
 
 ## 1. Dominio Puro (`app/domain/reglas_turno.py`)
 
@@ -15,17 +15,17 @@
   - [x] Test: nuevo horario coincide con bloqueo de profesional lanza `DentroDeBloqueo` (RN-TUR-05). El caso de sillón pasa a la tarea 1.5.
   - [x] Test: cambio exitoso con reasignación de nuevo profesional y nuevo sillón devuelve el `Turno` actualizado con mismo `id` (D-05).
 - [x] 1.2 Implementar la función `validar_reprogramacion(...)` en `app/domain/reglas_turno.py` haciendo pasar todos los tests de dominio en verde (hecha por Hernán antes del apply).
-- [ ] 1.3 Escribir tests de recursos nuevos y orden de validación en `tests/domain/test_reprogramar_turno.py`:
-  - [ ] Test: turno cancelado con `nuevo_sillon_id` inactivo lanza `TurnoNoModificable` (409), no `DatoInvalido`.
-  - [ ] Test: turno pasado con `nuevo_profesional_id` inexistente lanza `TurnoNoModificable` (409).
-  - [ ] Test: `nuevo_profesional_id` o `nuevo_sillon_id` inexistente o inactivo lanza `DatoInvalido` (422).
-  - [ ] Test: recurso nuevo inactivo en un horario con conflicto lanza `DatoInvalido`, no `ConflictoAgenda`.
-  - [ ] Test: recurso vigente inactivo que no se envía no impide reprogramar.
-- [ ] 1.4 Agregar `nuevo_profesional` y `nuevo_sillon` a `validar_reprogramacion` y validar solo los recursos enviados, después del estado y antes de la agenda, extrayendo helpers privados de `validar_recursos_alta` sin cambiar su comportamiento. Actualizar `test_reprogramar_cambiando_profesional_y_sillon_exitoso`, que hoy envía los ids sin los recursos.
-- [ ] 1.5 Cubrir en `tests/domain/test_reprogramar_turno.py` los casos que faltan en la reprogramación:
-  - [ ] Test: nuevo horario solapa con otro turno activo del mismo sillón, con otro profesional, lanza `ConflictoAgenda` (RN-TUR-03, RN-TUR-07).
-  - [ ] Test: nuevo horario coincide con bloqueo del sillón lanza `DentroDeBloqueo` (RN-TUR-05).
-  - [ ] Test: nuevo horario solapa con otro turno activo del mismo paciente, con otro profesional y sillón, lanza `ConflictoAgenda` (RN-TUR-03, RN-TUR-12).
+- [x] 1.3 Escribir tests de recursos nuevos y orden de validación en `tests/domain/test_reprogramar_turno.py`:
+  - [x] Test: turno cancelado con `nuevo_sillon_id` inactivo lanza `TurnoNoModificable` (409), no `DatoInvalido`.
+  - [x] Test: turno pasado con `nuevo_profesional_id` inexistente lanza `TurnoNoModificable` (409).
+  - [x] Test: `nuevo_profesional_id` o `nuevo_sillon_id` inexistente o inactivo lanza `DatoInvalido` (422).
+  - [x] Test: recurso nuevo inactivo en un horario con conflicto lanza `DatoInvalido`, no `ConflictoAgenda`.
+  - [x] Test: recurso vigente inactivo que no se envía no impide reprogramar.
+- [x] 1.4 Agregar `nuevo_profesional` y `nuevo_sillon` a `validar_reprogramacion` y validar solo los recursos enviados, después del estado y antes de la agenda, extrayendo helpers privados de `validar_recursos_alta` sin cambiar su comportamiento. Actualizar `test_reprogramar_cambiando_profesional_y_sillon_exitoso`, que hoy envía los ids sin los recursos.
+- [x] 1.5 Cubrir en `tests/domain/test_reprogramar_turno.py` los casos que faltan en la reprogramación:
+  - [x] Test: nuevo horario solapa con otro turno activo del mismo sillón, con otro profesional, lanza `ConflictoAgenda` (RN-TUR-03, RN-TUR-07).
+  - [x] Test: nuevo horario coincide con bloqueo del sillón lanza `DentroDeBloqueo` (RN-TUR-05).
+  - [x] Test: nuevo horario solapa con otro turno activo del mismo paciente, con otro profesional y sillón, lanza `ConflictoAgenda` (RN-TUR-03, RN-TUR-12).
 
 ## 2. Persistencia y Transaccionalidad (`app/db/`)
 

@@ -48,17 +48,25 @@ def validar_recursos_alta(
         raise DatoInvalido("La prestación indicada no existe.")
     if not prestacion.activa:
         raise DatoInvalido("La prestación indicada está inactiva.")
+    _exigir_profesional_activo(profesional)
+    _exigir_sillon_activo(sillon)
+    if paciente is None:
+        raise DatoInvalido("El paciente indicado no existe.")
+    return prestacion
+
+
+def _exigir_profesional_activo(profesional: Profesional | None) -> None:
     if profesional is None:
         raise DatoInvalido("El profesional indicado no existe.")
     if not profesional.activo:
         raise DatoInvalido("El profesional indicado está inactivo.")
+
+
+def _exigir_sillon_activo(sillon: Sillon | None) -> None:
     if sillon is None:
         raise DatoInvalido("El sillón indicado no existe.")
     if not sillon.activo:
         raise DatoInvalido("El sillón indicado está inactivo.")
-    if paciente is None:
-        raise DatoInvalido("El paciente indicado no existe.")
-    return prestacion
 
 
 def validar_alta(
@@ -134,12 +142,22 @@ def validar_reprogramacion(
     turnos_activos: Sequence[Turno],
     nuevo_profesional_id: int | None = None,
     nuevo_sillon_id: int | None = None,
+    nuevo_profesional: Profesional | None = None,
+    nuevo_sillon: Sillon | None = None,
 ) -> Turno:
-    """Valida y ejecuta la reprogramación de un turno futuro activo (RN-TUR-07, RN-TUR-08, RN-TUR-09, RN-TUR-10)."""
+    """Valida y ejecuta la reprogramación de un turno futuro activo (RN-TUR-07, RN-TUR-08, RN-TUR-09, RN-TUR-10).
+
+    Orden: estado del turno (409), recursos nuevos enviados (422, RN-REC-03) y agenda (409).
+    Solo se validan los recursos cuyo id se envía; los vigentes no se revalidan.
+    """
     if turno.estado != "reservado":
         raise TurnoNoModificable("No se puede reprogramar un turno cancelado.")
     if not es_futuro(turno, ahora):
         raise TurnoNoModificable("Solo se pueden reprogramar turnos futuros.")
+    if nuevo_profesional_id is not None:
+        _exigir_profesional_activo(nuevo_profesional)
+    if nuevo_sillon_id is not None:
+        _exigir_sillon_activo(nuevo_sillon)
 
     profesional_id = nuevo_profesional_id if nuevo_profesional_id is not None else turno.profesional_id
     sillon_id = nuevo_sillon_id if nuevo_sillon_id is not None else turno.sillon_id
