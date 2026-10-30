@@ -26,13 +26,18 @@
   - [x] Test: nuevo horario solapa con otro turno activo del mismo sillón, con otro profesional, lanza `ConflictoAgenda` (RN-TUR-03, RN-TUR-07).
   - [x] Test: nuevo horario coincide con bloqueo del sillón lanza `DentroDeBloqueo` (RN-TUR-05).
   - [x] Test: nuevo horario solapa con otro turno activo del mismo paciente, con otro profesional y sillón, lanza `ConflictoAgenda` (RN-TUR-03, RN-TUR-12).
+  > - Sin RED propio, porque pasaron en el primer intento: `test_reprogramar_solapa_con_turno_del_mismo_sillon_otro_profesional_lanza_conflicto`, `test_reprogramar_contiguo_al_turno_del_mismo_sillon_es_valido`, `test_reprogramar_dentro_de_bloqueo_de_sillon_lanza_dentro_de_bloqueo`, `test_reprogramar_con_bloqueo_de_otro_sillon_no_lo_afecta`, `test_reprogramar_solapa_con_turno_del_mismo_paciente_lanza_conflicto` y `test_reprogramar_ignora_turno_cancelado_del_mismo_paciente`. Las reglas ya estaban en `validar_alta` (C-10), que `validar_reprogramacion` reutiliza.
+  > - Mutaciones verificadas sobre `app/domain/reglas_turno.py`: desactivar el conflicto por sillón hace fallar el test de conflicto de sillón; desactivar el conflicto por paciente hace fallar el test de conflicto de paciente; hacer que los bloqueos de sillón nunca apliquen hace fallar el test de bloqueo de sillón y otros 3 tests, porque la mutación fue más amplia de lo necesario. Restaurado editando el archivo.
 
 ## 2. Persistencia y Transaccionalidad (`app/db/`)
 
-- [ ] 2.1 Escribir tests unitarios/integración para la persistencia de reprogramación en el repositorio de turnos (`tests/api/test_repositorio_turnos.py`):
-  - [ ] Test: reprogramación exitosa actualiza campos en tabla `turno` e inserta fila en `auditoria_turno` con `accion = 'reprogramar'` y `antes`/`despues` con `snapshot_turno` completo, incluido `estado` (RN-AUD-01, C-11 D2).
-  - [ ] Test: si ocurre un fallo o excepción, la transacción revierte y no se inserta auditoría (RN-AUD-03).
-- [ ] 2.2 Implementar en el repositorio la función `reprogramar_turno(...)` (`UPDATE` + `registrar_auditoria(accion="reprogramar")`), con la precondición de ejecutarse dentro de la transacción del router (C-11 D1).
+- [x] 2.1 Escribir tests unitarios/integración para la persistencia de reprogramación en el repositorio de turnos (`tests/api/test_repositorio_turnos.py`):
+  - [x] Test: reprogramación exitosa actualiza campos en tabla `turno` e inserta fila en `auditoria_turno` con `accion = 'reprogramar'` y `antes`/`despues` con `snapshot_turno` completo, incluido `estado` (RN-AUD-01, C-11 D2).
+  - [x] Test: si ocurre un fallo o excepción, la transacción revierte y no se inserta auditoría (RN-AUD-03).
+  > - Sin RED propio, porque solo fallaban por el `ImportError` de `reprogramar_turno` y pasaron en cuanto existió la función: `test_reprogramar_turno_con_usuario_inexistente_revierte_el_cambio` y `test_reprogramar_turno_si_falla_la_auditoria_revierte_tambien_el_update`. `transaccion()` (C-01) ya hacía rollback ante cualquier excepción, así que verifican un comportamiento que ya existía.
+  > - Mutaciones verificadas sobre `app/db/repositorio_turnos.py`: agregar `conexion.commit()` antes de auditar hace fallar esos dos tests; no actualizar el sillón hace fallar `test_reprogramar_turno_con_otro_profesional_y_sillon_los_persiste`; usar el snapshot nuevo como `antes` hace fallar `test_reprogramar_turno_actualiza_horario_y_registra_auditoria_reprogramar`. Restaurado editando el archivo.
+  > - Se agregó `test_reprogramar_turno_con_id_distinto_o_sin_id_lanza_value_error_y_no_escribe` para la guarda de ids de `reprogramar_turno`, que no figuraba en la tarea.
+- [x] 2.2 Implementar en el repositorio la función `reprogramar_turno(...)` (`UPDATE` + `registrar_auditoria(accion="reprogramar")`), con la precondición de ejecutarse dentro de la transacción del router (C-11 D1).
 
 ## 3. Capa API y Endpoint (`app/api/turnos.py`)
 

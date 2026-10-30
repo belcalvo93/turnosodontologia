@@ -4,6 +4,7 @@ import sqlite3
 from collections.abc import Iterator
 from contextlib import closing
 import json
+from dataclasses import replace
 from datetime import date, datetime, timedelta
 from pathlib import Path
 
@@ -20,6 +21,7 @@ from app.db.repositorio_turnos import (
     crear_turno,
     listar_turnos_activos_del_dia,
     obtener_turno,
+    reprogramar_turno,
     snapshot_turno,
     turno_desde_fila,
 )
@@ -489,3 +491,155 @@ def test_transaccion_de_otra_conexion_toma_el_lock_cuando_a_revierte(
                 conexion_b, dia=DIA, profesional_id=1, sillon_id=1, paciente_id=1
             )
         assert vistos == []
+
+
+# --- C-13 2.1 reprogramar_turno + auditoría ---
+
+OCURRIO_EN = datetime(2026, 1, 8, 9, 30)
+
+
+def _crear_reservado(con: sqlite3.Connection) -> Turno:
+    with transaccion(con):
+        return crear_turno(con, _candidato(), creado_por=1, creado_en=datetime(2026, 1, 5, 9, 0))
+
+
+def test_reprogramar_turno_actualiza_horario_y_registra_auditoria_reprogramar(
+    conexion: sqlite3.Connection,
+) -> None:
+    anterior = _crear_reservado(conexion)
+    nuevo = replace(
+        anterior, inicio=datetime(2026, 1, 12, 11, 0), fin=datetime(2026, 1, 12, 11, 30)
+    )
+
+    with transaccion(conexion):
+        devuelto = reprogramar_turno(
+            conexion, anterior, nuevo, usuario_id=1, ocurrio_en=OCURRIO_EN
+        )
+
+    assert devuelto == nuevo
+    assert obtener_turno(conexion, anterior.id) == nuevo  # type: ignore[arg-type]
+    auditorias = conexion.execute(
+        "SELECT turno_id, accion, usuario_id, ocurrio_en, antes, despues "
+        "FROM auditoria_turno WHERE accion = 'reprogramar'"
+    ).fetchall()
+    assert auditorias == [
+        (
+            anterior.id,
+            "reprogramar",
+            1,
+            "2026-01-08T09:30:00",
+            snapshot_turno(anterior),
+            snapshot_turno(nuevo),
+        )
+    ]
+    antes = json.loads(auditorias[0][4])
+    despues = json.loads(auditorias[0][5])
+    assert antes["inicio"] == "2026-01-12T10:00:00" and antes["estado"] == "reservado"
+    assert despues["inicio"] == "2026-01-12T11:00:00" and despues["estado"] == "reservado"
+    assert len(antes) == 8 and len(despues) == 8
+
+
+def test_reprogramar_turno_con_otro_profesional_y_sillon_los_persiste(
+    conexion: sqlite3.Connection,
+) -> None:
+    _agregar_recursos_alternativos(conexion)
+    anterior = _crear_reservado(conexion)
+    nuevo = replace(
+        anterior,
+        profesional_id=2,
+        sillon_id=2,
+        inicio=datetime(2026, 1, 12, 12, 0),
+        fin=datetime(2026, 1, 12, 12, 30),
+    )
+
+    with transaccion(conexion):
+        reprogramar_turno(conexion, anterior, nuevo, usuario_id=1, ocurrio_en=OCURRIO_EN)
+
+    guardado = obtener_turno(conexion, anterior.id)  # type: ignore[arg-type]
+    assert guardado == nuevo
+    assert (guardado.profesional_id, guardado.sillon_id) == (2, 2)  # type: ignore[union-attr]
+    despues = conexion.execute(
+        "SELECT despues FROM auditoria_turno WHERE accion = 'reprogramar'"
+    ).fetchone()[0]
+    assert json.loads(despues)["profesional_id"] == 2
+    assert json.loads(despues)["sillon_id"] == 2
+
+
+def test_reprogramar_turno_no_toca_otros_turnos_ni_los_campos_de_creacion(
+    conexion: sqlite3.Connection,
+) -> None:
+    anterior = _crear_reservado(conexion)
+    with transaccion(conexion):
+        otro = crear_turno(
+            conexion,
+            _candidato(datetime(2026, 1, 12, 13, 0)),
+            creado_por=1,
+            creado_en=datetime(2026, 1, 5, 9, 5),
+        )
+    nuevo = replace(
+        anterior, inicio=datetime(2026, 1, 12, 11, 0), fin=datetime(2026, 1, 12, 11, 30)
+    )
+
+    with transaccion(conexion):
+        reprogramar_turno(conexion, anterior, nuevo, usuario_id=1, ocurrio_en=OCURRIO_EN)
+
+    assert obtener_turno(conexion, otro.id) == otro  # type: ignore[arg-type]
+    assert conexion.execute(
+        "SELECT creado_por, creado_en FROM turno WHERE id = ?", (anterior.id,)
+    ).fetchone() == (1, "2026-01-05T09:00:00")
+    assert conexion.execute("SELECT COUNT(*) FROM auditoria_turno").fetchone()[0] == 3
+
+
+def test_reprogramar_turno_con_usuario_inexistente_revierte_el_cambio(
+    ruta_base: Path, conexion: sqlite3.Connection
+) -> None:
+    anterior = _crear_reservado(conexion)
+    nuevo = replace(
+        anterior, inicio=datetime(2026, 1, 12, 11, 0), fin=datetime(2026, 1, 12, 11, 30)
+    )
+
+    with pytest.raises(sqlite3.IntegrityError):
+        with transaccion(conexion):
+            reprogramar_turno(conexion, anterior, nuevo, usuario_id=999, ocurrio_en=OCURRIO_EN)
+
+    with closing(abrir_conexion(ruta_base)) as otra:
+        assert obtener_turno(otra, anterior.id) == anterior  # type: ignore[arg-type]
+    assert _contar(ruta_base, "auditoria_turno") == 1  # solo la de crear
+
+
+def test_reprogramar_turno_si_falla_la_auditoria_revierte_tambien_el_update(
+    ruta_base: Path, conexion: sqlite3.Connection, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    anterior = _crear_reservado(conexion)
+    nuevo = replace(
+        anterior, inicio=datetime(2026, 1, 12, 11, 0), fin=datetime(2026, 1, 12, 11, 30)
+    )
+
+    def auditoria_rota(*args: object, **kwargs: object) -> None:
+        raise sqlite3.IntegrityError("fallo simulado de auditoría")
+
+    monkeypatch.setattr("app.db.repositorio_turnos.registrar_auditoria", auditoria_rota)
+
+    with pytest.raises(sqlite3.IntegrityError, match="simulado"):
+        with transaccion(conexion):
+            reprogramar_turno(conexion, anterior, nuevo, usuario_id=1, ocurrio_en=OCURRIO_EN)
+
+    with closing(abrir_conexion(ruta_base)) as otra:
+        assert obtener_turno(otra, anterior.id) == anterior  # type: ignore[arg-type]
+    assert _contar(ruta_base, "auditoria_turno") == 1
+
+
+def test_reprogramar_turno_con_id_distinto_o_sin_id_lanza_value_error_y_no_escribe(
+    conexion: sqlite3.Connection,
+) -> None:
+    anterior = _crear_reservado(conexion)
+    con_otro_id = replace(anterior, id=999)
+    sin_id = replace(anterior, id=None)
+
+    for nuevo in (con_otro_id, sin_id):
+        with pytest.raises(ValueError, match="mismo id"):
+            with transaccion(conexion):
+                reprogramar_turno(conexion, anterior, nuevo, usuario_id=1, ocurrio_en=OCURRIO_EN)
+
+    assert obtener_turno(conexion, anterior.id) == anterior  # type: ignore[arg-type]
+    assert conexion.execute("SELECT COUNT(*) FROM auditoria_turno").fetchone()[0] == 1
