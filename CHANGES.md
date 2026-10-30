@@ -51,6 +51,9 @@ C-12 + C-13
 
 C-07 + C-14 + C-15 + C-16
   └── C-17 seed-y-flujo-e2e                      ← cierre del MVP
+
+C-03 + C-11 + C-14 + C-16 + C-17
+  └── C-18 frontend-minimo                       ← extensión posterior al MVP
 ```
 
 ### Paralelismo por fase
@@ -92,6 +95,9 @@ GATE 7: C-12 ✓ + C-13 ✓
 
 GATE 8: C-07 ✓ + C-14 ✓ + C-15 ✓ + C-16 ✓
   → C-17 seed-y-flujo-e2e                [Agente A]
+
+GATE 9: C-17 ✓                           ← extensión posterior al MVP
+  → C-18 frontend-minimo                 [Agente A]
 ```
 
 ### Camino crítico (8 changes — mínimo irreducible)
@@ -106,7 +112,7 @@ La rama del dominio (`C-02 → C-10`) es más corta y no está en el camino crí
 
 ### Plan óptimo con 3 agentes
 
-El MVP es solo backend (el frontend React es etapa posterior, D.3), así que no hay agente de frontend. Los agentes se reparten por dominio.
+El MVP (C-01 a C-17) es solo backend, así que no hay agente de frontend. El frontend mínimo es `C-18`, posterior al MVP; el frontend React completo y la app móvil son etapa posterior (D.3). Los agentes se reparten por dominio.
 
 | Paso | Agente A (Dominio y turnos) | Agente B (Recursos y disponibilidad) | Agente C (Acceso y consultas) |
 |------|-----------------------------|--------------------------------------|-------------------------------|
@@ -145,6 +151,7 @@ El MVP es solo backend (el frontend React es etapa posterior, D.3), así que no 
 | FASE 3 — Ciclo de vida del turno | C-10 a C-13 | CRITICO |
 | FASE 4 — Consultas y trazabilidad | C-14 a C-16 | ALTO |
 | FASE 5 — Cierre del MVP | C-17 | BAJO |
+| FASE 5b — Extensión: frontend mínimo | C-18 | MEDIO |
 | FASE 6 — Posterior al MVP | sin changes (fuera de alcance) | — |
 
 ---
@@ -452,6 +459,29 @@ El MVP es solo backend (el frontend React es etapa posterior, D.3), así que no 
 
 ---
 
+## FASE 5b — Extensión: frontend mínimo
+
+> Posterior al MVP: no cambia `C-01` a `C-17`. Decisión D-09 (equipo, 2026-10-30).
+
+### [C-18] `frontend-minimo`
+- **Estado**: `[ ]` pendiente
+- **Scope**:
+  - Frontend en TypeScript sin framework, compilado a archivos estáticos (Vite o `tsc`) y servido por la misma API (FastAPI `StaticFiles`); Node.js solo en desarrollo
+  - Pantallas: login, agenda de un profesional, crear turno, y bloqueo con la lista de `turnos_afectados`
+  - Consume solo endpoints existentes: sin reglas de negocio nuevas ni cambios de backend salvo servir los estáticos
+  - Respeta los roles (RBAC de 03): cada pantalla muestra solo lo que el rol puede hacer
+  - Diseños de referencia generados con el MCP de Stitch; datos ficticios
+- **Dependencias**: `C-03`, `C-11`, `C-14`, `C-16` (y `C-17` para los datos de demo)
+- **Governance**: MEDIO
+- **Leer antes**:
+  - `knowledge-base/02_descripcion_general.md`
+  - `knowledge-base/03_actores_y_roles.md` §rutas y roles
+  - `knowledge-base/06_funcionalidades.md` §US-005, §US-009, §US-010
+  - `knowledge-base/07_flujos_principales.md`
+  - `knowledge-base/09_decisiones_y_supuestos.md` §D-09
+
+---
+
 ## FASE 6 — Posterior al MVP (fuera de alcance, sin changes asignados)
 
 > **Nada de esta fase forma parte del MVP** ni tiene código C-NN. Son los ítems de D.3 "Diferenciador" y "Etapas posteriores" del informe. No se deben incluir en tareas de los changes C-01 a C-17 (RN-GLO-02). Si alguno se aprueba en el futuro, se planifica como change nuevo después de cerrar `C-17`.
@@ -470,4 +500,4 @@ El MVP es solo backend (el frontend React es etapa posterior, D.3), así que no 
 | Liquidación a obras sociales y prepagas | Etapa posterior | IF-02 | El MVP solo guarda el dato en `paciente` |
 | Historia clínica, odontograma y periodontograma | Etapa posterior | IF-07 | Ley 27.706, Decreto 393/2023 |
 | Reportes, métricas, multisede, IA | Etapa posterior | SE-16 | — |
-| Frontend React y aplicación móvil | Etapa posterior | — | El MVP es solo API |
+| Frontend React completo y aplicación móvil | Etapa posterior | — | El MVP es solo API; el frontend mínimo en TypeScript es `C-18` (FASE 5b) |
