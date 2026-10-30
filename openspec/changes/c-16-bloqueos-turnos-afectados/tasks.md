@@ -11,9 +11,9 @@
 
 ## 2. Repositorio (SQL parametrizado, Regla dura 4)
 
-- [ ] 2.1 **Rojo:** en `tests/api/test_repositorio_turnos.py` (o el archivo de repositorios que use C-11 para SQLite), test de la nueva consulta SQL parametrizada con `?`: dados 3 turnos `reservado` (dos del recurso en rango, uno fuera de rango) + 1 `cancelado` en rango, devuelve exactamente los del recurso en rango, en el orden `inicio ASC, id ASC` y como `Turno` (via `turno_desde_fila`).
-- [ ] 2.2 **Rojo:** test de contigüidad en SQL (turno con `fin == inicio_bloqueo` o `inicio == fin_bloqueo` → excluido) para validar el patrón `inicio < ? AND fin > ?` (idéntico a `listar_bloqueos_de_recursos`).
-- [ ] 2.3 **Verde:** implementar en `app/db/repositorio_turnos.py` la consulta con SQL como literal completo (sin f-strings ni concatenación), reutilizando `COLUMNAS_TURNO` y `turno_desde_fila`. La conversión de `Turno` ←→ fila no se duplica.
+- [x] 2.1 **Rojo:** en `tests/api/test_repositorio_turnos.py` (o el archivo de repositorios que use C-11 para SQLite), test de la nueva consulta SQL parametrizada con `?`: dados 3 turnos `reservado` (dos del recurso en rango, uno fuera de rango) + 1 `cancelado` en rango, devuelve exactamente los del recurso en rango, en el orden `inicio ASC, id ASC` y como `Turno` (via `turno_desde_fila`).
+- [x] 2.2 **Rojo:** test de contigüidad en SQL (turno con `fin == inicio_bloqueo` o `inicio == fin_bloqueo` → excluido) para validar el patrón `inicio < ? AND fin > ?` (idéntico a `listar_bloqueos_de_recursos`).
+- [x] 2.3 **Verde:** implementar en `app/db/repositorio_turnos.py` la consulta con SQL como literal completo (sin f-strings ni concatenación), reutilizando `COLUMNAS_TURNO` y `turno_desde_fila`. La conversión de `Turno` ←→ fila no se duplica.
 
 ## 3. Router (contrato plano D-A2, Regla dura 8)
 

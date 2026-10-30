@@ -20,6 +20,7 @@ from app.db.repositorio_turnos import (
     COLUMNAS_TURNO,
     cancelar_turno,
     crear_turno,
+    listar_reservados_del_recurso,
     listar_turnos_activos_del_dia,
     obtener_turno,
     reprogramar_turno,
@@ -713,3 +714,115 @@ def test_reprogramar_turno_con_id_distinto_o_sin_id_lanza_value_error_y_no_escri
 
     assert obtener_turno(conexion, anterior.id) == anterior  # type: ignore[arg-type]
     assert conexion.execute("SELECT COUNT(*) FROM auditoria_turno").fetchone()[0] == 1
+
+
+# --- C-16 listar_reservados_del_recurso ---
+
+DIA_BLOQUEO = datetime(2026, 11, 10)
+DESDE_BLOQUEO = DIA_BLOQUEO.replace(hour=9)
+HASTA_BLOQUEO = DIA_BLOQUEO.replace(hour=10, minute=30)
+
+
+def test_listar_reservados_del_recurso_devuelve_los_reservados_del_profesional_en_rango(
+    conexion: sqlite3.Connection,
+) -> None:
+    _agregar_recursos_alternativos(conexion)
+    en_rango_1 = _insertar_turno(
+        conexion, inicio="2026-11-10T09:30:00", fin="2026-11-10T10:00:00"
+    )
+    en_rango_2 = _insertar_turno(
+        conexion, inicio="2026-11-10T10:00:00", fin="2026-11-10T10:15:00"
+    )
+    _insertar_turno(conexion, inicio="2026-11-10T08:00:00", fin="2026-11-10T08:30:00")  # fuera de rango
+    _insertar_turno(
+        conexion, estado="cancelado", inicio="2026-11-10T09:00:00", fin="2026-11-10T09:30:00"
+    )
+    _insertar_turno(
+        conexion,
+        profesional_id=2,
+        sillon_id=2,
+        paciente_id=2,
+        inicio="2026-11-10T09:30:00",
+        fin="2026-11-10T10:00:00",
+    )  # otro profesional en rango
+
+    turnos = listar_reservados_del_recurso(
+        conexion,
+        alcance="profesional",
+        recurso_id=1,
+        desde=DESDE_BLOQUEO,
+        hasta=HASTA_BLOQUEO,
+    )
+
+    assert turnos == [obtener_turno(conexion, en_rango_1), obtener_turno(conexion, en_rango_2)]
+
+
+def test_listar_reservados_del_recurso_con_alcance_sillon_devuelve_solo_los_de_ese_sillon(
+    conexion: sqlite3.Connection,
+) -> None:
+    _agregar_recursos_alternativos(conexion)
+    del_sillon_1 = _insertar_turno(
+        conexion, inicio="2026-11-10T09:30:00", fin="2026-11-10T10:00:00", sillon_id=1
+    )
+    _insertar_turno(
+        conexion,
+        inicio="2026-11-10T09:30:00",
+        fin="2026-11-10T10:00:00",
+        sillon_id=2,
+        profesional_id=2,
+        paciente_id=2,
+    )
+
+    turnos = listar_reservados_del_recurso(
+        conexion,
+        alcance="sillon",
+        recurso_id=1,
+        desde=DESDE_BLOQUEO,
+        hasta=HASTA_BLOQUEO,
+    )
+
+    assert turnos == [obtener_turno(conexion, del_sillon_1)]
+
+
+def test_listar_reservados_del_recurso_excluye_los_turnos_contiguos_al_borde(
+    conexion: sqlite3.Connection,
+) -> None:
+    _agregar_recursos_alternativos(conexion)
+    _insertar_turno(
+        conexion,
+        profesional_id=2,
+        paciente_id=2,
+        inicio="2026-11-10T08:00:00",
+        fin="2026-11-10T09:00:00",
+    )  # fin == desde: contiguo en el borde inferior
+    _insertar_turno(
+        conexion,
+        profesional_id=2,
+        paciente_id=2,
+        inicio="2026-11-10T10:30:00",
+        fin="2026-11-10T11:00:00",
+    )  # inicio == hasta: contiguo en el borde superior
+    dentro = _insertar_turno(
+        conexion,
+        profesional_id=2,
+        inicio="2026-11-10T09:30:00",
+        fin="2026-11-10T10:00:00",
+    )
+
+    afectados_profesional = listar_reservados_del_recurso(
+        conexion,
+        alcance="profesional",
+        recurso_id=2,
+        desde=DESDE_BLOQUEO,
+        hasta=HASTA_BLOQUEO,
+    )
+    afectados_sillon = listar_reservados_del_recurso(
+        conexion,
+        alcance="sillon",
+        recurso_id=1,
+        desde=DESDE_BLOQUEO,
+        hasta=HASTA_BLOQUEO,
+    )
+
+    assert afectados_profesional == [obtener_turno(conexion, dentro)]
+    assert afectados_sillon == [obtener_turno(conexion, dentro)]
