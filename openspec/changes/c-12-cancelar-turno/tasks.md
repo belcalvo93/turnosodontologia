@@ -6,7 +6,7 @@
 
 ## 2. Persistencia transaccional y auditoría (`RN-AUD-01`, `RN-AUD-03`)
 
-- [ ] 2.1 Agregar la función transaccional de cancelación en el repositorio de turnos (`app/db/`) que dentro de `with transaccion(conexion):` cargue el turno, invoque `validar_cancelacion`, actualice `estado = 'cancelado'` e inserte el registro en `auditoria_turno` con `accion = 'cancelar'`, `usuario_id`, `ocurrio_en`, `antes` y `despues`, verificando con tests que si la validación falla no se modifica el turno ni se agrega fila en `auditoria_turno`
+- [ ] 2.1 Agregar `cancelar_turno(conexion, turno, *, usuario_id, ocurrio_en)` en `app/db/repositorio_turnos.py` que, dentro de la transacción abierta por el router, actualice `estado = 'cancelado'` e inserte en `auditoria_turno` el registro `accion = 'cancelar'` con `usuario_id`, `ocurrio_en`, `antes` y `despues` (sin llamar al dominio, regla dura 1), verificando con tests que guarda el turno cancelado con un único registro de auditoría y que si la transacción se revierte no queda ni el cambio de estado ni la auditoría
 
 ## 3. Endpoint HTTP y liberación de agenda (`RN-TUR-06`, `RN-ACC-02`)
 

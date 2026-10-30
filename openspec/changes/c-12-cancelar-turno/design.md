@@ -39,11 +39,11 @@ Estado previo y restricciones:
   ```
   *Por qué:* chequea primero `RN-TUR-10` (estado `cancelado`) y luego `RN-TUR-09` (`turno.inicio > ahora`) con el reloj inyectado `ahora`, devolviendo una nueva instancia inmutable (`dataclasses.replace`) sin efectos secundarios. Tanto `RN-TUR-09` como `RN-TUR-10` lanzan `TurnoNoModificable`, que la capa API traduce a `409`.
 
-- **D2 — Transacción única para actualizar turno e insertar auditoría.** En el repositorio de turnos (`app/db/`), `cancelar_turno_en_db(conexion, turno_id, usuario_id, ahora)` ejecuta todo dentro de `with transaccion(conexion):` (`BEGIN IMMEDIATE`):
-  1. `SELECT` del turno por `id`. Si no existe, retorna `None` (el router responde `404`).
+- **D2 — Transacción única para actualizar turno e insertar auditoría (ajustado en apply).** Siguiendo el patrón de `C-11` y la regla dura 1 (`db → domain` solo tipos), el repositorio no llama al dominio. `POST /turnos/{id}/cancelar` orquesta todo dentro de `with transaccion(conexion):` (`BEGIN IMMEDIATE`):
+  1. Carga el turno con `obtener_turno(conexion, turno_id)`. Si no existe, responde `404`.
   2. Llama a `validar_cancelacion(turno_actual, ahora)`. Si lanza `TurnoNoModificable`, la excepción sale del bloque, se hace `rollback` y no se ejecuta ningún `UPDATE` ni `INSERT` (`RN-AUD-03`).
-  3. Ejecuta `UPDATE turno SET estado = 'cancelado' WHERE id = ?`.
-  4. Ejecuta `INSERT INTO auditoria_turno (turno_id, accion, usuario_id, ocurrio_en, antes, despues) VALUES (?, 'cancelar', ?, ?, ?, ?)` serializando `antes` (`{"estado": "reservado", ...}`) y `despues` (`{"estado": "cancelado", ...}`) en JSON siguiendo el formato de `C-11`.
+  3. Llama a `cancelar_turno(conexion, turno_actual, usuario_id=..., ocurrio_en=ahora)` de `app/db/repositorio_turnos.py`, que ejecuta `UPDATE turno SET estado = 'cancelado' WHERE id = ?` e inserta en `auditoria_turno` el registro `accion = 'cancelar'` con `antes` (`estado: "reservado"`) y `despues` (`estado: "cancelado"`) usando `snapshot_turno` de `C-11`.
+  *Por qué el ajuste:* la versión original ponía la llamada a `validar_cancelacion` dentro del repositorio, lo que rompía la regla dura 1 de `AGENTS.md`.
 
 - **D3 — Reloj inyectado en el endpoint HTTP.** `POST /turnos/{id}/cancelar` obtiene el instante actual desde la dependencia de reloj de la app (`app.state.reloj`), convirtiéndolo a hora local del consultorio sin offset cuando corresponda, para que los tests de API en `tests/api/test_cancelar_turno.py` controlen exactamente el instante (`antes`, `igual`, `después` de `turno.inicio`).
 
