@@ -1,4 +1,4 @@
-"""Reglas de alta y reprogramación de turno en dominio puro (C-10, C-13)."""
+"""Reglas de alta, cancelación y reprogramación de turno en dominio puro (C-10, C-12, C-13)."""
 
 from collections.abc import Sequence
 from dataclasses import replace
@@ -94,6 +94,15 @@ def validar_alta(
         if recurso is not None and solapan(candidato, turno):
             raise ConflictoAgenda(_MENSAJE_CONFLICTO[recurso])
     return candidato
+
+
+def validar_cancelacion(turno: Turno, ahora: datetime) -> Turno:
+    """Valida que el turno esté reservado y sea futuro, devolviendo el turno cancelado (RN-TUR-09, RN-TUR-10)."""
+    if turno.estado == "cancelado":
+        raise TurnoNoModificable("El turno ya está cancelado.")
+    if not es_futuro(turno, ahora):
+        raise TurnoNoModificable("Solo se pueden cancelar turnos futuros.")
+    return replace(turno, estado="cancelado")
 
 
 def _recurso_compartido(candidato: Turno, turno: Turno) -> str | None:

@@ -4,6 +4,7 @@ import sqlite3
 from collections.abc import Iterator
 from contextlib import closing
 import json
+from dataclasses import replace
 from datetime import date, datetime, timedelta
 from pathlib import Path
 
@@ -17,6 +18,7 @@ from app.db.repositorio_profesionales import crear_profesional
 from app.db.repositorio_sillones import crear_sillon
 from app.db.repositorio_turnos import (
     COLUMNAS_TURNO,
+    cancelar_turno,
     crear_turno,
     listar_turnos_activos_del_dia,
     obtener_turno,
@@ -386,6 +388,75 @@ def test_crear_turno_si_falla_la_auditoria_revierte_tambien_el_turno(
 
     assert _contar(ruta_base, "turno") == 0
     assert _contar(ruta_base, "auditoria_turno") == 0
+
+
+# --- C-12 cancelar_turno + auditoría ---
+
+
+def _crear_y_cancelar_en_dominio(con: sqlite3.Connection) -> tuple[Turno, Turno]:
+    with transaccion(con):
+        antes = crear_turno(con, _candidato(), creado_por=1, creado_en=datetime(2026, 1, 5, 9, 0))
+    return antes, replace(antes, estado="cancelado")
+
+
+def test_cancelar_turno_guarda_estado_cancelado_y_auditoria_con_antes_y_despues(
+    conexion: sqlite3.Connection,
+) -> None:
+    antes, despues = _crear_y_cancelar_en_dominio(conexion)
+
+    with transaccion(conexion):
+        cancelar_turno(conexion, antes, despues, usuario_id=1, ocurrio_en=datetime(2026, 1, 12, 9, 0))
+
+    assert antes.id is not None
+    assert obtener_turno(conexion, antes.id) == despues
+    auditorias = conexion.execute(
+        "SELECT turno_id, accion, usuario_id, ocurrio_en, antes, despues FROM auditoria_turno"
+        " WHERE accion = 'cancelar'"
+    ).fetchall()
+    assert auditorias == [
+        (antes.id, "cancelar", 1, "2026-01-12T09:00:00", snapshot_turno(antes), snapshot_turno(despues))
+    ]
+    assert json.loads(auditorias[0][4])["estado"] == "reservado"
+    assert json.loads(auditorias[0][5])["estado"] == "cancelado"
+
+
+def test_cancelar_turno_no_toca_otros_turnos(conexion: sqlite3.Connection) -> None:
+    antes, despues = _crear_y_cancelar_en_dominio(conexion)
+    with transaccion(conexion):
+        otro = crear_turno(
+            conexion,
+            _candidato(datetime(2026, 1, 12, 11, 0)),
+            creado_por=1,
+            creado_en=datetime(2026, 1, 5, 9, 5),
+        )
+
+    with transaccion(conexion):
+        cancelar_turno(conexion, antes, despues, usuario_id=1, ocurrio_en=datetime(2026, 1, 12, 9, 0))
+
+    assert otro.id is not None
+    assert obtener_turno(conexion, otro.id) == otro
+
+
+def test_cancelar_turno_si_falla_la_auditoria_el_turno_sigue_reservado(
+    conexion: sqlite3.Connection, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    antes, despues = _crear_y_cancelar_en_dominio(conexion)
+
+    def auditoria_rota(*args: object, **kwargs: object) -> None:
+        raise sqlite3.IntegrityError("fallo simulado de auditoría")
+
+    monkeypatch.setattr("app.db.repositorio_turnos.registrar_auditoria", auditoria_rota)
+
+    with pytest.raises(sqlite3.IntegrityError, match="simulado"):
+        with transaccion(conexion):
+            cancelar_turno(conexion, antes, despues, usuario_id=1, ocurrio_en=datetime(2026, 1, 12, 9, 0))
+
+    assert antes.id is not None
+    assert obtener_turno(conexion, antes.id) == antes
+    cancelaciones = conexion.execute(
+        "SELECT COUNT(*) FROM auditoria_turno WHERE accion = 'cancelar'"
+    ).fetchone()[0]
+    assert cancelaciones == 0
 
 
 # --- 4.5 listar_turnos_activos_del_dia ---
