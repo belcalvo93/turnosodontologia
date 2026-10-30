@@ -33,6 +33,10 @@ _INSERTAR_AUDITORIA: Final = """
     VALUES (?, ?, ?, ?, ?, ?)
 """
 
+_ACTUALIZAR_REPROGRAMACION: Final = """
+    UPDATE turno SET inicio = ?, fin = ?, profesional_id = ?, sillon_id = ?
+    WHERE id = ?
+"""
 _ACTUALIZAR_ESTADO: Final = "UPDATE turno SET estado = ? WHERE id = ?"
 
 _SELECT_ACTIVOS_DEL_DIA: Final = """
@@ -147,6 +151,44 @@ def crear_turno(
         despues=snapshot_turno(creado),
     )
     return creado
+
+
+def reprogramar_turno(
+    conexion: sqlite3.Connection,
+    anterior: Turno,
+    nuevo: Turno,
+    *,
+    usuario_id: int,
+    ocurrio_en: datetime,
+) -> Turno:
+    """Actualiza horario y recursos del turno y registra la auditoría `reprogramar`.
+
+    Precondición: se llama dentro de `transaccion(...)`, que abre el router (C-11 D1); esta
+    función no abre una propia. La atomicidad (RN-AUD-03) la da esa transacción. El `id` y el
+    `estado` no cambian; `antes` y `despues` usan el snapshot canónico completo (C-11 D2).
+    """
+    if anterior.id is None or nuevo.id != anterior.id:
+        raise ValueError("El turno anterior y el nuevo deben tener el mismo id persistido.")
+    conexion.execute(
+        _ACTUALIZAR_REPROGRAMACION,
+        (
+            nuevo.inicio.isoformat(timespec="seconds"),
+            nuevo.fin.isoformat(timespec="seconds"),
+            nuevo.profesional_id,
+            nuevo.sillon_id,
+            anterior.id,
+        ),
+    )
+    registrar_auditoria(
+        conexion,
+        turno_id=anterior.id,
+        accion="reprogramar",
+        usuario_id=usuario_id,
+        ocurrio_en=ocurrio_en,
+        antes=snapshot_turno(anterior),
+        despues=snapshot_turno(nuevo),
+    )
+    return nuevo
 
 
 def cancelar_turno(

@@ -1,5 +1,6 @@
-"""Router de turnos: alta con POST /turnos, consulta con GET /turnos/{id} (C-11) y
-cancelación con POST /turnos/{id}/cancelar (C-12).
+"""Router de turnos: alta con POST /turnos, consulta con GET /turnos/{id} (C-11, design D1, D5, D7),
+cancelación con POST /turnos/{id}/cancelar (C-12) y reprogramación con
+POST /turnos/{id}/reprogramar (C-13).
 
 El router solo orquesta: valida la forma de la entrada (Pydantic), abre la transacción,
 carga el contexto desde los repositorios y delega las reglas en `app/domain/`.
@@ -27,9 +28,15 @@ from app.db.repositorio_turnos import (
     crear_turno,
     listar_turnos_activos_del_dia,
     obtener_turno,
+    reprogramar_turno,
 )
 from app.domain.models import EstadoTurno, Turno
-from app.domain.reglas_turno import validar_alta, validar_cancelacion, validar_recursos_alta
+from app.domain.reglas_turno import (
+    validar_alta,
+    validar_cancelacion,
+    validar_recursos_alta,
+    validar_reprogramacion,
+)
 from app.domain.usuarios import Rol, Usuario, puede_ver_turno
 
 router = APIRouter(prefix="/turnos", tags=["turnos"])
@@ -48,6 +55,14 @@ class CrearTurnoRequest(BaseModel):
     sillon_id: int
     prestacion_id: int
     inicio: NaiveDatetime  # hora local del consultorio; con zona u offset -> 422
+
+
+class ReprogramarTurnoRequest(BaseModel):
+    """Entrada de la reprogramación: profesional y sillón son opcionales (RN-TUR-07)."""
+
+    nuevo_inicio: NaiveDatetime  # hora local del consultorio; con zona u offset -> 422
+    nuevo_profesional_id: int | None = None
+    nuevo_sillon_id: int | None = None
 
 
 class TurnoResponse(BaseModel):
@@ -121,6 +136,75 @@ def post_turno(
         )
         creado = crear_turno(conexion, candidato, creado_por=usuario.id, creado_en=ahora_local)
     return turno_a_response(creado)
+
+
+@router.post("/{turno_id}/reprogramar")
+def post_reprogramar_turno(
+    turno_id: Annotated[int, Path(ge=1)],
+    entrada: ReprogramarTurnoRequest,
+    conexion: ConexionDep,
+    usuario: CreadorDep,
+    ahora_local: AhoraLocalDep,
+) -> TurnoResponse:
+    """Mueve un turno futuro activo a otro horario, y opcionalmente a otro profesional o sillón."""
+    dia = entrada.nuevo_inicio.date()
+    desde = datetime.combine(dia, time.min)
+    # BEGIN IMMEDIATE: el turno y el contexto se leen con el lock de escritura ya tomado.
+    with transaccion(conexion):
+        turno = obtener_turno(conexion, turno_id)
+        if turno is None:
+            raise HTTPException(status_code=404)
+        profesional_id = (
+            turno.profesional_id
+            if entrada.nuevo_profesional_id is None
+            else entrada.nuevo_profesional_id
+        )
+        sillon_id = turno.sillon_id if entrada.nuevo_sillon_id is None else entrada.nuevo_sillon_id
+        # Solo se cargan los recursos enviados; las reglas las aplica el dominio.
+        nuevo_profesional = (
+            None
+            if entrada.nuevo_profesional_id is None
+            else obtener_profesional_por_id(conexion, entrada.nuevo_profesional_id)
+        )
+        nuevo_sillon = (
+            None
+            if entrada.nuevo_sillon_id is None
+            else obtener_sillon_por_id(conexion, entrada.nuevo_sillon_id)
+        )
+        prestacion = obtener_prestacion_por_id(conexion, turno.prestacion_id)
+        if prestacion is None:
+            raise RuntimeError("El turno referencia una prestación inexistente.")
+        nuevo = validar_reprogramacion(
+            turno,
+            entrada.nuevo_inicio,
+            ahora_local,
+            prestacion,
+            listar_horarios_por_profesional_y_dia(
+                conexion, profesional_id, entrada.nuevo_inicio.weekday()
+            ),
+            listar_bloqueos_de_recursos(
+                conexion,
+                profesional_id=profesional_id,
+                sillon_id=sillon_id,
+                desde=desde,
+                hasta=desde + timedelta(days=1),
+            ),
+            listar_turnos_activos_del_dia(
+                conexion,
+                dia=dia,
+                profesional_id=profesional_id,
+                sillon_id=sillon_id,
+                paciente_id=turno.paciente_id,
+            ),
+            nuevo_profesional_id=entrada.nuevo_profesional_id,
+            nuevo_sillon_id=entrada.nuevo_sillon_id,
+            nuevo_profesional=nuevo_profesional,
+            nuevo_sillon=nuevo_sillon,
+        )
+        reprogramado = reprogramar_turno(
+            conexion, turno, nuevo, usuario_id=usuario.id, ocurrio_en=ahora_local
+        )
+    return turno_a_response(reprogramado)
 
 
 @router.get("/{turno_id}")
