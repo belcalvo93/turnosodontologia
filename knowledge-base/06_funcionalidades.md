@@ -218,4 +218,4 @@ Todo lo que sigue es siguiente iteración o etapa posterior según el informe (D
 | Liquidación a obras sociales y prepagas | Vacío del mercado (C.3.1); ver IF-02 |
 | Historia clínica, odontograma y periodontograma | Ley 27.706 y Decreto 393/2023 (C.3.6); ver IF-07 |
 | Reportes y métricas, multisede, funciones de IA | — |
-| Frontend React y aplicación móvil | — |
+| Frontend React completo y aplicación móvil | El frontend mínimo en TypeScript es el change C-18 (posterior al MVP) |

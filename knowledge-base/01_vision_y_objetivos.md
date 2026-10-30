@@ -50,7 +50,7 @@ Nada de esta lista forma parte del MVP. Se detalla en [06_funcionalidades.md](06
 - Liquidación a obras sociales y prepagas.
 - Historia clínica, odontograma y periodontograma.
 - Reportes y métricas, multisede, funciones de IA.
-- Frontend React y aplicación móvil.
+- Frontend React completo y aplicación móvil (el frontend mínimo en TypeScript es el change C-18, posterior al MVP).
 
 ## Métricas de éxito
 
