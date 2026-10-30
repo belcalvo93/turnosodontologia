@@ -10,8 +10,8 @@
 
 ## 3. Endpoint HTTP y liberación de agenda (`RN-TUR-06`, `RN-ACC-02`)
 
-- [ ] 3.1 Implementar `POST /turnos/{id}/cancelar` en `app/api/turnos.py` para los roles `administracion` y `recepcion` con reloj inyectado, verificando con tests en `tests/api/test_cancelar_turno.py`: cancelación de turno futuro (`200` con `estado = "cancelado"` y registro en `auditoria_turno`), turno en el instante exacto o pasado (`409`), segunda cancelación (`409` sin nuevo registro de auditoría) y turno inexistente (`404`)
-- [ ] 3.2 Verificar en `tests/api/test_cancelar_turno.py` que tras cancelar un turno de `10:00` a `10:30`, reservar un nuevo turno en el mismo intervalo con el mismo profesional, sillón y paciente responde `201` (`RN-TUR-06`), y que un usuario con rol `odontologo` recibe `403` (`RN-ACC-02`) y una petición sin token recibe `401` (`RN-ACC-01`)
+- [x] 3.1 Implementar `POST /turnos/{id}/cancelar` en `app/api/turnos.py` para los roles `administracion` y `recepcion` con reloj inyectado, verificando con tests en `tests/api/test_cancelar_turno.py`: cancelación de turno futuro (`200` con `estado = "cancelado"` y registro en `auditoria_turno`), turno en el instante exacto o pasado (`409`), segunda cancelación (`409` sin nuevo registro de auditoría) y turno inexistente (`404`)
+- [x] 3.2 Verificar en `tests/api/test_cancelar_turno.py` que tras cancelar un turno de `10:00` a `10:30`, reservar un nuevo turno en el mismo intervalo con el mismo profesional, sillón y paciente responde `201` (`RN-TUR-06`), y que un usuario con rol `odontologo` recibe `403` (`RN-ACC-02`) y una petición sin token recibe `401` (`RN-ACC-01`)
 
 ## 4. Verificación integral del change
 
