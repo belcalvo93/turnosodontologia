@@ -48,7 +48,6 @@ CREATE TABLE IF NOT EXISTS prestacion (
     activa           INTEGER NOT NULL DEFAULT 1 CHECK (activa IN (0, 1))
 );
 
-
 -- Pacientes del consultorio (C-06, KB 04 §Paciente). RN-PAC-01, RN-PAC-02:
 -- nombre, apellido y DNI obligatorios; DNI único; sin baja lógica.
 CREATE TABLE IF NOT EXISTS paciente (
@@ -73,3 +72,60 @@ CREATE TABLE IF NOT EXISTS horario_atencion (
 
 CREATE INDEX IF NOT EXISTS idx_horario_profesional_dia
     ON horario_atencion (profesional_id, dia_semana);
+
+-- Bloqueos horarios de profesional o sillón (C-09, KB 04 §Bloqueo, RN-REC-02).
+CREATE TABLE IF NOT EXISTS bloqueo (
+    id         INTEGER PRIMARY KEY AUTOINCREMENT,
+    alcance    TEXT    NOT NULL CHECK (alcance IN ('profesional', 'sillon')),
+    recurso_id INTEGER NOT NULL,
+    inicio     TEXT    NOT NULL,
+    fin        TEXT    NOT NULL,
+    motivo     TEXT    NOT NULL DEFAULT '',
+    CHECK (inicio < fin)
+);
+
+CREATE INDEX IF NOT EXISTS idx_bloqueo_alcance_recurso_inicio
+    ON bloqueo (alcance, recurso_id, inicio);
+
+-- Turnos (C-11, KB 04 §Turno, RN-TUR-02/14). Fechas: hora local sin offset (D4).
+CREATE TABLE IF NOT EXISTS turno (
+    id             INTEGER PRIMARY KEY AUTOINCREMENT,
+    paciente_id    INTEGER NOT NULL REFERENCES paciente(id),
+    profesional_id INTEGER NOT NULL REFERENCES profesional(id),
+    sillon_id      INTEGER NOT NULL REFERENCES sillon(id),
+    prestacion_id  INTEGER NOT NULL REFERENCES prestacion(id),
+    inicio         TEXT    NOT NULL,
+    fin            TEXT    NOT NULL,
+    estado         TEXT    NOT NULL DEFAULT 'reservado'
+                           CHECK (estado IN ('reservado', 'cancelado')),
+    creado_por     INTEGER NOT NULL REFERENCES usuario(id),
+    creado_en      TEXT    NOT NULL,
+    CHECK (inicio < fin)
+);
+
+CREATE INDEX IF NOT EXISTS idx_turno_profesional_inicio ON turno (profesional_id, inicio);
+CREATE INDEX IF NOT EXISTS idx_turno_sillon_inicio      ON turno (sillon_id, inicio);
+CREATE INDEX IF NOT EXISTS idx_turno_paciente_inicio    ON turno (paciente_id, inicio);
+
+-- Auditoría de turnos (C-11, KB 04 §AuditoriaTurno, RN-AUD-01/02). Solo INSERT.
+CREATE TABLE IF NOT EXISTS auditoria_turno (
+    id         INTEGER PRIMARY KEY AUTOINCREMENT,
+    turno_id   INTEGER NOT NULL REFERENCES turno(id),
+    accion     TEXT    NOT NULL CHECK (accion IN ('crear', 'cancelar', 'reprogramar')),
+    usuario_id INTEGER NOT NULL REFERENCES usuario(id),
+    ocurrio_en TEXT    NOT NULL,
+    antes      TEXT    NULL,
+    despues    TEXT    NOT NULL
+);
+
+CREATE TRIGGER IF NOT EXISTS auditoria_turno_sin_update
+    BEFORE UPDATE ON auditoria_turno
+BEGIN
+    SELECT RAISE(ABORT, 'auditoria_turno es de solo agregado');
+END;
+
+CREATE TRIGGER IF NOT EXISTS auditoria_turno_sin_delete
+    BEFORE DELETE ON auditoria_turno
+BEGIN
+    SELECT RAISE(ABORT, 'auditoria_turno es de solo agregado');
+END;

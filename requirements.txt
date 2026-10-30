@@ -10,3 +10,6 @@ pwdlib[argon2]>=0.2
 # Tests (httpx provee el TestClient de FastAPI)
 httpx>=0.27
 pytest>=8.0
+
+# Zonas horarias (C-11): ZoneInfo en Windows necesita la base IANA
+tzdata>=2024.1

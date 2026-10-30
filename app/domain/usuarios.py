@@ -4,7 +4,7 @@ from dataclasses import dataclass
 from enum import StrEnum
 
 from app.domain.errores import DatoInvalido
-from app.domain.models import Profesional
+from app.domain.models import Profesional, Turno
 
 
 class Rol(StrEnum):
@@ -29,6 +29,13 @@ class Usuario:
     # Sin FK en la base; C-07 valida que el profesional exista para usuarios odontólogo.
     profesional_id: int | None
     activo: bool
+
+
+def puede_ver_turno(usuario: Usuario, turno: Turno) -> bool:
+    """Administración y recepción ven cualquier turno; el odontólogo solo los suyos (RN-ACC-03)."""
+    if usuario.rol is Rol.ODONTOLOGO:
+        return usuario.profesional_id is not None and usuario.profesional_id == turno.profesional_id
+    return True
 
 
 def validar_username(username: str) -> str:
