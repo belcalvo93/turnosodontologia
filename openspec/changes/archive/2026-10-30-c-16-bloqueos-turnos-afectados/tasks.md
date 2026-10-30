@@ -31,4 +31,4 @@
 - [x] 5.1 Correr toda la suite y los health checks; no archivar con nada en rojo.
 - [x] 5.2 Verificar trazabilidad RN→test: `RN-TUR-04`, `RN-TUR-05` y `RN-TUR-08` cubiertas por los tests de dominio; sin `RN` sin test.
 - [x] 5.3 Verificar datos ficticios en los fixtures nuevos: DNIs con sufijo `"(ficticio)"` y sin datos reales.
-- [ ] 5.4 Guardar (`sync`) el delta del spec a `openspec/specs/bloqueos/spec.md` recién al archivar el change (paso `/opsx:archive`).
+- [x] 5.4 Guardar (`sync`) el delta del spec a `openspec/specs/bloqueos/spec.md` recién al archivar el change (paso `/opsx:archive`).

@@ -19,13 +19,59 @@ El sistema SHALL permitir al rol `administracion` crear un bloqueo mediante `POS
 
 - **Dado** un usuario autenticado con rol `administracion` y un sillón existente
 - **Cuando** envía `POST /bloqueos` con `inicio` igual o posterior a `fin`
-- **Entonces** el sistema responde `422` con un mensaje de error en español y no persiste el bloqueo
+- **Entonces** el sistema responde `422` con `codigo` `dato_invalido`, un mensaje de error en español y no persiste el bloqueo
 
 #### Scenario: Rechazo por recurso inexistente
 
 - **Dado** un usuario autenticado con rol `administracion`
 - **Cuando** envía `POST /bloqueos` con `alcance = "profesional"` (o `"sillon"`) y un `recurso_id` que no existe en la tabla correspondiente
-- **Entonces** el sistema responde `422` con un mensaje de error en español y no persiste el bloqueo
+- **Entonces** el sistema responde `422` con `codigo` `dato_invalido`, un mensaje de error en español y no persiste el bloqueo
+
+### Requirement: Reporte de turnos afectados al crear un bloqueo
+
+La respuesta de `POST /bloqueos` SHALL incluir, junto al bloqueo creado y al mismo nivel, el campo `turnos_afectados`: los turnos `reservado` del recurso bloqueado cuyo intervalo `[inicio, fin)` se solapa con el del bloqueo, ordenados por `inicio ASC, id ASC`. El sistema SHALL NOT cancelar, modificar ni auditar esos turnos. El alcance global queda fuera de alcance.
+
+#### Scenario: Crear un bloqueo reporta los turnos reservados solapados (RN-TUR-05 con RN-TUR-04)
+
+- **Dado** un usuario con rol `administracion`, un profesional con un turno `reservado` de `10:00` a `10:30` (y un sillón con su propio turno en el mismo rango) y datos ficticios rotulados con sufijo `"(ficticio)"`
+- **Cuando** crea un bloqueo `alcance = "profesional"` con intervalo `09:30–10:30`
+- **Entonces** responde `201` con el bloqueo y `turnos_afectados` contiene exactamente el turno `reservado` de ese profesional (con `id`, `paciente_id`, `profesional_id`, `sillon_id`, `prestacion_id`, `inicio`, `fin`, `estado`), sin el turno del otro recurso
+
+#### Scenario: Crear un bloqueo de sillón reporta solo los turnos de ese sillón
+
+- **Dado** un usuario con rol `administracion`, un sillón A con un turno `reservado` que cae dentro del intervalo, y un profesional con su propio turno en el mismo rango
+- **Cuando** crea un bloqueo `alcance = "sillon"` sobre el sillón A
+- **Entonces** responde `201` y `turnos_afectados` contiene solo el turno del sillón A: los turnos de otro profesional o de otro sillón no se reportan
+
+#### Scenario: Los turnos contiguos al intervalo del bloqueo no se reportan (RN-TUR-04)
+
+- **Dado** un usuario con rol `administracion` y dos turnos `reservado` del mismo profesional, uno de `08:00` a `10:00` y otro de `13:00` a `15:00`
+- **Cuando** crea un bloqueo para ese profesional con intervalo `10:00–13:00`
+- **Entonces** responde `201` con `turnos_afectados = []`: los intervalos semiabiertos `[inicio, fin)` hacen que los turnos que terminan o empiezan en el borde del bloqueo no lo afecten
+
+#### Scenario: Los turnos cancelados no se reportan (RN-TUR-08)
+
+- **Dado** un usuario con rol `administracion`, un profesional con dos turnos `reservado` y un turno `cancelado` que quedan dentro del intervalo
+- **Cuando** crea un bloqueo para ese profesional sobre ese intervalo
+- **Entonces** responde `201` y `turnos_afectados` contiene solo los 2 turnos `reservado`; el turno `cancelado` no ocupa agenda
+
+#### Scenario: turnos_afectados llega vacío cuando no hay turnos superpuestos
+
+- **Dado** un usuario con rol `administracion` y un sillón sin turnos que se superpongan con el intervalo
+- **Cuando** crea un bloqueo `alcance = "sillon"` sobre ese intervalo
+- **Entonces** responde `201` con el bloqueo creado y `turnos_afectados = []`
+
+#### Scenario: Los turnos afectados se listan ordenados por inicio y no se modifican
+
+- **Dado** un usuario con rol `administracion` y un profesional con un turno `reservado` de `11:00` a `11:30`, otro de `10:00` a `10:30` y un tercero de `10:30` a `11:00`, todos dentro del intervalo del bloqueo
+- **Cuando** crea el bloqueo para ese profesional y luego consulta cada turno reportado por su `id`
+- **Entonces** `turnos_afectados` está ordenado por `inicio ASC`, cada turno sigue con `estado = "reservado"` y no se agregó ninguna fila en `auditoria_turno`
+
+#### Scenario: GET /bloqueos no incluye turnos_afectados
+
+- **Dado** al menos un bloqueo registrado creado con reporte de turnos afectados
+- **Cuando** un usuario autenticado (cualquier rol) consulta `GET /bloqueos`
+- **Entonces** cada bloqueo del listado conserva exactamente sus campos `id, alcance, recurso_id, inicio, fin, motivo` y no incluye la clave `turnos_afectados`
 
 ### Requirement: Consulta y eliminación de bloqueos
 
