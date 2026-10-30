@@ -53,6 +53,9 @@ La fuente de verdad del dominio vive en `knowledge-base/`. **Leé el archivo rel
 | **Backend FastAPI** | Routers, Pydantic, scaffolding del proyecto | `fastapi`, `fastapi-templates` |
 | **Acceso y seguridad** | Login, token, RBAC, auditoría | `auth-implementation-patterns`, `fastapi` |
 | **Orquestación** | Fundación OPSX/SDD y docs | `active-orchestrator`, `kb-creator`, `roadmap-generator`, `agent-instruction`, `skill-registry`, `find-skill`, `skill-creator` |
+| **Revisión de specs** | Revisar escenarios, citas RN-xx y tasks.md antes del apply | `revisor-escenarios-sdd` |
+
+> `revisor-escenarios-sdd`: revisar los specs y `tasks.md` de un change AL TERMINAR un `/opsx:propose` y ANTES de `/opsx:apply`. Necesita solo la ruta del change (`openspec/changes/<nombre>/`). Informa hallazgos (ambigüedad, falta, sobra, cita errónea, conteo) con archivo y línea, sin modificar archivos: el humano decide qué corregir.
 
 Cargá la skill correspondiente al contexto ANTES de escribir código.
 

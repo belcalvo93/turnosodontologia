@@ -13,6 +13,7 @@ Las skills vienen versionadas en el repositorio (`.agents/skills/` para OpenCode
 | python-testing-patterns | Escribir tests con pytest: unitarios del dominio, de API y e2e (todos los changes, Strict TDD) | `.agents/skills/python-testing-patterns/SKILL.md` |
 | auth-implementation-patterns | Login, token y roles (C-03 `auth-login-roles`, dominio CRÍTICO) | `.agents/skills/auth-implementation-patterns/SKILL.md` |
 | api-design-principles | Definir rutas, códigos de estado y formato de errores de la API | `.agents/skills/api-design-principles/SKILL.md` |
+| revisor-escenarios-sdd | Revisar specs y tasks.md de un change al terminar un /opsx:propose, antes de /opsx:apply; cruza escenarios con la KB y el contrato de errores-api | `.agents/skills/revisor-escenarios-sdd/SKILL.md` |
 
 ## Compact Rules
 
@@ -55,6 +56,15 @@ Las skills vienen versionadas en el repositorio (`.agents/skills/` para OpenCode
 - Paginación en las colecciones grandes (por ejemplo, la agenda).
 - La estructura de la API no copia el esquema de la base de datos.
 - OpenAPI/Swagger de FastAPI como documentación; mantenerlo coherente con los specs.
+
+### revisor-escenarios-sdd
+- Solo lectura: informa hallazgos con archivo y línea; no modifica archivos ni resuelve por su cuenta, el humano decide qué corregir.
+- Contar los escenarios reales contando las líneas `#### Scenario:`; no confiar en el número total que declare un documento.
+- Cruzar cada escenario con su RN-xx en `knowledge-base/05_reglas_de_negocio.md`: que el número exista y que la regla diga lo que el escenario afirma.
+- No imponer códigos HTTP de memoria: cotejar con `openspec/specs/errores-api/spec.md` (404 si el id va en la ruta, 422 si el dato viene en el cuerpo, 409 dominio/unicidad, 401 sin token, 403 con token sin permiso).
+- Bordes a revisar: intervalos semiabiertos `[inicio, fin)`, recurso inexistente, rol sin permiso, listas vacías, estados del turno y datos ficticios (RN-PAC-03).
+- Cada RN-xx del change mapea a al menos una tarea de test en `tasks.md` (regla dura 11) y consta la tarea de verificación final con pytest.
+- Mínimo 3 escenarios por historia del change: camino esperado, error de negocio y borde.
 
 ## Project Conventions
 
