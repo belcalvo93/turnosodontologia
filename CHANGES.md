@@ -435,7 +435,7 @@ El MVP es solo backend (el frontend React es etapa posterior, D.3), así que no 
 ## FASE 5 — Cierre del MVP
 
 ### [C-17] `seed-y-flujo-e2e`
-- **Estado**: `[ ]` pendiente
+- **Estado**: `[x]` completado
 - **Scope**:
   - `app/db/seed.py` con los datos ficticios de 04 (2 profesionales, 2 sillones, 3 prestaciones, horarios L-V, 2 pacientes, 3 usuarios demo); contraseñas solo desde variables de entorno
   - Test de API extremo a extremo: login recepción → crear turno → reprogramar → cancelar → login administración → consultar auditoría
