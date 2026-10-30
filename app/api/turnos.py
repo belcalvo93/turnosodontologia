@@ -1,5 +1,6 @@
-"""Router de turnos: alta con POST /turnos, consulta con GET /turnos/{id} (C-11, design D1, D5, D7)
-y reprogramación con POST /turnos/{id}/reprogramar (C-13).
+"""Router de turnos: alta con POST /turnos, consulta con GET /turnos/{id} (C-11, design D1, D5, D7),
+cancelación con POST /turnos/{id}/cancelar (C-12) y reprogramación con
+POST /turnos/{id}/reprogramar (C-13).
 
 El router solo orquesta: valida la forma de la entrada (Pydantic), abre la transacción,
 carga el contexto desde los repositorios y delega las reglas en `app/domain/`.
@@ -23,13 +24,19 @@ from app.db.repositorio_prestaciones import obtener_prestacion_por_id
 from app.db.repositorio_profesionales import obtener_profesional_por_id
 from app.db.repositorio_sillones import obtener_sillon_por_id
 from app.db.repositorio_turnos import (
+    cancelar_turno,
     crear_turno,
     listar_turnos_activos_del_dia,
     obtener_turno,
     reprogramar_turno,
 )
 from app.domain.models import EstadoTurno, Turno
-from app.domain.reglas_turno import validar_alta, validar_recursos_alta, validar_reprogramacion
+from app.domain.reglas_turno import (
+    validar_alta,
+    validar_cancelacion,
+    validar_recursos_alta,
+    validar_reprogramacion,
+)
 from app.domain.usuarios import Rol, Usuario, puede_ver_turno
 
 router = APIRouter(prefix="/turnos", tags=["turnos"])
@@ -213,3 +220,24 @@ def get_turno(
     if not puede_ver_turno(usuario, turno):
         raise SinPermiso()
     return turno_a_response(turno)
+
+
+@router.post("/{turno_id}/cancelar")
+def post_cancelar_turno(
+    turno_id: Annotated[int, Path(ge=1)],
+    conexion: ConexionDep,
+    usuario: CreadorDep,
+    ahora_local: AhoraLocalDep,
+) -> TurnoResponse:
+    """Cancela un turno futuro y audita el cambio en la misma transacción (C-12, design D2).
+
+    Si el dominio rechaza la cancelación, la excepción sale del bloque y la transacción
+    se revierte sin escribir nada (RN-AUD-03).
+    """
+    with transaccion(conexion):
+        turno = obtener_turno(conexion, turno_id)
+        if turno is None:
+            raise HTTPException(status_code=404)
+        cancelado = validar_cancelacion(turno, ahora_local)
+        cancelar_turno(conexion, turno, cancelado, usuario_id=usuario.id, ocurrio_en=ahora_local)
+    return turno_a_response(cancelado)

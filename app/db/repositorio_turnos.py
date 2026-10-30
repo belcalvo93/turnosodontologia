@@ -37,6 +37,7 @@ _ACTUALIZAR_REPROGRAMACION: Final = """
     UPDATE turno SET inicio = ?, fin = ?, profesional_id = ?, sillon_id = ?
     WHERE id = ?
 """
+_ACTUALIZAR_ESTADO: Final = "UPDATE turno SET estado = ? WHERE id = ?"
 
 _SELECT_ACTIVOS_DEL_DIA: Final = """
     SELECT id, paciente_id, profesional_id, sillon_id, prestacion_id, inicio, fin, estado
@@ -188,6 +189,33 @@ def reprogramar_turno(
         despues=snapshot_turno(nuevo),
     )
     return nuevo
+
+
+def cancelar_turno(
+    conexion: sqlite3.Connection,
+    antes: Turno,
+    despues: Turno,
+    *,
+    usuario_id: int,
+    ocurrio_en: datetime,
+) -> None:
+    """Guarda la cancelación que ya validó el dominio y su registro de auditoría `cancelar` (C-12).
+
+    No llama al dominio (regla dura 1): recibe el turno original y el devuelto por
+    `validar_cancelacion`. Precondición: se llama dentro de `transaccion(...)` (RN-AUD-03).
+    """
+    if antes.id is None:
+        raise RuntimeError("El turno a cancelar debe tener id.")
+    conexion.execute(_ACTUALIZAR_ESTADO, (despues.estado, antes.id))
+    registrar_auditoria(
+        conexion,
+        turno_id=antes.id,
+        accion="cancelar",
+        usuario_id=usuario_id,
+        ocurrio_en=ocurrio_en,
+        antes=snapshot_turno(antes),
+        despues=snapshot_turno(despues),
+    )
 
 
 def listar_turnos_activos_del_dia(

@@ -350,7 +350,7 @@ El MVP es solo backend (el frontend React es etapa posterior, D.3), así que no 
   - `knowledge-base/10_preguntas_abiertas.md` §SE-06, §IF-06
 
 ### [C-12] `cancelar-turno`
-- **Estado**: `[ ]` pendiente
+- **Estado**: `[x]` completado
 - **Scope**:
   - `app/domain/reglas_turno.py::validar_cancelacion(turno, ahora)`: turno futuro (RN-TUR-09) y no cancelado (RN-TUR-10)
   - `POST /turnos/{id}/cancelar` (administración y recepción): estado `cancelado` + auditoría con antes/después en una transacción
