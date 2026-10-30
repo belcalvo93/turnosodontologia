@@ -15,9 +15,9 @@
 
 ## 4. Verificación integral del change
 
-- [ ] 4.1 Ejecutar `pytest tests` completo y verificar que toda la suite pasa en verde
-- [ ] 4.2 Verificar que `app/domain/` no llama a `datetime.now()` ni importa `fastapi`/`app.db`/`app.api`
-- [ ] 4.3 Ejecutar `openspec validate c-12-cancelar-turno --strict` y verificar que no reporta errores
+- [x] 4.1 Ejecutar `pytest tests` completo y verificar que toda la suite pasa en verde
+- [x] 4.2 Verificar que `app/domain/` no llama a `datetime.now()` ni importa `fastapi`/`app.db`/`app.api`
+- [x] 4.3 Ejecutar `openspec validate c-12-cancelar-turno --strict` y verificar que no reporta errores
 
 ## Workflow follow-up
 
