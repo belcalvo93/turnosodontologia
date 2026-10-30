@@ -402,7 +402,7 @@ El MVP es solo backend (el frontend React es etapa posterior, D.3), así que no 
   - `knowledge-base/03_actores_y_roles.md` §RBAC
 
 ### [C-15] `consulta-auditoria`
-- **Estado**: `[ ]` pendiente
+- **Estado**: `[x]` completado
 - **Scope**:
   - `GET /auditoria?turno_id=` solo administración: registros en orden cronológico con usuario, acción, antes/después y fecha y hora
   - Sin rutas PUT/PATCH/DELETE de auditoría (RN-AUD-02)
