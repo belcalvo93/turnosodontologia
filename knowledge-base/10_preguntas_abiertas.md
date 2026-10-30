@@ -57,7 +57,7 @@ Cada ítem se buscó en el informe antes de rotularlo; ninguno aparece textualme
 | SE-06 | Concurrencia en reservas simultáneas: dos recepcionistas reservando el mismo hueco. SQLite serializa escrituras; hay que validar y escribir en una sola transacción | Alta | Diseño de repositorio y tests API | Equipo | RN-TUR-03 |
 | SE-07 | Margen de limpieza o preparación entre turnos del mismo sillón: el MVP no lo impone (se incluye en la duración de la prestación) | Baja | RN-TUR-13 | Equipo / cátedra | RN-TUR-13 |
 | SE-08 | Anticipación mínima para cancelar: el informe la lista como función de siguiente iteración (IF-10); la parte supuesta es que el MVP no impone ningún plazo más allá de "turno futuro" | Media | RN-TUR-09 | Equipo / cátedra | RN-TUR-09 |
-| SE-09 | Turnos ya existentes cuando se crea un bloqueo que los cubre: ¿se cancelan, se listan para reprogramar, se rechaza el bloqueo? Propuesta del MVP: listar y no cancelar automáticamente | Alta | Flujo 5 de 07 | Equipo / cátedra | RN-TUR-05 |
+| SE-09 | Turnos ya existentes cuando se crea un bloqueo que los cubre — **Resuelta (equipo)**: el bloqueo se crea igual y NO se cancelan turnos; la respuesta de `POST /bloqueos` devuelve la lista `turnos_afectados` (solo turnos en estado reservado, ordenados por inicio ASC) para que recepción los reprograme a mano | Alta (resuelta) | Flujo 5 de 07 | Equipo / cátedra | RN-TUR-05 |
 | SE-10 | Intervalos semiabiertos `[inicio, fin)`: turnos contiguos son válidos (el informe no lo dice literalmente) | Alta | RN-TUR-04 | Equipo | RN-TUR-04 |
 | SE-11 | Solo se cancelan o reprograman turnos futuros (el informe no define esta restricción) | Media | RN-TUR-09 | Equipo / cátedra | RN-TUR-09 |
 | SE-12 | Matriz RBAC completa (el informe define solo los tres roles). Incluye: odontólogo ve solo su agenda; ¿puede el odontólogo bloquear su agenda o crear turnos propios? | Alta | Autorización de rutas | Equipo / cátedra | RN-ACC-02/03 |
@@ -76,4 +76,4 @@ Cada ítem se buscó en el informe antes de rotularlo; ninguno aparece textualme
 
 ## Resumen para decisiones del primer change
 
-Las preguntas **alta** que conviene resolver antes de implementar: IF-06 (alcance de auditoría), SE-01, SE-02, SE-06, SE-09, SE-10 y SE-12.
+Las preguntas **alta** que conviene resolver antes de implementar: IF-06 (alcance de auditoría), SE-01, SE-02, SE-06, SE-10 y SE-12.
