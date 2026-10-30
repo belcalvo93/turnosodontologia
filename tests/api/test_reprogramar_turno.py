@@ -1,12 +1,15 @@
 """API de reprogramación: POST /turnos/{id}/reprogramar (C-13, US-008, RN-TUR-07..10, RN-AUD-03)."""
 
 import json
+import sqlite3
+import threading
 from collections.abc import Callable
 from contextlib import closing
 
 import pytest
 
-from app.db.conexion import abrir_conexion
+from app.db.conexion import abrir_conexion, transaccion
+from app.db.repositorio_turnos import reprogramar_turno as reprogramar_turno_real
 from app.domain.usuarios import Usuario
 from tests.api.test_turnos import (  # noqa: F401  (contexto_turnos es una fixture)
     CLAVES_SNAPSHOT,
@@ -204,9 +207,15 @@ def _desactivar(ctx: ContextoTurnos, tabla: str, recurso_id: int) -> None:
         con.execute(sentencias[tabla], (recurso_id,))
 
 
-@pytest.mark.parametrize("campo", ["nuevo_profesional_id", "nuevo_sillon_id"])
+@pytest.mark.parametrize(
+    ("campo", "mensaje"),
+    [
+        ("nuevo_profesional_id", "El profesional indicado no existe."),
+        ("nuevo_sillon_id", "El sillón indicado no existe."),
+    ],
+)
 def test_reprogramar_con_recurso_nuevo_inexistente_422_dato_invalido(
-    contexto_turnos: ContextoTurnos, campo: str
+    contexto_turnos: ContextoTurnos, campo: str, mensaje: str
 ) -> None:
     ctx = contexto_turnos
     turno = _reservar(ctx)
@@ -215,19 +224,19 @@ def test_reprogramar_con_recurso_nuevo_inexistente_422_dato_invalido(
 
     assert respuesta.status_code == 422
     assert respuesta.json()["codigo"] == "dato_invalido"
-    assert respuesta.json()["mensaje"]
+    assert respuesta.json()["mensaje"] == mensaje
     _assert_rechazo_sin_cambios(ctx, turno, 1)
 
 
 @pytest.mark.parametrize(
-    ("tabla", "campo", "atributo"),
+    ("tabla", "campo", "atributo", "mensaje"),
     [
-        ("profesional", "nuevo_profesional_id", "profesional_b"),
-        ("sillon", "nuevo_sillon_id", "sillon_2"),
+        ("profesional", "nuevo_profesional_id", "profesional_b", "El profesional indicado está inactivo."),
+        ("sillon", "nuevo_sillon_id", "sillon_2", "El sillón indicado está inactivo."),
     ],
 )
 def test_reprogramar_con_recurso_nuevo_inactivo_422_dato_invalido(
-    contexto_turnos: ContextoTurnos, tabla: str, campo: str, atributo: str
+    contexto_turnos: ContextoTurnos, tabla: str, campo: str, atributo: str, mensaje: str
 ) -> None:
     ctx = contexto_turnos
     turno = _reservar(ctx)
@@ -239,6 +248,7 @@ def test_reprogramar_con_recurso_nuevo_inactivo_422_dato_invalido(
 
     assert respuesta.status_code == 422
     assert respuesta.json()["codigo"] == "dato_invalido"
+    assert respuesta.json()["mensaje"] == mensaje
     _assert_rechazo_sin_cambios(ctx, turno, 1)
 
 
@@ -450,3 +460,109 @@ def test_reprogramar_a_otro_profesional_valida_el_horario_de_ese_profesional(
     assert respuesta.status_code == 409
     assert respuesta.json()["codigo"] == "fuera_de_horario"
     _assert_rechazo_sin_cambios(ctx, turno, 1)
+
+
+# --- RN-TUR-11: nadie fuerza solapamientos (C-13 3.5) ---
+
+
+def test_reprogramar_como_administracion_a_un_hueco_ocupado_409_conflicto_agenda(
+    contexto_turnos: ContextoTurnos,
+) -> None:
+    ctx = contexto_turnos
+    turno = _reservar(ctx)  # 10:00-10:30
+    ocupante = ctx.reservar(
+        ctx.cuerpo(f"{LUNES}T11:00:00", paciente_id=ctx.paciente_2, sillon_id=ctx.sillon_2)
+    )
+    assert ocupante.status_code == 201
+
+    respuesta = _reprogramar(ctx, turno["id"], f"{LUNES}T11:15:00", ctx.cabeceras_admin)
+
+    assert respuesta.status_code == 409
+    assert respuesta.json()["codigo"] == "conflicto_agenda"
+    _assert_rechazo_sin_cambios(ctx, turno, 2)
+
+
+# --- SE-06 / C-11 D1: dos reprogramaciones concurrentes al mismo hueco (C-13 3.6) ---
+
+ESPERA_MAXIMA_S = 10  # solo evita colgar la suite si algo falla; no hay esperas por tiempo
+
+
+def test_dos_reprogramaciones_concurrentes_al_mismo_hueco_una_200_y_la_otra_409(
+    contexto_turnos: ContextoTurnos, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    """La conexión de B espera el lock de A y, al obtenerlo, ve la reprogramación ya confirmada.
+
+    Determinista y sin `sleep`: A queda detenida dentro de su transacción (ya escribió, no
+    confirmó) con un `Event`; B se lanza recién entonces y avisa con otro `Event` cuando su
+    conexión ejecuta `BEGIN IMMEDIATE`. Solo después A continúa y confirma.
+    Si el router validara fuera de la transacción, B habría leído el contexto antes de ese
+    aviso, sin ver a A, y ambas reprogramaciones se aplicarían.
+    """
+    ctx = contexto_turnos
+    turno_a = _reservar(ctx)  # 10:00-10:30, paciente 1
+    turno_b = ctx.reservar(ctx.cuerpo(f"{LUNES}T09:00:00", paciente_id=ctx.paciente_2)).json()
+    hueco = f"{LUNES}T11:00:00"
+
+    a_escribio = threading.Event()  # A ya hizo el UPDATE y sigue sin confirmar
+    a_continua = threading.Event()
+    b_habilitada = threading.Event()  # desde acá se vigila el BEGIN IMMEDIATE de B
+    b_pide_el_lock = threading.Event()
+    primera_escritura = threading.Event()
+
+    def reprogramar_pausando(*args: object, **kwargs: object):  # type: ignore[no-untyped-def]
+        resultado = reprogramar_turno_real(*args, **kwargs)  # type: ignore[arg-type]
+        if not primera_escritura.is_set():  # solo A se detiene; B (si llegara) sigue de largo
+            primera_escritura.set()
+            a_escribio.set()
+            assert a_continua.wait(ESPERA_MAXIMA_S)
+        return resultado
+
+    def abrir_con_aviso(ruta):  # type: ignore[no-untyped-def]
+        conexion = abrir_conexion(ruta)
+
+        def al_ejecutar(sentencia: str) -> None:
+            if b_habilitada.is_set() and sentencia.startswith("BEGIN IMMEDIATE"):
+                b_pide_el_lock.set()
+
+        conexion.set_trace_callback(al_ejecutar)
+        return conexion
+
+    monkeypatch.setattr("app.api.turnos.reprogramar_turno", reprogramar_pausando)
+    monkeypatch.setattr("app.api.dependencias.abrir_conexion", abrir_con_aviso)
+
+    respuestas: dict[str, object] = {}
+
+    def lanzar(nombre: str, turno_id: object) -> None:
+        respuestas[nombre] = _reprogramar(ctx, turno_id, hueco)
+
+    hilo_a = threading.Thread(target=lanzar, args=("a", turno_a["id"]))
+    hilo_b = threading.Thread(target=lanzar, args=("b", turno_b["id"]))
+    hilo_a.start()
+    try:
+        assert a_escribio.wait(ESPERA_MAXIMA_S)
+        # A conserva el lock de escritura: una tercera conexión no puede tomarlo.
+        with closing(abrir_conexion(ctx.config.database_path)) as sonda:
+            sonda.execute("PRAGMA busy_timeout = 50")  # solo en este test
+            with pytest.raises(sqlite3.OperationalError, match="locked"):
+                with transaccion(sonda):
+                    pytest.fail("A debería conservar el lock de escritura")
+        b_habilitada.set()
+        hilo_b.start()
+        assert b_pide_el_lock.wait(ESPERA_MAXIMA_S)
+    finally:
+        a_continua.set()  # A confirma; B toma el lock y ve la reprogramación de A
+        hilo_a.join(ESPERA_MAXIMA_S)
+        if hilo_b.ident is not None:  # B puede no haberse lanzado si falló una espera anterior
+            hilo_b.join(ESPERA_MAXIMA_S)
+
+    assert not hilo_a.is_alive() and not hilo_b.is_alive()
+    respuesta_a, respuesta_b = respuestas["a"], respuestas["b"]
+    assert respuesta_a.status_code == 200  # type: ignore[attr-defined]
+    assert respuesta_b.status_code == 409  # type: ignore[attr-defined]
+    assert respuesta_b.json()["codigo"] == "conflicto_agenda"  # type: ignore[attr-defined]
+    assert _fila_turno(ctx, turno_a["id"])[5] == hueco
+    assert _fila_turno(ctx, turno_b["id"]) == tuple(turno_b.values())  # B quedó como estaba
+    reprogramaciones = _consultar(
+        ctx, "SELECT turno_id FROM auditoria_turno WHERE accion = 'reprogramar'"
+    )
+    assert reprogramaciones == [(turno_a["id"],)]
