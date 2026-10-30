@@ -33,6 +33,12 @@ _INSERTAR_AUDITORIA: Final = """
     VALUES (?, ?, ?, ?, ?, ?)
 """
 
+_ACTUALIZAR_REPROGRAMACION: Final = """
+    UPDATE turno SET inicio = ?, fin = ?, profesional_id = ?, sillon_id = ?
+    WHERE id = ?
+"""
+_ACTUALIZAR_ESTADO: Final = "UPDATE turno SET estado = ? WHERE id = ?"
+
 _SELECT_ACTIVOS_DEL_DIA: Final = """
     SELECT id, paciente_id, profesional_id, sillon_id, prestacion_id, inicio, fin, estado
     FROM turno
@@ -145,6 +151,71 @@ def crear_turno(
         despues=snapshot_turno(creado),
     )
     return creado
+
+
+def reprogramar_turno(
+    conexion: sqlite3.Connection,
+    anterior: Turno,
+    nuevo: Turno,
+    *,
+    usuario_id: int,
+    ocurrio_en: datetime,
+) -> Turno:
+    """Actualiza horario y recursos del turno y registra la auditoría `reprogramar`.
+
+    Precondición: se llama dentro de `transaccion(...)`, que abre el router (C-11 D1); esta
+    función no abre una propia. La atomicidad (RN-AUD-03) la da esa transacción. El `id` y el
+    `estado` no cambian; `antes` y `despues` usan el snapshot canónico completo (C-11 D2).
+    """
+    if anterior.id is None or nuevo.id != anterior.id:
+        raise ValueError("El turno anterior y el nuevo deben tener el mismo id persistido.")
+    conexion.execute(
+        _ACTUALIZAR_REPROGRAMACION,
+        (
+            nuevo.inicio.isoformat(timespec="seconds"),
+            nuevo.fin.isoformat(timespec="seconds"),
+            nuevo.profesional_id,
+            nuevo.sillon_id,
+            anterior.id,
+        ),
+    )
+    registrar_auditoria(
+        conexion,
+        turno_id=anterior.id,
+        accion="reprogramar",
+        usuario_id=usuario_id,
+        ocurrio_en=ocurrio_en,
+        antes=snapshot_turno(anterior),
+        despues=snapshot_turno(nuevo),
+    )
+    return nuevo
+
+
+def cancelar_turno(
+    conexion: sqlite3.Connection,
+    antes: Turno,
+    despues: Turno,
+    *,
+    usuario_id: int,
+    ocurrio_en: datetime,
+) -> None:
+    """Guarda la cancelación que ya validó el dominio y su registro de auditoría `cancelar` (C-12).
+
+    No llama al dominio (regla dura 1): recibe el turno original y el devuelto por
+    `validar_cancelacion`. Precondición: se llama dentro de `transaccion(...)` (RN-AUD-03).
+    """
+    if antes.id is None:
+        raise RuntimeError("El turno a cancelar debe tener id.")
+    conexion.execute(_ACTUALIZAR_ESTADO, (despues.estado, antes.id))
+    registrar_auditoria(
+        conexion,
+        turno_id=antes.id,
+        accion="cancelar",
+        usuario_id=usuario_id,
+        ocurrio_en=ocurrio_en,
+        antes=snapshot_turno(antes),
+        despues=snapshot_turno(despues),
+    )
 
 
 def listar_turnos_activos_del_dia(

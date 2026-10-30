@@ -2,7 +2,7 @@
 
 **Proyecto:** Sistema de gestión de turnos odontológicos (Metodología I, UTN Mendoza).
 **Repositorio:** https://github.com/belcalvo93/turnosodontologia
-**Rama:** `hernan`, `hernan-evidencia`, `hernan-c02-dominio-base`, `hernan-c08-horarios-atencion`
+**Rama:** `hernan`, `hernan-evidencia`, `hernan-c02-dominio-base`, `hernan-c08-horarios-atencion`, `hernan-c14-agenda`
 
 ## Decisiones
 
@@ -23,7 +23,9 @@
 | 13 | 6 | Lanzar `DatoInvalido` (HTTP 422) y no `ConflictoAgenda` (409) ante franjas horarias superpuestas o invertidas en `HorarioAtencion`. | Lanzar `ConflictoAgenda` o `FueraDeHorario` (409). | Las inconsistencias en la configuración de recursos (días fuera de 0-6, hora inicio posterior a fin, superposición de franjas o profesional inexistente) son errores de datos de entrada (422). El código 409 queda reservado estrictamente para colisiones en turnos agendados. | `app/domain/models.py`, `app/api/horarios.py`, change archivado C-08 |
 | 14 | 6 | Aplicar restricción RBAC en `GET /profesionales/{id}/horarios`: los odontólogos solo pueden consultar sus propios horarios. | Permitir que cualquier usuario autenticado consulte los horarios de cualquier colega. | Respeta la matriz RBAC de la KB (documento 03) y RN-ACC-03: si un odontólogo consulta el ID de otro profesional recibe 403 (`SinPermiso`). Administración y recepción sí pueden ver los de todos. | `app/api/horarios.py`, `tests/api/test_horarios.py` |
 | 15 | 6 | Almacenar horarios como cadenas ISO `"HH:MM"` en SQLite e indexar por `(profesional_id, dia_semana)`. | Almacenar minutos acumulados desde medianoche como entero o usar tipos complejos. | SQLite compara y ordena strings de ancho fijo lexicográficamente de forma natural, mapea directo con `time.fromisoformat()` de Python y el índice compuesto acelera la validación de huecos para el futuro C-11. | `app/db/esquema.sql`, `app/db/repositorio_horarios.py` |
+| 16 | 6 | En C-14 agenda, consultar turnos y bloqueos con intervalo semiabierto `inicio < hasta AND fin > desde` y reutilizar `COLUMNAS_TURNO` y `_bloqueo_desde_fila` de C-09 y C-11. | Crear modelos o queries duplicadas y no contemplar eventos multidia o límites de franja. | Garantiza que turnos y bloqueos que intersectan la ventana consultada aparezcan en la vista sin duplicar mapeos de columnas, excluyendo estrictamente turnos cancelados (`RN-TUR-08`). | `app/db/repositorio_agenda.py`, `app/api/agenda.py`, PR `hernan-c14-agenda` |
+| 17 | 6 | Encapsular las reglas de visibilidad de agenda (`puede_ver_agenda_profesional`, `puede_ver_agenda_sillon`) y validación de rango (`validar_rango_agenda`) en `app/domain/usuarios.py`. | Validar roles y rangos con sentencias if sueltas dentro de los routers. | Cumple la regla dura #8 de `AGENTS.md` (no poner reglas de negocio en el router) y RN-ACC-03, permitiendo testear los permisos y validaciones como funciones puras sin HTTP ni base de datos. | `app/domain/usuarios.py`, `tests/domain/test_permisos_agenda.py` |
 
 ## Uso de IA
 
-Usé OpenCode y Antigravity para ejecutar los ciclos OPSX (explore, propose, apply, verify y archive) de C-02 y C-08, respetando Strict TDD. El asistente generó el código y los tests guiado por las especificaciones, mientras que yo definí la asignación de códigos HTTP (422 vs 409), supervisé que se mantuviera la aislación del dominio puro sin dependencias de base de datos ni FastAPI, verifiqué que los 497 tests pasaran en verde y autoricé los commits y pushes de mis ramas.
+Usé OpenCode y Antigravity para ejecutar los ciclos OPSX (explore, propose, apply, verify y archive) de C-02, C-08 y C-14, respetando Strict TDD. El asistente generó el código y los tests guiado por las especificaciones, mientras que yo definí la asignación de códigos HTTP (422 vs 409 vs 403), supervisé que se mantuviera la aislación del dominio puro sin dependencias de base de datos ni FastAPI, verifiqué que los 650 tests pasaran en verde y autoricé los commits y pushes de mis ramas.

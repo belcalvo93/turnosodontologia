@@ -9,6 +9,7 @@ from app.domain.errores import DatoInvalido
 
 EstadoTurno = Literal["reservado", "cancelado"]
 AlcanceBloqueo = Literal["profesional", "sillon"]
+AccionAuditoria = Literal["crear", "cancelar", "reprogramar"]
 
 
 @dataclass(frozen=True, kw_only=True)
@@ -218,3 +219,17 @@ class Turno:
     fin: datetime
     estado: EstadoTurno = "reservado"
     id: int | None = None
+
+
+@dataclass(frozen=True, kw_only=True)
+class RegistroAuditoria:
+    """Registro de solo lectura de `auditoria_turno` (C-15, US-014)."""
+
+    id: int
+    turno_id: int
+    accion: AccionAuditoria
+    usuario_id: int
+    username: str | None
+    ocurrio_en: datetime
+    antes: dict[str, object] | None
+    despues: dict[str, object]
