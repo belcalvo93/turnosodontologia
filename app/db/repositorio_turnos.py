@@ -8,14 +8,12 @@ import json
 import sqlite3
 from dataclasses import replace
 from datetime import date, datetime, time, timedelta
-from typing import Final, Literal, cast
+from typing import Final, cast
 
-from app.domain.models import AlcanceBloqueo, EstadoTurno, Turno
+from app.domain.models import AccionAuditoria, AlcanceBloqueo, EstadoTurno, Turno
 
 # Orden de columnas que espera `turno_desde_fila`; lo reutilizan C-12, C-13, C-14 y C-16.
 COLUMNAS_TURNO: Final = "id, paciente_id, profesional_id, sillon_id, prestacion_id, inicio, fin, estado"
-
-AccionAuditoria = Literal["crear", "cancelar", "reprogramar"]
 
 # SQL como literales completos (sin armar texto con f-strings ni concatenación).
 _SELECT_POR_ID: Final = """
