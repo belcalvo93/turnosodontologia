@@ -107,7 +107,9 @@ No hace falta `transaccion()`: es un `SELECT` único sobre una conexión en auto
 
 ### 4.5 Spec
 
-**Capability nueva `auditoria`** en `openspec/specs/auditoria/spec.md`, con referencia cruzada a `cancelar-turno` y `reprogramar-turno`. **No hay delta de `errores-api`**: no se agrega ningún código nuevo.
+**Capability existente `auditoria-turnos`** (creada por C-11 en `openspec/specs/auditoria-turnos/spec.md`, con 5 requirements del lado escritura). C-15 la **modifica** agregando el requirement de consulta, no crea una capability nueva: el historial de turnos ya tiene dueño y una capability `auditoria` paralela sería un duplicado.
+
+**No hay delta de `errores-api`**: no se agrega ningún código nuevo.
 
 ## 5. El problema de diseño central: el contrato de la respuesta
 
