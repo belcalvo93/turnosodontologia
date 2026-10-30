@@ -365,7 +365,7 @@ El MVP es solo backend (el frontend React es etapa posterior, D.3), así que no 
   - `knowledge-base/10_preguntas_abiertas.md` §SE-08, §SE-11
 
 ### [C-13] `reprogramar-turno`
-- **Estado**: `[ ]` pendiente
+- **Estado**: `[x]` completado
 - **Scope**:
   - `app/domain/reglas_turno.py::validar_reprogramacion(...)`: futuro y activo, recalcula fin y reutiliza `validar_alta` excluyendo el propio id (RN-TUR-07/08)
   - `POST /turnos/{id}/reprogramar` con nuevo inicio y, opcional, nuevo profesional y/o sillón; mismo `turno_id`
