@@ -17,14 +17,14 @@
 
 ## 3. Router (contrato plano D-A2, Regla dura 8)
 
-- [ ] 3.1 **Rojo:** en `tests/api/test_bloqueos.py`, tests de API para `POST /bloqueos` con stock de datos ficticios (`"(ficticio)"`, `RN-PAC-03`): con 2 turnos `reservado` y 1 `cancelado` en rango → `201` con los 6 campos actuales + `turnos_afectados` (solo los 2 `reservado`, serializados como `TurnoResponse`, ordenados por `inicio ASC`); sin turnos → `turnos_afectados = []`; verificación posterior con `GET /turnos/{id}` de que los turnos siguen `reservado` y con `repositorio_turnos`/`auditoria_turno` de que no se agregaron filas de auditoría (`IF-06`, D-A1).
-- [ ] 3.2 **Rojo:** test de que los reportes también salen para `alcance = "sillon"` y test de que `GET /bloqueos` sigue sin contener la clave `turnos_afectados` (contrato actual intacto).
-- [ ] 3.3 **Verde:** en `app/api/bloqueos.py`, agregar `BloqueoCreadoSalida(BloqueoSalida)` con `turnos_afectados: list[TurnoResponse]` **solo para `POST`**, importando `TurnoResponse`/`turno_a_response` de `app/api/turnos.py`; dentro de la `transaccion(conexion)` actual, tras `crear_bloqueo`, consultar el repositorio (2.3) y filtrar con `turnos_afectados_por_bloqueo` (1.4). Sin lógica de negocio en el router, sin tocar `GET`/`DELETE`.
-- [ ] 3.4 **Verde:** ejecutar toda la suite `pytest`.
+- [x] 3.1 **Rojo:** en `tests/api/test_bloqueos.py`, tests de API para `POST /bloqueos` con stock de datos ficticios (`"(ficticio)"`, `RN-PAC-03`): con 2 turnos `reservado` y 1 `cancelado` en rango → `201` con los 6 campos actuales + `turnos_afectados` (solo los 2 `reservado`, serializados como `TurnoResponse`, ordenados por `inicio ASC`); sin turnos → `turnos_afectados = []`; verificación posterior con `GET /turnos/{id}` de que los turnos siguen `reservado` y con `repositorio_turnos`/`auditoria_turno` de que no se agregaron filas de auditoría (`IF-06`, D-A1).
+- [x] 3.2 **Rojo:** test de que los reportes también salen para `alcance = "sillon"` y test de que `GET /bloqueos` sigue sin contener la clave `turnos_afectados` (contrato actual intacto).
+- [x] 3.3 **Verde:** en `app/api/bloqueos.py`, agregar `BloqueoCreadoSalida(BloqueoSalida)` con `turnos_afectados: list[TurnoResponse]` **solo para `POST`**, importando `TurnoResponse`/`turno_a_response` de `app/api/turnos.py`; dentro de la `transaccion(conexion)` actual, tras `crear_bloqueo`, consultar el repositorio (2.3) y filtrar con `turnos_afectados_por_bloqueo` (1.4). Sin lógica de negocio en el router, sin tocar `GET`/`DELETE`.
+- [x] 3.4 **Verde:** ejecutar toda la suite `pytest`.
 
 ## 4. Compatibilizar el test de `C-09` (única edición aprobada)
 
-- [ ] 4.1 **Rojo → verde en un paso:** actualizar la aserción de igualdad exacta de la respuesta de `POST /bloqueos` en `tests/api/test_bloqueos.py` (línea 46) para incluir `"turnos_afectados": []`. El resto del archivo y los tests de `GET`/`DELETE /bloqueos` no se tocan.
+- [x] 4.1 **Rojo → verde en un paso:** actualizar dos aserciones en `tests/api/test_bloqueos.py`: (1) la igualdad exacta de la respuesta de `POST /bloqueos` en `test_post_bloqueos_para_profesional_y_sillon_responde_201` pasa a incluir `"turnos_afectados": []`; (2) en el test de 403 para recepción/odontólogo, la comparación `listado.json() == [bloqueo]` pasa a quitar la clave `"turnos_afectados"` del `bloqueo` guardado desde el POST antes de comparar con el `GET`. El resto del archivo y los tests de `GET`/`DELETE /bloqueos` no se tocan.
 
 ## 5. Verify (para el cierre del change)
 

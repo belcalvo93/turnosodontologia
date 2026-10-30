@@ -9,13 +9,16 @@ from pydantic import BaseModel
 
 from app.api.auth import requiere_rol, usuario_actual
 from app.api.dependencias import obtener_conexion
+from app.api.turnos import TurnoResponse, turno_a_response
 from app.db.conexion import transaccion
 from app.db.repositorio_bloqueos import (
     crear_bloqueo,
     eliminar_bloqueo,
     listar_bloqueos,
 )
+from app.db.repositorio_turnos import listar_reservados_del_recurso
 from app.domain.models import AlcanceBloqueo, Bloqueo, validar_datos_bloqueo
+from app.domain.reglas_turno import turnos_afectados_por_bloqueo
 from app.domain.usuarios import Rol, Usuario
 
 router = APIRouter(prefix="/bloqueos", tags=["bloqueos"])
@@ -40,6 +43,16 @@ class BloqueoSalida(BaseModel):
     inicio: str
     fin: str
     motivo: str
+
+
+class BloqueoCreadoSalida(BloqueoSalida):
+    """Salida de `POST /bloqueos` (C-16, D-A2): el bloqueo creado más los turnos afectados.
+
+    Solo se usa en POST; `GET /bloqueos` sigue devolviendo `list[BloqueoSalida]` sin el campo
+    para evitar consultas N+1 en el listado.
+    """
+
+    turnos_afectados: list[TurnoResponse]
 
 
 def _a_salida(bloqueo: Bloqueo) -> BloqueoSalida:
@@ -69,8 +82,14 @@ def post_bloqueo(
     entrada: BloqueoEntrada,
     conexion: ConexionDep,
     _: AdminDep,
-) -> BloqueoSalida:
-    """Valida el intervalo y el recurso y crea un bloqueo."""
+) -> BloqueoCreadoSalida:
+    """Valida el intervalo y el recurso, crea el bloqueo y reporta los turnos afectados (C-16).
+
+    Solo lista (D-A1): los turnos `reservado` afectados no se cancelan ni se modifican y no se
+    registra auditoría de turno. La consulta ocurre dentro de la misma transacción (D-A6) y la
+    regla de negocio vive en el dominio: `turnos_afectados_por_bloqueo` revalida el solapamiento
+    que preselecciona el repositorio (D-A4).
+    """
     bloqueo_validado = validar_datos_bloqueo(
         alcance=entrada.alcance,
         recurso_id=entrada.recurso_id,
@@ -80,7 +99,19 @@ def post_bloqueo(
     )
     with transaccion(conexion):
         creado = crear_bloqueo(conexion, bloqueo_validado)
-    return _a_salida(creado)
+        reservados_en_rango = listar_reservados_del_recurso(
+            conexion,
+            alcance=creado.alcance,
+            recurso_id=creado.recurso_id,
+            desde=creado.inicio,
+            hasta=creado.fin,
+        )
+        afectados = turnos_afectados_por_bloqueo(creado, reservados_en_rango)
+    salida = _a_salida(creado)
+    return BloqueoCreadoSalida(
+        **salida.model_dump(),
+        turnos_afectados=[turno_a_response(turno) for turno in afectados],
+    )
 
 
 @router.delete("/{id}", status_code=204)
