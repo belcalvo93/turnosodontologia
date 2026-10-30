@@ -2,7 +2,7 @@
 
 ## Tipo de sistema
 
-API REST (backend) para gestión de agenda de turnos de un consultorio odontológico. Para el MVP alcanza con el backend; el frontend (React) y la app móvil son etapas posteriores (informe, D.3).
+API REST (backend) para gestión de agenda de turnos de un consultorio odontológico. Para el MVP alcanza con el backend; un frontend mínimo en TypeScript es el change C-18 (posterior al MVP, D-09), y el frontend React completo y la app móvil son etapas posteriores (informe, D.3).
 
 ## Stack tecnológico
 

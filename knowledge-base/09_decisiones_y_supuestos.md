@@ -50,6 +50,13 @@ Las decisiones del equipo se registran como **DD** o con ID **D-xx**. Las que de
 **Decisión**: toda semilla, ejemplo y test usa datos ficticios rotulados.
 **Contexto**: informe D.3 #7. Sin secretos en el repositorio.
 
+### D-09 — Frontend mínimo en TypeScript, servido por la API
+**Decisión**: sumar un frontend mínimo y funcional (change C-18, posterior al MVP) en TypeScript sin framework, compilado a archivos estáticos (Vite o `tsc`) y servido por la misma API (FastAPI `StaticFiles`). Node.js solo en desarrollo. El diseño visual se genera con el MCP de Stitch. React completo y app móvil siguen en etapa posterior.
+**Contexto**: decisión del equipo del 2026-10-30. C-01 a C-17 no cambian.
+**Alternativas consideradas**: frontend React completo; seguir sin frontend.
+**Justificación**: demostrar el uso del MCP de Stitch y tener una cara visible del MVP, sin agregar reglas de negocio ni un segundo servidor.
+**Trade-offs aceptados**: se suma una herramienta de desarrollo (Node.js) al stack; cubre pocas pantallas (login, agenda, crear turno, bloqueo con turnos afectados).
+
 ## Supuestos inferidos
 
 Detalle completo y prioridades en [10_preguntas_abiertas.md](10_preguntas_abiertas.md).
