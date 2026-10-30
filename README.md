@@ -426,4 +426,4 @@ AGENTS.md / CLAUDE.md              Reglas para los agentes de IA
 
 - El repositorio no contiene claves ni credenciales: los valores de los ejemplos son ficticios y `.env` no se versiona.
 - Las contraseñas se guardan solo como hash Argon2id con sal, nunca en texto plano.
-- Todos los datos de pacientes, profesionales, sillones y usuarios del seed y de los tests son ficticios y están rotulados (`"(ficticio)"` / `"(ficticia)"`).
+- Todos los datos del seed y de los tests son ficticios; los DNI de pacientes y las matrículas de profesionales están rotulados (`"(ficticio)"` / `"(ficticia)"`).
