@@ -41,19 +41,22 @@
 
 ## 3. Capa API y Endpoint (`app/api/turnos.py`)
 
-- [ ] 3.1 Escribir tests de integración API para `POST /turnos/{id}/reprogramar` en `tests/api/test_reprogramar_turno.py`:
-  - [ ] Test: reprogramación exitosa con rol `recepcion` y `administracion` devuelve 200 y el turno actualizado con la forma de `TurnoResponse` (US-008, C-11 D8).
-  - [ ] Test: odontólogo intentando reprogramar recibe 403 `SinPermiso` (RN-ACC-02).
-  - [ ] Test: solicitud sin token recibe 401 `NoAutenticado` (RN-ACC-01).
-  - [ ] Test: turno inexistente devuelve 404 `no_encontrado` (US-008, C-11 D5).
-  - [ ] Test: nuevo profesional o nuevo sillón inexistente o inactivo devuelve 422 `DatoInvalido` (C-11 D10).
-  - [ ] Test: turno cancelado con `nuevo_sillon_id` inactivo devuelve 409 y no agrega filas en `auditoria_turno`.
-  - [ ] Test: `nuevo_inicio` con offset o `Z` devuelve 422 (C-11 D4).
-  - [ ] Test: con el reloj inyectado en UTC, un turno futuro se reprograma sin `TypeError` y uno pasado en hora local devuelve 409 (C-11 D3).
-  - [ ] Test: conflicto de agenda, bloqueo o fuera de horario devuelve 409 y la cantidad de filas en `auditoria_turno` no cambia (RN-AUD-03).
-- [ ] 3.2 Definir el esquema Pydantic `ReprogramarTurnoRequest` con `nuevo_inicio: NaiveDatetime` (C-11 D4).
-- [ ] 3.3 Implementar el endpoint `POST /turnos/{id}/reprogramar` con `requiere_rol(Rol.ADMINISTRACION, Rol.RECEPCION)` y `obtener_ahora_local`, responder con `TurnoResponse` y usar `obtener_turno` → `HTTPException(404)` (C-11 D3, D5, D8).
-- [ ] 3.4 Dentro de `with transaccion(conexion):`, cargar el contexto con `listar_turnos_activos_del_dia` y `listar_bloqueos_de_recursos`, cargar los recursos nuevos enviados y llamar a `validar_reprogramacion` y `reprogramar_turno` (C-11 D1, D8). El router no valida recursos: lo hace el dominio.
+- [x] 3.1 Escribir tests de integración API para `POST /turnos/{id}/reprogramar` en `tests/api/test_reprogramar_turno.py`:
+  - [x] Test: reprogramación exitosa con rol `recepcion` y `administracion` devuelve 200 y el turno actualizado con la forma de `TurnoResponse` (US-008, C-11 D8).
+  - [x] Test: odontólogo intentando reprogramar recibe 403 `SinPermiso` (RN-ACC-02).
+  - [x] Test: solicitud sin token recibe 401 `NoAutenticado` (RN-ACC-01).
+  - [x] Test: turno inexistente devuelve 404 `no_encontrado` (US-008, C-11 D5).
+  - [x] Test: nuevo profesional o nuevo sillón inexistente o inactivo devuelve 422 `DatoInvalido` (C-11 D10).
+  - [x] Test: turno cancelado con `nuevo_sillon_id` inactivo devuelve 409 y no agrega filas en `auditoria_turno`.
+  - [x] Test: `nuevo_inicio` con offset o `Z` devuelve 422 (C-11 D4).
+  - [x] Test: con el reloj inyectado en UTC, un turno futuro se reprograma sin `TypeError` y uno pasado en hora local devuelve 409 (C-11 D3).
+  - [x] Test: conflicto de agenda, bloqueo o fuera de horario devuelve 409 y la cantidad de filas en `auditoria_turno` no cambia (RN-AUD-03).
+  > - Sin RED propio, porque pasó en el primer intento (con la ruta inexistente el 404 del enrutador coincidía con el esperado, por la razón equivocada): `test_reprogramar_turno_inexistente_404_no_encontrado`. Mutación verificada sobre `app/api/turnos.py`: reemplazar el `HTTPException(404)` por otro error lo hace fallar.
+  > - Los otros 26 tests fallaron en RED con 404 por ruta inexistente (el RBAC, la forma de la entrada y los 409 de agenda vienen del dominio de 1.x y de los handlers globales; el endpoint solo orquesta). Mutaciones verificadas: no cargar los recursos nuevos hace fallar 2 tests (`..._los_persiste_200` y `..._valida_el_horario_de_ese_profesional`; los 422 siguen pasando porque `None` también es un recurso inexistente, y la distinción inactivo/inexistente la cubren los tests de dominio de 1.3); usar los horarios del profesional actual hace fallar `test_reprogramar_con_otro_profesional_y_sillon_los_persiste_200`; guardar `ocurrio_en` distinto del reloj local hace fallar `test_reprogramar_registra_auditoria_reprogramar_con_antes_y_despues`. Restaurado editando el archivo.
+  > - Fuera de las tareas: `Path(ge=1)` en `turno_id` (igual que `GET /turnos/{id}`), un `RuntimeError` si el turno referencia una prestación inexistente (invariante por clave foránea) y los tests extra `test_reprogramar_odontologo_sobre_turno_inexistente_responde_403_antes_que_404`, `test_reprogramar_sin_nuevo_inicio_422_en_el_campo`, `test_reprogramar_contiguo_a_otro_turno_200`, `test_reprogramar_turno_cancelado_409_turno_no_modificable`, `test_reprogramar_a_otro_profesional_valida_el_horario_de_ese_profesional` y `test_reprogramar_con_sillon_vigente_inactivo_que_no_se_envia_200`.
+- [x] 3.2 Definir el esquema Pydantic `ReprogramarTurnoRequest` con `nuevo_inicio: NaiveDatetime` (C-11 D4).
+- [x] 3.3 Implementar el endpoint `POST /turnos/{id}/reprogramar` con `requiere_rol(Rol.ADMINISTRACION, Rol.RECEPCION)` y `obtener_ahora_local`, responder con `TurnoResponse` y usar `obtener_turno` → `HTTPException(404)` (C-11 D3, D5, D8).
+- [x] 3.4 Dentro de `with transaccion(conexion):`, cargar el contexto con `listar_turnos_activos_del_dia` y `listar_bloqueos_de_recursos`, cargar los recursos nuevos enviados y llamar a `validar_reprogramacion` y `reprogramar_turno` (C-11 D1, D8). El router no valida recursos: lo hace el dominio.
 
 ## 4. Verificación y Cierre
 

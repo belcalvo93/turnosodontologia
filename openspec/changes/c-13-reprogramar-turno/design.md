@@ -76,6 +76,7 @@ Para satisfacer `RN-AUD-01` y `RN-AUD-03`:
 - Dentro de esa transacción:
   1. `UPDATE turno SET inicio = ?, fin = ?, profesional_id = ?, sillon_id = ? WHERE id = ?`, con fechas en `isoformat(timespec="seconds")` (C-11 D4).
   2. `registrar_auditoria(conexion, turno_id=..., accion="reprogramar", usuario_id=..., ocurrio_en=..., antes=snapshot_turno(turno_anterior), despues=snapshot_turno(turno_nuevo))`.
+- **Guarda de ids:** antes de escribir, `reprogramar_turno` lanza `ValueError` si `anterior.id` es `None` o si `nuevo.id` difiere de `anterior.id`, para que el `UPDATE` y la auditoría no queden con ids distintos. Protege contra un error de programación: no es una regla de negocio ni tiene mapeo HTTP propio.
 - `antes` y `despues` usan el snapshot canónico completo de 8 claves, incluido `estado` (C-11 D2).
 - Si ocurre cualquier error antes o durante la escritura, se hace rollback y no queda rastro en `auditoria_turno`.
 
