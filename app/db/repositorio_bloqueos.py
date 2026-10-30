@@ -76,3 +76,37 @@ def _bloqueo_desde_fila(fila: _FilaBloqueo) -> Bloqueo:
         fin=datetime.fromisoformat(fin),
         motivo=motivo,
     )
+
+
+_SELECT_DE_RECURSOS: Final = """
+    SELECT id, alcance, recurso_id, inicio, fin, motivo
+    FROM bloqueo
+    WHERE ((alcance = 'profesional' AND recurso_id = ?) OR (alcance = 'sillon' AND recurso_id = ?))
+      AND inicio < ? AND fin > ?
+    ORDER BY inicio ASC, id ASC
+"""
+
+
+def listar_bloqueos_de_recursos(
+    conexion: sqlite3.Connection,
+    *,
+    profesional_id: int,
+    sillon_id: int,
+    desde: datetime,
+    hasta: datetime,
+) -> list[Bloqueo]:
+    """Bloqueos del profesional o del sillón que intersectan la ventana `[desde, hasta)` (C-11).
+
+    Incluye bloqueos de varios días que cubren la ventana; los contiguos (que terminan en
+    `desde` o empiezan en `hasta`) quedan fuera por el intervalo semiabierto.
+    """
+    filas = conexion.execute(
+        _SELECT_DE_RECURSOS,
+        (
+            profesional_id,
+            sillon_id,
+            hasta.isoformat(timespec="seconds"),
+            desde.isoformat(timespec="seconds"),
+        ),
+    ).fetchall()
+    return [_bloqueo_desde_fila(fila) for fila in filas]
