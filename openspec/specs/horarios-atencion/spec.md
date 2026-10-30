@@ -8,7 +8,7 @@ Gestión de horarios de atención semanales por profesional: permite dar de alta
 
 ### Requirement: Alta de franja de horario de atención
 
-El sistema SHALL permitir al rol `administracion` crear una franja horaria de atención para un profesional mediante `POST /profesionales/{id}/horarios` especificando `dia_semana` (entero entre 0 y 6), `hora_desde` y `hora_hasta` en formato HH:MM. Si `hora_desde >= hora_hasta`, si `dia_semana` no está en 0..6 o si la franja se superpone con otra franja existente del mismo profesional en ese día, el sistema SHALL rechazar la operación con `422` `dato_invalido`. Si el profesional indicado no existe, el sistema SHALL responder `422` `dato_invalido`.
+El sistema SHALL permitir al rol `administracion` crear una franja horaria de atención para un profesional mediante `POST /profesionales/{id}/horarios` con `dia_semana` (0 a 6), `hora_desde` y `hora_hasta` (HH:MM). El sistema SHALL rechazar con `422` `dato_invalido` una franja con `hora_desde >= hora_hasta`, un `dia_semana` fuera de 0..6, una franja superpuesta con otra del mismo profesional en ese día o un profesional inexistente.
 
 #### Scenario: Alta válida de franja horaria
 
