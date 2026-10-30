@@ -1,4 +1,4 @@
-"""Configuración de la aplicación desde variables de entorno (C-01, C-03)."""
+"""Configuración de la aplicación desde variables de entorno (C-01, C-03, C-17)."""
 
 import os
 import secrets
@@ -38,6 +38,8 @@ class Config:
     jwt_algorithm: str
     access_token_expire_minutes: int
     seed_admin_password: str | None
+    seed_recepcion_password: str | None
+    seed_odontologo_password: str | None
 
 
 def cargar_config(entorno: Mapping[str, str] | None = None) -> Config:
@@ -54,6 +56,8 @@ def cargar_config(entorno: Mapping[str, str] | None = None) -> Config:
             _valor(valores, "ACCESS_TOKEN_EXPIRE_MINUTES")
         ),
         seed_admin_password=valores.get("SEED_ADMIN_PASSWORD") or None,
+        seed_recepcion_password=valores.get("SEED_RECEPCION_PASSWORD") or None,
+        seed_odontologo_password=valores.get("SEED_ODONTOLOGO_PASSWORD") or None,
     )
 
 

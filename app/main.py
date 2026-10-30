@@ -1,4 +1,4 @@
-"""Aplicación FastAPI: crea la app, aplica el esquema y monta los routers (C-01, C-03..C-09)."""
+"""Aplicación FastAPI: crea la app, aplica el esquema y monta los routers (C-01, C-03..C-17)."""
 
 from collections.abc import AsyncIterator, Callable
 from contextlib import asynccontextmanager
@@ -22,12 +22,16 @@ from app.api.turnos import router as router_turnos
 from app.api.usuarios import router as router_usuarios
 from app.config import Config, cargar_config
 from app.db.conexion import abrir_conexion, inicializar_esquema
-from app.db.seed import sembrar_admin_demo
+from app.db.seed import sembrar_demo
 
 
 def _hora_real() -> datetime:
     # Único lugar de app/ que lee la hora real; los tests inyectan un reloj fijo (design §11).
     return datetime.now(UTC)
+
+
+def _hash_o_none(password: str | None) -> str | None:
+    return None if password is None else hashear(password)
 
 
 def create_app(
@@ -38,12 +42,17 @@ def create_app(
 
     @asynccontextmanager
     async def lifespan(_: FastAPI) -> AsyncIterator[None]:
-        """Aplica el esquema y, solo en development, siembra `admin_demo` (design §9)."""
+        """Aplica el esquema y, solo en development, siembra los datos demo (C-03, C-17)."""
         inicializar_esquema(config_app.database_path)
         if config_app.app_env == "development" and config_app.seed_admin_password:
             conexion = abrir_conexion(config_app.database_path)
             try:
-                sembrar_admin_demo(conexion, hashear(config_app.seed_admin_password))
+                sembrar_demo(
+                    conexion,
+                    password_hash_admin=hashear(config_app.seed_admin_password),
+                    password_hash_recepcion=_hash_o_none(config_app.seed_recepcion_password),
+                    password_hash_odontologo=_hash_o_none(config_app.seed_odontologo_password),
+                )
             finally:
                 conexion.close()
         yield

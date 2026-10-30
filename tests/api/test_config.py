@@ -133,3 +133,37 @@ def test_password_de_seed_vacia_equivale_a_no_definida() -> None:
     config = cargar_config(entorno={"SEED_ADMIN_PASSWORD": ""})
 
     assert config.seed_admin_password is None
+
+
+def test_sin_passwords_de_recepcion_ni_odontologo_quedan_en_none() -> None:
+    config = cargar_config(entorno={"SEED_ADMIN_PASSWORD": "clave-admin-ficticia"})
+
+    assert config.seed_admin_password == "clave-admin-ficticia"
+    assert config.seed_recepcion_password is None
+    assert config.seed_odontologo_password is None
+
+
+def test_passwords_de_recepcion_y_odontologo_se_leen_del_entorno() -> None:
+    config = cargar_config(
+        entorno={
+            "SEED_ADMIN_PASSWORD": "clave-admin-ficticia",
+            "SEED_RECEPCION_PASSWORD": "clave-recepcion-ficticia",
+            "SEED_ODONTOLOGO_PASSWORD": "clave-odontologo-ficticia",
+        }
+    )
+
+    assert config.seed_admin_password == "clave-admin-ficticia"
+    assert config.seed_recepcion_password == "clave-recepcion-ficticia"
+    assert config.seed_odontologo_password == "clave-odontologo-ficticia"
+
+
+def test_passwords_de_recepcion_y_odontologo_vacias_equivalen_a_no_definidas() -> None:
+    config = cargar_config(
+        entorno={
+            "SEED_RECEPCION_PASSWORD": "",
+            "SEED_ODONTOLOGO_PASSWORD": "",
+        }
+    )
+
+    assert config.seed_recepcion_password is None
+    assert config.seed_odontologo_password is None

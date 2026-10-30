@@ -442,7 +442,7 @@ El MVP (C-01 a C-17) es solo backend, así que no hay agente de frontend. El fro
 ## FASE 5 — Cierre del MVP
 
 ### [C-17] `seed-y-flujo-e2e`
-- **Estado**: `[ ]` pendiente
+- **Estado**: `[x]` completado
 - **Scope**:
   - `app/db/seed.py` con los datos ficticios de 04 (2 profesionales, 2 sillones, 3 prestaciones, horarios L-V, 2 pacientes, 3 usuarios demo); contraseñas solo desde variables de entorno
   - Test de API extremo a extremo: login recepción → crear turno → reprogramar → cancelar → login administración → consultar auditoría

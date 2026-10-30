@@ -638,3 +638,93 @@ def test_no_hay_rutas_para_modificar_o_borrar_turnos_ni_auditoria(
     assert respuesta.status_code in (404, 405)
     assert _auditorias(ctx) == antes
     assert _cantidad(ctx, "turno") == 1
+
+
+
+# --- 6.4 RN-REC-03: conservación de turnos históricos al desactivar recursos (C-17) ---
+
+
+def test_sillon_desactivado_despues_de_la_reserva_conserva_el_turno_y_rechaza_nuevos_422(
+    contexto_turnos: ContextoTurnos,
+) -> None:
+    """Escenario 'Sillón desactivado después de la reserva' (specs/turnos/spec.md, RN-REC-03)."""
+    ctx = contexto_turnos
+    creado = ctx.reservar(ctx.cuerpo()).json()
+
+    baja = ctx.cliente.patch(
+        f"/sillones/{ctx.sillon_1}",
+        json={"activo": False},
+        headers=ctx.cabeceras_admin,
+    )
+    assert baja.status_code == 200
+
+    consulta = ctx.cliente.get(f"/turnos/{creado['id']}", headers=ctx.cabeceras_admin)
+    assert consulta.status_code == 200
+    assert consulta.json() == creado
+    assert consulta.json()["sillon_id"] == ctx.sillon_1
+    assert consulta.json()["estado"] == "reservado"
+
+    listado = ctx.cliente.get("/sillones", headers=ctx.cabeceras_admin)
+    assert listado.status_code == 200
+    sillones_por_id = {s["id"]: s for s in listado.json()}
+    assert sillones_por_id[ctx.sillon_1]["activo"] is False
+
+    nuevo = ctx.reservar(ctx.cuerpo(inicio=f"{LUNES}T11:00:00", sillon_id=ctx.sillon_1))
+    assert nuevo.status_code == 422
+    assert nuevo.json()["codigo"] == "dato_invalido"
+
+
+def test_profesional_desactivado_despues_de_la_reserva_conserva_el_turno_y_rechaza_nuevos_422(
+    contexto_turnos: ContextoTurnos,
+) -> None:
+    """Escenario 'Profesional desactivado después de la reserva' (specs/turnos/spec.md, RN-REC-03)."""
+    ctx = contexto_turnos
+    creado = ctx.reservar(ctx.cuerpo()).json()
+
+    baja = ctx.cliente.patch(
+        f"/profesionales/{ctx.profesional_a}",
+        json={"activo": False},
+        headers=ctx.cabeceras_admin,
+    )
+    assert baja.status_code == 200
+
+    consulta = ctx.cliente.get(f"/turnos/{creado['id']}", headers=ctx.cabeceras_admin)
+    assert consulta.status_code == 200
+    assert consulta.json() == creado
+    assert consulta.json()["profesional_id"] == ctx.profesional_a
+    assert consulta.json()["estado"] == "reservado"
+
+    nuevo = ctx.reservar(
+        ctx.cuerpo(
+            inicio=f"{LUNES}T11:00:00",
+            profesional_id=ctx.profesional_a,
+            sillon_id=ctx.sillon_2,
+        )
+    )
+    assert nuevo.status_code == 422
+    assert nuevo.json()["codigo"] == "dato_invalido"
+
+
+def test_desactivar_el_sillon_no_borra_ni_modifica_la_auditoria_del_turno(
+    contexto_turnos: ContextoTurnos,
+) -> None:
+    """Escenario 'La desactivación no borra auditoría' (specs/turnos/spec.md, RN-REC-03)."""
+    ctx = contexto_turnos
+    creado = ctx.reservar(ctx.cuerpo()).json()
+    auditorias_previas = _auditorias(ctx)
+
+    baja = ctx.cliente.patch(
+        f"/sillones/{ctx.sillon_1}",
+        json={"activo": False},
+        headers=ctx.cabeceras_admin,
+    )
+    assert baja.status_code == 200
+
+    assert _auditorias(ctx) == auditorias_previas
+    respuesta_auditoria = ctx.cliente.get(
+        f"/auditoria?turno_id={creado['id']}", headers=ctx.cabeceras_admin
+    )
+    assert respuesta_auditoria.status_code == 200
+    registros = respuesta_auditoria.json()["registros"]
+    assert len(registros) == 1
+    assert registros[0]["accion"] == "crear"
