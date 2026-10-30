@@ -1,4 +1,4 @@
-"""Reglas de alta, cancelación y reprogramación de turno en dominio puro (C-10, C-12, C-13)."""
+"""Reglas de alta, cancelación y reprogramación de turno en dominio puro (C-10, C-12, C-13, C-16)."""
 
 from collections.abc import Sequence
 from dataclasses import replace
@@ -128,6 +128,26 @@ def _bloqueo_afecta(bloqueo: Bloqueo, turno: Turno) -> bool:
     """RN-TUR-05: el bloqueo aplica si es del profesional o del sillón del turno."""
     recurso_del_turno = turno.profesional_id if bloqueo.alcance == "profesional" else turno.sillon_id
     return bloqueo.recurso_id == recurso_del_turno
+
+
+def turnos_afectados_por_bloqueo(
+    bloqueo: Bloqueo, turnos: Sequence[Turno]
+) -> list[Turno]:
+    """Reporta los turnos reservados del recurso bloqueado que solapan [inicio, fin) (C-16).
+
+    RN-TUR-05: solo aplica el bloqueo del profesional o del sillón del turno.
+    RN-TUR-04: intervalos semiabiertos; los turnos contiguos al borde no se afectan.
+    RN-TUR-08: los turnos cancelados no ocupan agenda y no se reportan.
+    D-A3: no depende del reloj; no recibe `ahora` y no filtra turnos pasados.
+    """
+    afectados = [
+        turno
+        for turno in turnos
+        if turno.estado == "reservado"
+        and _bloqueo_afecta(bloqueo, turno)
+        and solapan(turno, bloqueo)
+    ]
+    return sorted(afectados, key=lambda turno: (turno.inicio, turno.id or 0))
 
 
 def _encaja_en_franja(
