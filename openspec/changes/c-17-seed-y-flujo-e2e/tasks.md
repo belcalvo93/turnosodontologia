@@ -12,20 +12,20 @@
 
 ## 3. Seed demo y arranque
 
-- [ ] 3.1 Escribir `tests/api/test_seed_demo.py` y verificar que **falla por ausencia de `sembrar_demo`**: catálogo completo (2 profesionales, 2 sillones, 3 prestaciones, 2 pacientes), 20 horarios (lunes a viernes, 09:00-13:00 y 14:00-18:00, para ambos profesionales), `odontologo_demo` ligado al profesional A y los otros dos sin `profesional_id`, ningún usuario demo sin su contraseña, `password_hash` con prefijo `$argon2id$`, y los datos ficticios rotulados (DNI terminado en `"(ficticio)"`, nombres con "ficticio/ficticia" sin distinguir mayúsculas)
+- [ ] 3.1 Escribir `tests/api/test_seed_demo.py` y verificar que **falla por ausencia de `sembrar_demo`**: catálogo completo (2 profesionales con matrícula terminada en `"(ficticia)"`, 2 sillones, 3 prestaciones con duraciones 30, 45 y 60 minutos, 2 pacientes: uno con obra social y otro sin obra social, donde se consultan con una consulta directa a la base), 20 horarios (lunes a viernes, 09:00-13:00 y 14:00-18:00, para ambos profesionales, donde se consultan con una consulta directa a la base), `odontologo_demo` ligado al profesional A y los otros dos sin `profesional_id`, ningún usuario demo sin su contraseña, `password_hash` con prefijo `$argon2id$`, el test "un usuario demo existente no se modifica", y los datos ficticios rotulados (DNI terminado en `"(ficticio)"`, nombres con "ficticio/ficticia" sin distinguir mayúsculas, donde se consultan con una consulta directa a la base)
 - [ ] 3.2 Implementar en `app/db/seed.py` las funciones por grupo y `sembrar_demo(...) -> DatosDemo` con `ON CONFLICT DO NOTHING` donde hay `UNIQUE` e `INSERT … SELECT … WHERE NOT EXISTS` en `profesional` y `horario_atencion`, todo en un único `transaccion()`; verificar que 3.1 pasa y que los 6 tests de unidad de `sembrar_admin_demo` siguen verdes
-- [ ] 3.3 Escribir los tests del arranque y verificar que **fallan**: con las tres contraseñas se crean los 3 usuarios y el catálogo, dos arranques dejan exactamente 32 filas y los mismos hashes, en `test`/`production` no se siembra nada, sin `SEED_ADMIN_PASSWORD` no se siembra nada, y solo con `SEED_ADMIN_PASSWORD` no aparece `odontologo_demo`; ajustar en `tests/api/test_seed.py` las dos aserciones que hoy esperan un único usuario y confirmar que las dos fallan por el mismo motivo
-- [ ] 3.4 Cablear el `lifespan` de `app/main.py` para calcular los hashes de las variables definidas y llamar a `sembrar_demo`, y verificar que 3.3 y los tests del grupo 2 quedan en verde
+- [ ] 3.3 Escribir los tests del arranque y verificar que **fallan**: con las tres contraseñas se crean los 3 usuarios y el catálogo, dos arranques dejan exactamente 32 filas y los mismos hashes, en `test`/`production` no se siembra nada, sin `SEED_ADMIN_PASSWORD` no se siembra nada, y solo con `SEED_ADMIN_PASSWORD` no aparece `odontologo_demo`
+- [ ] 3.4 Cablear el `lifespan` de `app/main.py` para calcular los hashes de las variables definidas y llamar a `sembrar_demo`, y verificar que 3.3 y los tests del grupo 2 quedan en verde y que `tests/api/test_seed.py` sigue en verde sin modificarlo
 
 ## 4. Cierre de los dos huecos de reglas
 
-- [ ] 4.1 `RN-REC-03`: agregar en `tests/api/test_turnos.py` el caso de caracterización de "los turnos históricos se conservan" — desactivar el sillón de un turno reservado y verificar que `GET /turnos/{id}` sigue devolviéndolo, y que un turno nuevo sobre ese sillón responde `422`. Es caracterización: si pasa sin tocar código, el comportamiento ya era correcto y queda blindado; documentarlo en la tarea
+- [ ] 4.1 `RN-REC-03`: agregar en `tests/api/test_turnos.py` los casos de caracterización de "los turnos históricos se conservan" citando los escenarios del delta `specs/turnos/spec.md` ("Sillón desactivado después de la reserva", "Profesional desactivado después de la reserva" y "La desactivación no borra auditoría") — desactivar el sillón o el profesional de un turno reservado y verificar que `GET /turnos/{id}` sigue devolviéndolo con el recurso desactivado y estado `reservado`, que la desactivación no borra la auditoría y que un turno nuevo sobre el recurso desactivado responde `422`. Es caracterización: si pasa sin tocar código, el comportamiento ya era correcto y queda blindado; documentarlo en la tarea
 - [ ] 4.2 Revisar que todos los datos de los tests nuevos (pacientes, profesionales, sillones, prestaciones y contraseñas) son ficticios y están rotulados: ningún DNI sin `"(ficticio)"`, ninguna contraseña literal fuera de las variables de entorno de la fixture; corregir lo que aparezca
 
 ## 5. Trazabilidad RN → test
 
-- [ ] 5.1 Escribir `tests/test_trazabilidad.py` con los helpers puros (`codigos_de_reglas`, `filas_de_tabla`, `tests_existentes` con `ast`, `hallazgos`) y los cuatro casos: el repositorio real no tiene hallazgos, una regla sin fila falla nombrando el código, un test citado inexistente falla nombrando el nodo, y una tabla completa no reporta nada; verificar que **falla antes de implementar** (no existen ni los helpers ni el documento)
-- [ ] 5.2 Crear `docs/trazabilidad-rn-test.md` con las 31 reglas de KB 05 mapeadas a su nodo de test exacto e implementar los helpers en `tests/trazabilidad.py`; verificar que 5.1 pasa y que el documento coincide con lo relevado en `explore.md` §3
+- [ ] 5.1 Escribir los tests en `tests/test_trazabilidad.py` importando los helpers desde `tests/trazabilidad.py` (`codigos_de_reglas`, `filas_de_tabla`, `tests_existentes` con `ast`, `hallazgos`) con los cuatro casos: el repositorio real no tiene hallazgos, una regla sin fila falla nombrando el código, un test citado inexistente falla nombrando el nodo, y una tabla completa no reporta nada; verificar que **falla antes de implementar** porque el módulo de helpers no existe (y tampoco el documento)
+- [ ] 5.2 Implementar los helpers en `tests/trazabilidad.py` y crear `docs/trazabilidad-rn-test.md` con las 31 reglas de KB 05 mapeadas a su nodo de test exacto; verificar que 5.1 pasa y que el documento coincide con lo relevado en `explore.md` §3
 
 ## 6. README y `.env.example`
 
@@ -38,7 +38,7 @@
 - [ ] 7.1 Correr la suite completa (`.venv\Scripts\python.exe -m pytest -q`) y verificar 0 fallos y que el total sea 759 más los tests nuevos
 - [ ] 7.2 Correr `openspec validate c-17-seed-y-flujo-e2e --strict` y verificar que no reporta errores ni warnings
 - [ ] 7.3 Verificar con `git diff --stat` que no se modificaron `app/db/esquema.sql` ni ningún archivo de `app/api/`, `knowledge-base/`, `CHANGES.md` ni `docs/discovery/`
-- [ ] 7.4 Escribir `verify.md` con el resultado de la suite, la tabla escenario → test de los 4 requirements del delta, el conteo de filas del seed y la confirmación de archivos protegidos
+- [ ] 7.4 Escribir `verify.md` con el resultado de la suite, la tabla escenario → test de los 8 requirements del delta (6 de acceso-usuarios, 1 de base-tecnica y 1 de turnos), el conteo de filas del seed y la confirmación de archivos protegidos
 
 ## Workflow follow-up
 

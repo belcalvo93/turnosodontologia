@@ -8,7 +8,7 @@ Al arrancar en `APP_ENV=development` con `SEED_ADMIN_PASSWORD` definida, el sist
 
 #### Scenario: Creación en development
 
-- **Dado** `APP_ENV=development`, `SEED_ADMIN_PASSWORD=clave-demo-ficticia` y una base temporal vacía
+- **Dado** `APP_ENV=development`, `SEED_ADMIN_PASSWORD=clave-demo-ficticia`, sin `SEED_RECEPCION_PASSWORD` ni `SEED_ODONTOLOGO_PASSWORD`, y una base temporal vacía
 - **Cuando** la aplicación arranca
 - **Entonces** existe un único usuario `admin_demo` con rol `administracion` y activo
 - **Y** el catálogo demo está sembrado
@@ -16,20 +16,21 @@ Al arrancar en `APP_ENV=development` con `SEED_ADMIN_PASSWORD` definida, el sist
 
 #### Scenario: Arranque repetido idempotente
 
-- **Dado** una base temporal donde un arranque previo en development ya sembró los datos demo
-- **Cuando** la aplicación vuelve a arrancar con la misma configuración
-- **Entonces** cada tabla demo tiene exactamente las mismas filas que antes, sin profesionales ni horarios duplicados
+- **Dado** una base temporal donde un arranque previo en development, con `SEED_ADMIN_PASSWORD`, `SEED_RECEPCION_PASSWORD` y `SEED_ODONTOLOGO_PASSWORD` definidas, ya sembró los datos demo
+- **Cuando** la aplicación vuelve a arrancar con esas mismas tres variables definidas
+- **Entonces** la base sigue teniendo 2 profesionales, 2 sillones, 3 prestaciones, 20 horarios, 2 pacientes y 3 usuarios
 - **Y** el `password_hash` de cada usuario demo no cambió
+- **Y** ningún profesional ni horario quedó duplicado
 
 #### Scenario: Sin seed fuera de development
 
-- **Dado** `APP_ENV=test`, `SEED_ADMIN_PASSWORD=clave-demo-ficticia` y una base temporal vacía
+- **Dado** `APP_ENV=test`, con `SEED_ADMIN_PASSWORD`, `SEED_RECEPCION_PASSWORD` y `SEED_ODONTOLOGO_PASSWORD` definidas, y una base temporal vacía
 - **Cuando** la aplicación arranca
 - **Entonces** las tablas `usuario`, `profesional`, `sillon`, `prestacion`, `horario_atencion` y `paciente` están vacías
 
 #### Scenario: Sin seed si falta la contraseña
 
-- **Dado** `APP_ENV=development` sin `SEED_ADMIN_PASSWORD` y una base temporal vacía
+- **Dado** `APP_ENV=development` sin `SEED_ADMIN_PASSWORD` y con `SEED_RECEPCION_PASSWORD` y `SEED_ODONTOLOGO_PASSWORD` definidas, y una base temporal vacía
 - **Cuando** la aplicación arranca
 - **Entonces** el arranque termina sin error y ninguna tabla de datos demo tiene filas
 
@@ -44,22 +45,31 @@ Bajo el mismo gate del seed de desarrollo, el sistema SHALL sembrar un catálogo
 - **Dado** `APP_ENV=development` con `SEED_ADMIN_PASSWORD` definida y una base temporal vacía
 - **Cuando** la aplicación arranca
 - **Entonces** existen exactamente 2 profesionales, 2 sillones, 3 prestaciones y 2 pacientes, todos activos
+- **Y** las tres prestaciones tienen duración de 30, 45 y 60 minutos respectivamente
+- **Y** uno de los profesionales tiene una matrícula terminada en `"(ficticia)"`
+- **Y** uno de los pacientes tiene `obra_social` no nula y el otro la tiene nula
 
 #### Scenario: Los recursos sembrados aceptan turnos
 
-- **Dado** el catálogo demo sembrado y un usuario `recepcion_demo` autenticado
-- **Cuando** reserva un turno en un día hábil a las 10:00 con la prestación "Consulta ficticia"
+- **Dado** el catálogo demo sembrado con `SEED_ADMIN_PASSWORD` y `SEED_RECEPCION_PASSWORD` definidas, y un usuario `recepcion_demo` autenticado
+- **Cuando** reserva un turno en un día hábil con horario sembrado, a las 10:00 y con la prestación "Consulta ficticia"
 - **Entonces** responde `201` con `estado` `reservado` y `fin` a las 10:30
 
 ### Requirement: Horarios de atención demo
 
-El seed SHALL crear los horarios de atención de ambos profesionales de lunes a viernes, con dos franjas por día: de 09:00 a 13:00 y de 14:00 a 18:00.
+El seed SHALL crear los horarios de atención de ambos profesionales con la convención de `knowledge-base/04_modelo_de_datos.md` (`dia_semana` 0 = lunes … 6 = domingo): de lunes (0) a viernes (4), con dos franjas por día, de 09:00 a 13:00 y de 14:00 a 18:00.
 
 #### Scenario: Horarios de lunes a viernes para ambos profesionales
 
-- **Dado** el catálogo demo sembrado
-- **Cuando** se consultan los horarios de cada profesional
-- **Entonces** cada uno tiene 2 franjas por cada día hábil de lunes (1) a viernes (5), de 09:00 a 13:00 y de 14:00 a 18:00
+- **Dado** el catálogo demo sembrado con `SEED_ADMIN_PASSWORD` definida
+- **Cuando** se consultan los horarios de cada profesional con una consulta directa a la tabla `horario_atencion`
+- **Entonces** cada uno tiene 2 franjas por cada día de lunes (0) a viernes (4), de 09:00 a 13:00 y de 14:00 a 18:00
+
+#### Scenario: Un segundo arranque no duplica franjas
+
+- **Dado** una base temporal donde un arranque previo en development, con `SEED_ADMIN_PASSWORD`, `SEED_RECEPCION_PASSWORD` y `SEED_ODONTOLOGO_PASSWORD` definidas, ya sembró los 20 horarios
+- **Cuando** la aplicación vuelve a arrancar con esas mismas tres variables definidas
+- **Entonces** la tabla `horario_atencion` sigue teniendo exactamente 20 filas, 2 por cada día de 0 a 4 y por cada profesional
 
 ### Requirement: Usuarios demo de recepción y odontología
 
@@ -77,15 +87,15 @@ Con `SEED_RECEPCION_PASSWORD` definida, el seed SHALL crear `recepcion_demo` (ro
 
 #### Scenario: Sin variable de contraseña no hay usuario para ese rol
 
-- **Dado** `APP_ENV=development` con `SEED_ADMIN_PASSWORD` definida pero sin `SEED_RECEPCION_PASSWORD` ni `SEED_ODONTOLOGO_PASSWORD`
+- **Dado** `APP_ENV=development` con `SEED_ADMIN_PASSWORD` definida y sin `SEED_RECEPCION_PASSWORD` ni `SEED_ODONTOLOGO_PASSWORD`
 - **Cuando** la aplicación arranca
 - **Entonces** existe `admin_demo` y el catálogo demo está sembrado
 - **Y** no existen los usuarios `recepcion_demo` ni `odontologo_demo`
 
 #### Scenario: Un usuario demo existente no se modifica
 
-- **Dado** una base donde `recepcion_demo` ya existe con otro rol y `activo = 0`
-- **Cuando** la aplicación arranca de nuevo en development con su contraseña definida
+- **Dado** una base donde `recepcion_demo` ya existe con otro rol y `activo = 0`, con `SEED_ADMIN_PASSWORD`, `SEED_RECEPCION_PASSWORD` y `SEED_ODONTOLOGO_PASSWORD` definidas
+- **Cuando** la aplicación arranca de nuevo en development
 - **Entonces** `recepcion_demo` conserva su rol, su `password_hash` y su estado `activo`
 
 ### Requirement: Contraseñas del seed desde el entorno
@@ -94,13 +104,13 @@ Las contraseñas de los usuarios demo SHALL provenir exclusivamente de las varia
 
 #### Scenario: La base guarda hashes, no contraseñas
 
-- **Dado** `APP_ENV=development` con las tres contraseñas demo definidas y una base temporal vacía
+- **Dado** `APP_ENV=development` con `SEED_ADMIN_PASSWORD`, `SEED_RECEPCION_PASSWORD` y `SEED_ODONTOLOGO_PASSWORD` definidas, y una base temporal vacía
 - **Cuando** la aplicación arranca
 - **Entonces** el `password_hash` de cada usuario demo empieza con `$argon2id$`
 
 #### Scenario: La contraseña demo no queda en el archivo de la base
 
-- **Dado** un arranque en development con `SEED_ADMIN_PASSWORD=clave-demo-ficticia`
+- **Dado** un arranque en development con `SEED_ADMIN_PASSWORD=clave-demo-ficticia` como única variable de seed definida
 - **Cuando** se leen los bytes del archivo de la base
 - **Entonces** la cadena `clave-demo-ficticia` no aparece
 
@@ -110,12 +120,12 @@ Todos los datos del seed demo SHALL ser ficticios y estar rotulados como tales (
 
 #### Scenario: Los DNI demo están rotulados
 
-- **Dado** el catálogo demo sembrado
-- **Cuando** se consultan los pacientes
+- **Dado** el catálogo demo sembrado con `SEED_ADMIN_PASSWORD` definida
+- **Cuando** se consultan los pacientes con una consulta directa a la tabla `paciente`
 - **Entonces** cada `dni` termina en `"(ficticio)"`
 
 #### Scenario: Los nombres demo están rotulados
 
-- **Dado** el catálogo demo sembrado
-- **Cuando** se consultan profesionales y pacientes
+- **Dado** el catálogo demo sembrado con `SEED_ADMIN_PASSWORD` definida
+- **Cuando** se consultan los profesionales y los pacientes con una consulta directa a la base
 - **Entonces** cada nombre o apellido contiene la palabra "ficticio" o "ficticia", sin distinguir mayúsculas
