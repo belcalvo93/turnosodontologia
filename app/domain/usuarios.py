@@ -1,10 +1,11 @@
-"""Usuarios, roles y validaciones de la gestión de cuentas (C-03, C-07). Python puro."""
+"""Usuarios, roles y validaciones de la gestión de cuentas y agenda (C-03, C-07, C-14). Python puro."""
 
 from dataclasses import dataclass
+from datetime import datetime
 from enum import StrEnum
 
 from app.domain.errores import DatoInvalido
-from app.domain.models import Profesional
+from app.domain.models import Profesional, Turno
 
 
 class Rol(StrEnum):
@@ -29,6 +30,32 @@ class Usuario:
     # Sin FK en la base; C-07 valida que el profesional exista para usuarios odontólogo.
     profesional_id: int | None
     activo: bool
+
+
+def puede_ver_turno(usuario: Usuario, turno: Turno) -> bool:
+    """Administración y recepción ven cualquier turno; el odontólogo solo los suyos (RN-ACC-03)."""
+    if usuario.rol is Rol.ODONTOLOGO:
+        return usuario.profesional_id is not None and usuario.profesional_id == turno.profesional_id
+    return True
+
+
+def puede_ver_agenda_profesional(usuario: Usuario, profesional_id: int) -> bool:
+    """Administración y recepción ven cualquier agenda; el odontólogo solo la propia (RN-ACC-03)."""
+    if usuario.rol is Rol.ODONTOLOGO:
+        return usuario.profesional_id is not None and usuario.profesional_id == profesional_id
+    return True
+
+
+def puede_ver_agenda_sillon(usuario: Usuario) -> bool:
+    """Administración y recepción ven la agenda de sillones; el odontólogo no (03 §RBAC)."""
+    return usuario.rol in (Rol.ADMINISTRACION, Rol.RECEPCION)
+
+
+def validar_rango_agenda(desde: datetime, hasta: datetime) -> None:
+    """Valida que el rango temporal de consulta sea consistente (desde <= hasta)."""
+    if desde > hasta:
+        raise DatoInvalido("El rango de fechas es inválido: 'desde' no puede ser posterior a 'hasta'.")
+
 
 
 def validar_username(username: str) -> str:

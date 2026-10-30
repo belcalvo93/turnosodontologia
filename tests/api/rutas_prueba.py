@@ -12,7 +12,7 @@ from fastapi import APIRouter, Depends, Request
 from pydantic import BaseModel
 
 from app.api.auth import requiere_rol, usuario_actual
-from app.api.dependencias import obtener_ahora, obtener_conexion
+from app.api.dependencias import obtener_ahora, obtener_ahora_local, obtener_conexion
 from app.api.errores import CredencialesInvalidas, NoAutenticado, SinPermiso
 from app.domain.errores import (
     ConflictoAgenda,
@@ -118,6 +118,13 @@ def usar_conexion_y_fallar(request: Request, conexion: Conexion) -> None:
 @router.get("/ahora")
 def devolver_ahora(ahora: Annotated[datetime, Depends(obtener_ahora)]) -> dict[str, str]:
     return {"ahora": ahora.isoformat()}
+
+
+@router.get("/ahora-local")
+def devolver_ahora_local(
+    ahora_local: Annotated[datetime, Depends(obtener_ahora_local)],
+) -> dict[str, str]:
+    return {"ahora_local": ahora_local.isoformat()}
 
 
 @router.get("/autenticado")
