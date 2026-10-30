@@ -66,7 +66,7 @@ Los criterios de aceptación son propuesta del equipo; los datos de ejemplo son 
 - [ ] Se crea un bloqueo con alcance, recurso, inicio, fin y motivo.
 - [ ] Un turno que se superpone con un bloqueo del profesional o del sillón es rechazado.
 - [ ] Se puede eliminar un bloqueo y el horario vuelve a estar disponible.
-- [ ] Qué pasa con turnos ya existentes dentro del bloqueo nuevo: pregunta abierta (SE-09), el MVP los reporta pero no los cancela automáticamente (propuesta).
+- [ ] Turnos ya existentes dentro del bloqueo nuevo (SE-09, decisión tomada): el bloqueo se crea igual y NO se cancelan turnos; la respuesta de `POST /bloqueos` devuelve la lista `turnos_afectados` (solo turnos en estado reservado, ordenados por inicio ASC) para que recepción los reprograme a mano.
 
 **Reglas relacionadas**: RN-REC-02, RN-TUR-05
 

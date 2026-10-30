@@ -86,7 +86,7 @@ Recepción --> API --> DB (lee contexto)
 2. El dominio valida inicio < fin (RN-REC-02).
 3. `app/db` guarda el bloqueo.
 4. Desde ese momento, crear o reprogramar turnos en ese intervalo y recurso se rechaza (RN-TUR-05).
-5. Turnos preexistentes dentro del bloqueo: a definir (SE-09); la propuesta del MVP es devolver la lista de turnos afectados para que recepción los reprograme a mano.
+5. Turnos preexistentes dentro del bloqueo (SE-09, decisión tomada): el bloqueo se crea igual y NO se cancelan turnos; la respuesta de `POST /bloqueos` devuelve la lista de turnos afectados (solo turnos en estado reservado, ordenados por inicio ASC) para que recepción los reprograme a mano.
 
 **Casos de error**:
 - inicio >= fin -> 422.
