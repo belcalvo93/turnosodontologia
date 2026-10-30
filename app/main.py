@@ -6,6 +6,7 @@ from datetime import UTC, datetime
 
 from fastapi import FastAPI
 
+from app.api.agenda import router as router_agenda
 from app.api.auth import router as router_auth
 from app.api.bloqueos import router as router_bloqueos
 from app.api.errores import registrar_manejadores
@@ -68,6 +69,7 @@ def create_app(
     aplicacion.include_router(router_usuarios)
     aplicacion.include_router(router_bloqueos)
     aplicacion.include_router(router_turnos)
+    aplicacion.include_router(router_agenda)
     return aplicacion
 
 
