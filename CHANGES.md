@@ -416,7 +416,7 @@ El MVP es solo backend (el frontend React es etapa posterior, D.3), así que no 
   - `knowledge-base/10_preguntas_abiertas.md` §IF-06, §SE-13
 
 ### [C-16] `bloqueos-turnos-afectados`
-- **Estado**: `[ ]` pendiente — **requiere decidir SE-09 antes del propose**
+- **Estado**: `[x]` completado
 - **Scope**:
   - Según la propuesta actual del MVP: `POST /bloqueos` devuelve, junto al bloqueo creado, la lista de turnos activos que quedan dentro del intervalo y recurso
   - No cancela ni modifica esos turnos (recepción los reprograma a mano)

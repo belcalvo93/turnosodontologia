@@ -10,9 +10,9 @@ from dataclasses import replace
 from datetime import date, datetime, time, timedelta
 from typing import Final, Literal, cast
 
-from app.domain.models import EstadoTurno, Turno
+from app.domain.models import AlcanceBloqueo, EstadoTurno, Turno
 
-# Orden de columnas que espera `turno_desde_fila`; lo reutilizan C-12, C-13 y C-14.
+# Orden de columnas que espera `turno_desde_fila`; lo reutilizan C-12, C-13, C-14 y C-16.
 COLUMNAS_TURNO: Final = "id, paciente_id, profesional_id, sillon_id, prestacion_id, inicio, fin, estado"
 
 AccionAuditoria = Literal["crear", "cancelar", "reprogramar"]
@@ -239,6 +239,57 @@ def listar_turnos_activos_del_dia(
             profesional_id,
             sillon_id,
             paciente_id,
+            hasta.isoformat(timespec="seconds"),
+            desde.isoformat(timespec="seconds"),
+        ),
+    ).fetchall()
+    return [turno_desde_fila(fila) for fila in filas]
+
+
+# C-16 (D-A4): literales completos idénticos al patrón de `listar_bloqueos_de_recursos`;
+# las columnas respetan el orden de `COLUMNAS_TURNO`, que espera `turno_desde_fila`.
+_SELECT_RESERVADOS_PROFESIONAL_EN_RANGO: Final = """
+    SELECT id, paciente_id, profesional_id, sillon_id, prestacion_id, inicio, fin, estado
+    FROM turno
+    WHERE estado = 'reservado'
+      AND profesional_id = ?
+      AND inicio < ? AND fin > ?
+    ORDER BY inicio ASC, id ASC
+"""
+_SELECT_RESERVADOS_SILLON_EN_RANGO: Final = """
+    SELECT id, paciente_id, profesional_id, sillon_id, prestacion_id, inicio, fin, estado
+    FROM turno
+    WHERE estado = 'reservado'
+      AND sillon_id = ?
+      AND inicio < ? AND fin > ?
+    ORDER BY inicio ASC, id ASC
+"""
+
+
+def listar_reservados_del_recurso(
+    conexion: sqlite3.Connection,
+    *,
+    alcance: AlcanceBloqueo,
+    recurso_id: int,
+    desde: datetime,
+    hasta: datetime,
+) -> list[Turno]:
+    """Turnos `reservado` del recurso indicado por el alcance que solapan `[desde, hasta)`.
+
+    La ventana es semiabierta (RN-TUR-04): los turnos contiguos al borde, con `fin == desde`
+    o `inicio == hasta`, quedan fuera. Los cancelados no ocupan agenda (RN-TUR-08).
+    La regla de negocio del solapamiento se revalida en el dominio con
+    `turnos_afectados_por_bloqueo`; esta consulta solo preselecciona.
+    """
+    consulta = (
+        _SELECT_RESERVADOS_PROFESIONAL_EN_RANGO
+        if alcance == "profesional"
+        else _SELECT_RESERVADOS_SILLON_EN_RANGO
+    )
+    filas = conexion.execute(
+        consulta,
+        (
+            recurso_id,
             hasta.isoformat(timespec="seconds"),
             desde.isoformat(timespec="seconds"),
         ),
