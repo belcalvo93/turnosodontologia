@@ -6,7 +6,7 @@
 
 - [ ] 1.1 **Rojo:** en `tests/domain/test_reglas_turno.py` (o nuevo `tests/domain/test_bloqueos_turnos_afectados.py`), escribir los tests de `turnos_afectados_por_bloqueo(bloqueo, turnos)` sin implementarla: turnos `reservado` solapados de forma parcial son reportados, y los turnos de otro profesional o de otro sillón quedan fuera (`RN-TUR-05`). Datos ficticios.
 - [ ] 1.2 **Rojo:** test de contigüidad en el borde (`turno.fin == bloqueo.inicio` y `turno.inicio == bloqueo.fin` → NO afectados; `RN-TUR-04`) y test de exclusión de turnos `cancelado` (`RN-TUR-08`).
-- [ ] 1.3 **Rojo:** test de orden de la salida (`inicio ASC`, empates por `id ASC`) y de que la función no depende del reloj (no recibe `ahora`; D-A3).
+- [ ] 1.3 **Rojo:** test de orden de la salida por `inicio ASC` y de que la función no depende del reloj (no recibe `ahora`; D-A3). El desempate por `id ASC` se prueba SOLO a nivel dominio con una lista armada a mano (dos turnos con el mismo `inicio` y distinto `id`): es un orden determinista defensivo que no ocurre con datos válidos, porque dos turnos `reservado` del mismo profesional o sillón no pueden empezar a la vez (RN-TUR-04 y RN-TUR-11).
 - [ ] 1.4 **Verde:** implementar en `app/domain/reglas_turno.py` la función pública `turnos_afectados_por_bloqueo(bloqueo: Bloqueo, turnos: Sequence[Turno]) -> list[Turno]`, reutilizando `_bloqueo_afecta` y `solapan` (Regla dura 3, semiabiertos `[inicio, fin)`), filtrando `estado == "reservado"`. Sin FastAPI, sin SQLite, sin `datetime.now()` (Regla dura 2). Ejecutar los tests de 1.1 a 1.3 en verde y el resto de `tests/domain/` sin regresiones.
 
 ## 2. Repositorio (SQL parametrizado, Regla dura 4)
@@ -17,7 +17,7 @@
 
 ## 3. Router (contrato plano D-A2, Regla dura 8)
 
-- [ ] 3.1 **Rojo:** en `tests/api/test_bloqueos.py`, tests de API para `POST /bloqueos` con stock de datos ficticios (`"(ficticio)"`, `RN-PAC-03`): con 2 turnos `reservado` y 1 `cancelado` en rango → `201` con los 6 campos actuales + `turnos_afectados` (solo los 2 `reservado`, serializados como `TurnoResponse`); sin turnos → `turnos_afectados = []`; verificación posterior con `GET /turnos/{id}` de que los turnos siguen `reservado` y con `repositorio_turnos`/`auditoria_turno` de que no se agregaron filas de auditoría (`IF-06`, D-A1).
+- [ ] 3.1 **Rojo:** en `tests/api/test_bloqueos.py`, tests de API para `POST /bloqueos` con stock de datos ficticios (`"(ficticio)"`, `RN-PAC-03`): con 2 turnos `reservado` y 1 `cancelado` en rango → `201` con los 6 campos actuales + `turnos_afectados` (solo los 2 `reservado`, serializados como `TurnoResponse`, ordenados por `inicio ASC`); sin turnos → `turnos_afectados = []`; verificación posterior con `GET /turnos/{id}` de que los turnos siguen `reservado` y con `repositorio_turnos`/`auditoria_turno` de que no se agregaron filas de auditoría (`IF-06`, D-A1).
 - [ ] 3.2 **Rojo:** test de que los reportes también salen para `alcance = "sillon"` y test de que `GET /bloqueos` sigue sin contener la clave `turnos_afectados` (contrato actual intacto).
 - [ ] 3.3 **Verde:** en `app/api/bloqueos.py`, agregar `BloqueoCreadoSalida(BloqueoSalida)` con `turnos_afectados: list[TurnoResponse]` **solo para `POST`**, importando `TurnoResponse`/`turno_a_response` de `app/api/turnos.py`; dentro de la `transaccion(conexion)` actual, tras `crear_bloqueo`, consultar el repositorio (2.3) y filtrar con `turnos_afectados_por_bloqueo` (1.4). Sin lógica de negocio en el router, sin tocar `GET`/`DELETE`.
 - [ ] 3.4 **Verde:** ejecutar toda la suite `pytest`.

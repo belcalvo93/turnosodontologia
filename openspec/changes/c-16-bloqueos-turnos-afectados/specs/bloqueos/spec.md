@@ -22,13 +22,13 @@ Además, para cualquier alcance admitido (`profesional` o `sillon`), la respuest
 
 - **Dado** un usuario autenticado con rol `administracion` y un sillón existente
 - **Cuando** envía `POST /bloqueos` con `inicio` igual o posterior a `fin`
-- **Entonces** el sistema responde `422` con un mensaje de error en español y no persiste el bloqueo
+- **Entonces** el sistema responde `422` con `codigo` `dato_invalido`, un mensaje de error en español y no persiste el bloqueo
 
 #### Scenario: Rechazo por recurso inexistente
 
 - **Dado** un usuario autenticado con rol `administracion`
 - **Cuando** envía `POST /bloqueos` con `alcance = "profesional"` (o `"sillon"`) y un `recurso_id` que no existe en la tabla correspondiente
-- **Entonces** el sistema responde `422` con un mensaje de error en español y no persiste el bloqueo
+- **Entonces** el sistema responde `422` con `codigo` `dato_invalido`, un mensaje de error en español y no persiste el bloqueo
 
 #### Scenario: Crear un bloqueo reporta los turnos reservados solapados (RN-TUR-05 con RN-TUR-04)
 
@@ -62,9 +62,9 @@ Además, para cualquier alcance admitido (`profesional` o `sillon`), la respuest
 
 #### Scenario: Los turnos afectados se listan ordenados por inicio y no se modifican
 
-- **Dado** un usuario con rol `administracion`, un profesional con un turno `reservado` de `11:00` a `11:30`, otro de `10:00` a `10:30` y un tercero de `10:30` a `11:00` (id mayor), todos dentro del intervalo del bloqueo
+- **Dado** un usuario con rol `administracion` y un profesional con un turno `reservado` de `11:00` a `11:30`, otro de `10:00` a `10:30` y un tercero de `10:30` a `11:00`, todos dentro del intervalo del bloqueo
 - **Cuando** crea el bloqueo para ese profesional y luego consulta cada turno reportado por su `id`
-- **Entonces** `turnos_afectados` está ordenado por `inicio ASC` (empatados por `id ASC`), cada turno sigue con `estado = "reservado"` y no se agregó ninguna fila en `auditoria_turno`
+- **Entonces** `turnos_afectados` está ordenado por `inicio ASC`, cada turno sigue con `estado = "reservado"` y no se agregó ninguna fila en `auditoria_turno`
 
 #### Scenario: GET /bloqueos no incluye turnos_afectados
 
