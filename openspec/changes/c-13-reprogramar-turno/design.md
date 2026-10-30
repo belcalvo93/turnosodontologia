@@ -10,15 +10,15 @@ Siguiendo las decisiones D-02 y las reglas duras de `AGENTS.md`, la solución ma
       ▼
 [app/api/turnos.py] ────────► [app/db/repositorio_turnos.py]
       │                                    │
-      │ (Pydantic / RBAC / Reloj)          │ (SQL Parametrizado, BEGIN IMMEDIATE)
+      │ (Pydantic, RBAC, reloj, tx)        │ (SQL parametrizado)
       ▼                                    ▼
 [app/domain/reglas_turno.py]         [SQLite: turno + auditoria_turno]
       (Python Puro, sin DB/HTTP)
 ```
 
 - **`app/domain/`**: Lógica pura e inmutable de validación (`validar_reprogramacion`). No importa FastAPI, ni SQL, ni bibliotecas externas. Recibe el reloj `ahora: datetime` explícitamente.
-- **`app/db/`**: Acceso a datos con SQL parametrizado (`?`) dentro de transacciones inmediatas (`with transaccion(conexion):`), garantizando atomicidad entre la actualización del turno y la creación del registro de auditoría.
-- **`app/api/`**: Deserialización, autenticación, validación de esquemas (Pydantic), inyección de reloj y orquestación.
+- **`app/db/`**: Acceso a datos con SQL parametrizado (`?`). Sus funciones se llaman dentro de la transacción que abre el router; no validan reglas de negocio.
+- **`app/api/`**: Deserialización, autenticación, validación de esquemas (Pydantic), inyección de reloj, orquestación y apertura de la transacción (`with transaccion(conexion):`, SQLite `BEGIN IMMEDIATE`), que garantiza la atomicidad entre la actualización del turno y su auditoría (C-11 D1).
 
 ---
 
@@ -30,13 +30,14 @@ def validar_reprogramacion(
     turno: Turno,
     nuevo_inicio: datetime,
     ahora: datetime,
-    duracion_minutos: int,
-    horarios_profesional: list[HorarioAtencion],
-    bloqueos_profesional: list[Bloqueo],
-    bloqueos_sillon: list[Bloqueo],
-    turnos_existentes: list[Turno],
+    prestacion: Prestacion,
+    horarios: Sequence[HorarioAtencion],
+    bloqueos: Sequence[Bloqueo],
+    turnos_activos: Sequence[Turno],
     nuevo_profesional_id: int | None = None,
     nuevo_sillon_id: int | None = None,
+    nuevo_profesional: Profesional | None = None,
+    nuevo_sillon: Sillon | None = None,
 ) -> Turno:
     ...
 ```
@@ -46,28 +47,24 @@ def validar_reprogramacion(
    Si `turno.estado != "reservado"` (por ejemplo si ya fue `"cancelado"`), lanza `TurnoNoModificable("No se puede reprogramar un turno cancelado.")`.
 2. **Validar temporalidad del turno actual (`RN-TUR-09`):**
    Si `not es_futuro(turno, ahora)` (es decir, `turno.inicio <= ahora`), lanza `TurnoNoModificable("Solo se pueden reprogramar turnos futuros.")`.
-3. **Determinar recursos y nuevo intervalo:**
+3. **Validar solo los recursos que cambian (`RN-REC-03`, C-11 D10):**
+   - Si `nuevo_profesional_id is not None`: `nuevo_profesional` inexistente (`None`) o inactivo lanza `DatoInvalido` (→ 422).
+   - Si `nuevo_sillon_id is not None`: `nuevo_sillon` inexistente (`None`) o inactivo lanza `DatoInvalido` (→ 422).
+   - Un id enviado siempre se valida, aunque coincida con el recurso actual del turno. Los recursos que no se envían, la prestación y el paciente no se revalidan: un turno cuyo recurso vigente quedó inactivo se puede mover de horario sin cambiarlo.
+   - `validar_recursos_alta` no se llama acá, porque exige los cuatro recursos. Se extraen de ella helpers privados de profesional y sillón, con los mismos mensajes y sin cambiar su comportamiento, y los usan ambas funciones.
+4. **Determinar recursos y nuevo intervalo:**
    - `profesional_id = nuevo_profesional_id if nuevo_profesional_id is not None else turno.profesional_id`
    - `sillon_id = nuevo_sillon_id if nuevo_sillon_id is not None else turno.sillon_id`
-   - `nuevo_fin = nuevo_inicio + timedelta(minutes=duracion_minutos)` (`RN-TUR-01`).
-4. **Validar disponibilidad en agenda (`RN-TUR-07`, `RN-TUR-08`):**
-   Reutiliza `validar_alta` (o sus sub-funciones de validación) pasando `excluir_turno_id=turno.id`:
+   - El nuevo `fin` lo calcula `validar_alta` a partir de `prestacion` (`RN-TUR-01`).
+5. **Validar disponibilidad en agenda (`RN-TUR-07`, `RN-TUR-08`):**
+   Reutiliza `validar_alta` pasando `excluir_turno_id=turno.id`:
    - El nuevo horario debe estar íntegramente contenido en una franja de atención del profesional (`FueraDeHorario` → 409).
    - No debe superponerse con bloqueos del profesional ni del sillón (`DentroDeBloqueo` → 409).
    - No debe superponerse con otros turnos activos del profesional, del sillón ni del mismo paciente (`ConflictoAgenda` → 409). Se ignora el propio turno (`turno.id`) permitiendo cambios horarios contiguos o solapados con su franja anterior.
-5. **Retorno:**
-   Nueva instancia inmutable de `Turno` con los atributos actualizados:
+6. **Retorno:**
+   Nueva instancia inmutable de `Turno`, a partir del candidato que devuelve `validar_alta`, conservando `id` y `estado`:
    ```python
-   return Turno(
-       id=turno.id,
-       paciente_id=turno.paciente_id,
-       profesional_id=profesional_id,
-       sillon_id=sillon_id,
-       prestacion_id=turno.prestacion_id,
-       inicio=nuevo_inicio,
-       fin=nuevo_fin,
-       estado=turno.estado,
-   )
+   return replace(candidato, id=turno.id, estado=turno.estado)
    ```
 
 ---
@@ -75,14 +72,11 @@ def validar_reprogramacion(
 ## 3. Persistencia y Transaccionalidad (`app/db/`)
 
 Para satisfacer `RN-AUD-01` y `RN-AUD-03`:
-- Se define la función `reprogramar_turno(...)` en el repositorio de turnos.
-- Ejecuta una única transacción atómica `with transaccion(conexion):` (SQLite `BEGIN IMMEDIATE`):
-  1. Serializa el estado anterior a JSON:
-     `antes = json.dumps({"inicio": turno_anterior.inicio.isoformat(), "fin": turno_anterior.fin.isoformat(), "profesional_id": turno_anterior.profesional_id, "sillon_id": turno_anterior.sillon_id})`
-  2. Serializa el estado posterior a JSON:
-     `despues = json.dumps({"inicio": turno_nuevo.inicio.isoformat(), "fin": turno_nuevo.fin.isoformat(), "profesional_id": turno_nuevo.profesional_id, "sillon_id": turno_nuevo.sillon_id})`
-  3. `UPDATE turno SET inicio = ?, fin = ?, profesional_id = ?, sillon_id = ? WHERE id = ?`
-  4. `INSERT INTO auditoria_turno (turno_id, accion, usuario_id, ocurrio_en, antes, despues) VALUES (?, 'reprogramar', ?, ?, ?, ?)`
+- Se define la función `reprogramar_turno(...)` en `app/db/repositorio_turnos.py`. **Precondición:** se llama dentro de la transacción que abre el router (C-11 D1); no abre una propia.
+- Dentro de esa transacción:
+  1. `UPDATE turno SET inicio = ?, fin = ?, profesional_id = ?, sillon_id = ? WHERE id = ?`, con fechas en `isoformat(timespec="seconds")` (C-11 D4).
+  2. `registrar_auditoria(conexion, turno_id=..., accion="reprogramar", usuario_id=..., ocurrio_en=..., antes=snapshot_turno(turno_anterior), despues=snapshot_turno(turno_nuevo))`.
+- `antes` y `despues` usan el snapshot canónico completo de 8 claves, incluido `estado` (C-11 D2).
 - Si ocurre cualquier error antes o durante la escritura, se hace rollback y no queda rastro en `auditoria_turno`.
 
 ---
@@ -92,7 +86,7 @@ Para satisfacer `RN-AUD-01` y `RN-AUD-03`:
 ### Esquema de Entrada
 ```python
 class ReprogramarTurnoRequest(BaseModel):
-    nuevo_inicio: datetime
+    nuevo_inicio: NaiveDatetime  # con offset o `Z` → 422 (C-11 D4)
     nuevo_profesional_id: int | None = None
     nuevo_sillon_id: int | None = None
 ```
@@ -100,14 +94,32 @@ class ReprogramarTurnoRequest(BaseModel):
 ### Endpoint
 `POST /turnos/{id}/reprogramar`
 - **Autorización:** `Depends(requiere_rol("administracion", "recepcion"))` (odontólogos reciben 403; no autenticados 401).
-- **Reloj:** `ahora = request.app.state.reloj()` para garantizar inyección de tiempo.
-- **Flujo de Ejecución:**
-  1. Carga el turno por ID; si no existe → 404 (`TurnoNoEncontrado`).
-  2. Valida la existencia y estado activo de `nuevo_profesional_id` (si se envió) y `nuevo_sillon_id` (si se envió); si alguno no existe o está inactivo → 422 (`DatoInvalido`).
-  3. Carga prestación asociada al turno para obtener su duración en minutos.
-  4. Carga horarios de atención, bloqueos y turnos existentes para el nuevo contexto.
-  5. Invoca `validar_reprogramacion(...)`. Ante errores de dominio (`TurnoNoModificable`, `ConflictoAgenda`, `FueraDeHorario`, `DentroDeBloqueo`), el middleware global los traduce a HTTP 409.
-  6. Ejecuta la transacción de persistencia y retorna el turno actualizado (HTTP 200).
+- **Reloj:** dependencia `obtener_ahora_local` (C-11 D3). El reloj UTC directo no sirve: `es_futuro` lanzaría `TypeError` al comparar un `datetime` con zona contra `turno.inicio`, que es naive.
+- **Flujo de Ejecución** (toda la lectura y la validación ocurren dentro de la transacción, C-11 D1; así dos reprogramaciones al mismo hueco no pasan juntas):
+  ```
+  entrada (Pydantic: nuevo_inicio sin tz)                          → 422
+  usuario = requiere_rol(ADMINISTRACION, RECEPCION)                → 401 / 403
+  ahora_local = obtener_ahora_local
+  with transaccion(conexion):                                      # BEGIN IMMEDIATE
+      turno = obtener_turno(conexion, id)                          # None → HTTPException(404)
+      profesional_id, sillon_id = nuevos si se enviaron, si no los del turno
+      prestacion = obtener_prestacion_por_id(turno.prestacion_id)  # solo para la duración; no se valida si está activa
+      nuevo_profesional, nuevo_sillon = obtener_*_por_id solo para los ids enviados
+      horarios = listar_horarios_por_profesional_y_dia(profesional_id, nuevo_inicio.weekday())
+      bloqueos = listar_bloqueos_de_recursos(profesional_id, sillon_id, desde=dia 00:00, hasta=dia+1 00:00)
+      activos  = listar_turnos_activos_del_dia(dia, profesional_id, sillon_id, paciente_id)
+      nuevo    = validar_reprogramacion(...)                       # dominio → 409 / 422 / 409 (ver orden abajo)
+      reprogramar_turno(conexion, turno, nuevo, usuario_id=usuario.id, ocurrio_en=ahora_local)
+  return 200 turno_a_response(nuevo)
+  ```
+- **404:** `HTTPException(status_code=404)`, que el handler global responde como `no_encontrado`. No se crea `TurnoNoEncontrado` (C-11 D5).
+- **Respuesta:** `TurnoResponse` / `turno_a_response` de C-11 (D8).
+- **Errores de dominio:** `TurnoNoModificable`, `ConflictoAgenda`, `FueraDeHorario` y `DentroDeBloqueo` los traduce a HTTP 409 el handler global; `DatoInvalido`, a HTTP 422.
+- **Orden de validación de negocio**, una vez que el turno existe, fijado dentro de `validar_reprogramacion` y sin reglas en el router:
+  1. Turno cancelado o pasado → 409 `TurnoNoModificable`.
+  2. Recurso nuevo inexistente o inactivo → 422 `DatoInvalido`.
+  3. Fuera de horario, bloqueo o conflicto de agenda → 409.
+- **Contexto cargado antes de validar:** si el profesional nuevo no existe, sus horarios llegan vacíos, pero el dominio lanza `DatoInvalido` antes de usarlos. El router solo pasa datos; no decide sobre ellos.
 
 ---
 
