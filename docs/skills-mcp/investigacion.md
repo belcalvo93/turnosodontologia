@@ -55,7 +55,7 @@ Cambio de elección: el 29/10 se evaluó Context7 (documentación de librerías)
 
 ## 5. Archivos de la fundación a actualizar
 
-`.atl/skill-registry.md` y `AGENTS.md`/`CLAUDE.md` (skill: hecho; MCP: propósito, momento de uso y límites); `README.md` (requisitos, autenticación, configuración sin secretos, comprobación); `docs/skills-mcp/` (ficha, informe y evidencias 01 a 05).
+`.atl/skill-registry.md` y `AGENTS.md`/`CLAUDE.md` (skill: hecho; MCP: propósito, momento de uso y límites); `README.md` (requisitos, autenticación, configuración sin secretos, comprobación); `docs/skills-mcp/` (ficha, informe y evidencias 01 a 04).
 
 ## 6. Fuentes
 

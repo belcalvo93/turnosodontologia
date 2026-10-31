@@ -1,4 +1,4 @@
-# Evidencia 04 — Invocaciones reales del MCP de Stitch
+# Evidencia 03 — Invocaciones reales del MCP de Stitch
 
 Fecha: 2026-10-30. Cliente: Antigravity (IDE de Google). Servidor: Stitch MCP remoto (`https://stitch.googleapis.com/mcp`).
 Autenticación: OAuth con `gcloud` (token de ~1 hora + cabecera `X-Goog-User-Project`). No se versiona ninguna credencial.

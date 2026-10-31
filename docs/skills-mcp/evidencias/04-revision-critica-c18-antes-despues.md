@@ -1,4 +1,4 @@
-# Evidencia 05 — Revisión crítica con la skill `revisor-escenarios-sdd` (antes / después)
+# Evidencia 04 — Revisión crítica con la skill `revisor-escenarios-sdd` (antes / después)
 
 Skill propia: `.agents/skills/revisor-escenarios-sdd/SKILL.md` (solo lectura). Cliente: Antigravity.
 Change revisado: `openspec/changes/c-18-frontend-minimo/` (proposal, design, spec con 15 escenarios, tasks).
