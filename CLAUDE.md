@@ -63,6 +63,16 @@ Cargá la skill correspondiente al contexto ANTES de escribir código.
 
 ---
 
+## MCP
+
+- **Stitch** es una integración externa mediante MCP (no una skill del repositorio).
+- Se usa solo para generar o editar diseños de pantalla de `C-18`.
+- **Qué puede hacer:** crear y editar proyectos y pantallas en la cuenta de Stitch.
+- **Qué no hace:** no toca el repositorio ni la base de datos.
+- **Límites:** enviar únicamente datos ficticios y el contrato público de la API; nunca datos reales de pacientes, y mantener las credenciales siempre fuera del repositorio.
+
+---
+
 ## Roadmap de Changes
 
 El plan de implementación completo está en [CHANGES.md](CHANGES.md). Resumen:
