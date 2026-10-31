@@ -427,3 +427,56 @@ AGENTS.md / CLAUDE.md              Reglas para los agentes de IA
 - El repositorio no contiene claves ni credenciales: los valores de los ejemplos son ficticios y `.env` no se versiona.
 - Las contraseñas se guardan solo como hash Argon2id con sal, nunca en texto plano.
 - Todos los datos del seed y de los tests son ficticios; los DNI de pacientes y las matrículas de profesionales están rotulados (`"(ficticio)"` / `"(ficticia)"`).
+
+## MCP de Stitch (diseño de pantallas)
+
+**Stitch** es una integración con un servicio externo de Google mediante MCP (no es una skill del repositorio). Lo usamos para generar y editar el diseño de las pantallas de `C-18`.
+
+### Requisitos
+
+- Cuenta de Google.
+- SDK de Google Cloud (`gcloud`) instalado.
+- Un proyecto de Google Cloud con la API de Stitch habilitada.
+
+### Autenticación con OAuth
+
+Autenticarse en Google Cloud, habilitar el servicio en el proyecto y obtener el token de acceso:
+
+```bash
+gcloud auth login
+gcloud auth application-default login
+gcloud services enable stitch.googleapis.com --project=<TU_PROYECTO>
+gcloud auth application-default print-access-token
+```
+
+> **Nota sobre claves de API:** la clave de API de Stitch **no sirve** para las llamadas reales (devuelve `401 "API keys are not supported by this API"`). Tampoco hay que enviar clave de API y token OAuth a la vez; se debe usar únicamente el token Bearer de OAuth.
+
+### Configuración en Antigravity (`~/.gemini/config/mcp_config.json`)
+
+El archivo vive **fuera del repositorio**. Ejemplo usando solo placeholders:
+
+```json
+{
+  "mcpServers": {
+    "stitch": {
+      "serverUrl": "https://stitch.googleapis.com/mcp",
+      "headers": {
+        "Authorization": "Bearer <TOKEN>",
+        "X-Goog-User-Project": "<TU_PROYECTO>"
+      }
+    }
+  }
+}
+```
+
+> **Variables de entorno:** este MCP no usa ninguna. Antigravity no documenta sustitución de variables en su archivo de configuración, así que el token Bearer y el ID del proyecto se escriben directamente en `~/.gemini/config/mcp_config.json`, que está fuera del repositorio y nunca se versiona.
+
+> El token OAuth obtenido con `gcloud auth application-default print-access-token` vence en **~1 hora**; cuando expira, hay que imprimir uno nuevo y actualizar `Authorization`.
+
+### Cómo comprobar la conexión
+
+Pedirle al agente que ejecute la herramienta `list_projects` de Stitch. Una respuesta sin error de autenticación (por ejemplo `{}` si todavía no hay proyectos creados) confirma que la conexión funciona.
+
+### Problema real resuelto
+
+Stitch no aparece en el Marketplace de Antigravity y el comando `gcloud beta services mcp enable` ya no existe en el SDK actual: la habilitación se hace directamente con `gcloud services enable stitch.googleapis.com --project=<TU_PROYECTO>`.

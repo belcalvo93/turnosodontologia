@@ -1,23 +1,23 @@
 # Ficha de investigación: skill propia y MCP para el sistema de turnos odontológico
 
 Metodología I · UTN Mendoza · Equipo: Bruno Fiouchetta, Elías Tello, Belén Calvo, Hernán González, Joaquín Morán
-Fecha: 2026-10-29 · Repositorio: https://github.com/belcalvo93/turnosodontologia
+Fecha: 2026-10-30 · Repositorio: https://github.com/belcalvo93/turnosodontologia
 
 ## 1. Necesidad detectada
 
-Al preparar un change (explore, propose, specs, tasks) detectamos errores que se descubrían tarde: conteos de escenarios que no coinciden entre spec, tasks y verify; tests que agrupan varias reglas (la regla del proyecto es un test por RN-xx); y casos de borde faltantes (intervalos contiguos, recurso inexistente, rol sin permiso). También hace falta consultar documentación vigente del stack (FastAPI, Pydantic) sin depender de la memoria del agente.
+Al preparar un change (explore, propose, specs, tasks) detectamos errores que se descubrían tarde: conteos de escenarios que no coinciden entre spec, tasks y verify; tests que agrupan varias reglas (la regla del proyecto es un test por RN-xx); y casos de borde faltantes (intervalos contiguos, recurso inexistente, rol sin permiso). Además, la API no tenía interfaz, así que no se podía ver funcionando. Por eso se agregó C-18 `frontend-minimo`: una interfaz mínima en TypeScript servida por la propia API (decisión D-09).
 
 - **Skill:** automatiza la revisión de los specs de un change antes del apply.
-- **MCP:** da al agente acceso a documentación actualizada del stack al redactar el diseño.
+- **MCP:** permite al agente generar y editar los diseños de pantalla a partir de la descripción del flujo (Stitch), como insumo del frontend de C-18.
 
-## 2. Change elegido: C-16 `bloqueos-turnos-afectados`
+## 2. Change elegido: C-18 `frontend-minimo`
 
-Pendiente en `CHANGES.md`. Sus dependencias (C-09 y C-11) ya están en `main`, así que se puede preparar sin funcionalidades inexistentes. Extiende `POST /bloqueos` para devolver `turnos_afectados` (turnos reservados que se solapan con el bloqueo) sin cancelarlos (decisión SE-09 tomada el 2026-10-29 por la responsable del change). Tiene explore, proposal, design, specs y tasks; no está implementado. La skill revisa los escenarios de su spec y el MCP consulta documentación para su diseño.
+Pendiente en `CHANGES.md` (FASE 5b). Sus dependencias (C-03, C-11, C-14, C-16) ya están en `main`. Cuatro pantallas (login, agenda de un profesional, crear turno y crear bloqueo con la lista `turnos_afectados`) que consumen solo endpoints existentes y respetan los roles. Está preparado (explore, proposal, design, specs con 15 escenarios, tasks) y **no está implementado**. La skill revisa los escenarios de su spec; Stitch genera el diseño de la pantalla de bloqueo, que `design.md` referencia.
 
 ## 3. Skill creadora y skill propia
 
-- **Skill creadora:** `skill-creator`, oficial de Anthropic, en https://github.com/anthropics/skills (carpeta `skills/skill-creator`). Licencia Apache 2.0 (primera línea de su `LICENSE.txt`). Se copió a `.agents/skills/skill-creator/` desde el commit `ca45fc496a3436251f191354091d557da31c15b5`. El `SKILL.md` versionado tiene el mismo hash que el del repositorio oficial en ese commit, y la copia global que ya tenía OpenCode es idéntica (`diff` sin diferencias).
-- **Compatibilidad con OpenCode** (documentación oficial): busca skills en `.opencode/skills/`, `.claude/skills/` y `.agents/skills/` (proyecto) y sus equivalentes globales. Cada skill es una carpeta con `SKILL.md` y frontmatter `name` (igual al nombre de la carpeta) y `description`. El agente carga la skill con su herramienta `skill`. Compatibilidad con Antigravity: no evaluada (el equipo trabaja con OpenCode).
+- **Skill creadora:** `skill-creator`, oficial de Anthropic, en https://github.com/anthropics/skills (carpeta `skills/skill-creator`). Licencia Apache 2.0 (primera línea de su `LICENSE.txt`). Se copió a `.agents/skills/skill-creator/` desde el commit `ca45fc496a3436251f191354091d557da31c15b5`; su `SKILL.md` tiene el mismo hash que el del repositorio oficial en ese commit.
+- **Compatibilidad:** OpenCode (documentación oficial) busca skills en `.opencode/skills/`, `.claude/skills/` y `.agents/skills/`. **Antigravity**: verificado en la práctica; al pedirle que leyera `AGENTS.md`, listó las skills de `.agents/skills/` incluida la propia. Cada skill es una carpeta con `SKILL.md` y frontmatter `name` y `description`.
 - **Ubicación:** `.agents/skills/revisor-escenarios-sdd/SKILL.md`, dentro del repositorio, registrada en `.atl/skill-registry.md` y referenciada en `AGENTS.md` y `CLAUDE.md`.
 
 | Aspecto | Diseño de `revisor-escenarios-sdd` |
@@ -25,38 +25,47 @@ Pendiente en `CHANGES.md`. Sus dependencias (C-09 y C-11) ya están en `main`, a
 | Propósito | Revisar los specs de un change antes del apply: ambigüedades, bordes faltantes y contraste con la base de conocimiento |
 | Cuándo se activa | Al terminar un propose, o al pedir revisar escenarios de `specs/` |
 | Entradas | Ruta del change (`openspec/changes/<nombre>/`) |
-| Procedimiento | Contar escenarios reales; verificar formato Dado/Cuando/Entonces; cruzar cada escenario con su RN-xx en la KB; detectar reglas sin escenario; revisar bordes contra `errores-api`; comprobar que `tasks.md` dice cómo verificar cada escenario |
+| Procedimiento | Contar escenarios reales; verificar formato Dado/Cuando/Entonces; cruzar cada escenario con su RN-xx; detectar reglas sin escenario; revisar bordes contra `errores-api`; comprobar que `tasks.md` dice cómo verificar cada escenario |
 | Resultado | Tabla escenario → regla → verificación, y hallazgos con archivo y línea |
 | Criterios de revisión | Mínimo 3 escenarios (esperado, error de negocio, borde); sin reglas nuevas sin justificar; todo hallazgo cita su fuente; solo lectura |
 
 ## 4. Comparación de servidores MCP y elección
 
-| | Context7 | `mcp-server-sqlite` (referencia) |
+Cambio de elección: el 29/10 se evaluó Context7 (documentación de librerías) frente a `mcp-server-sqlite` (descartado por estar archivado y permitir escritura). El 30/10 se rehízo la parte MCP: el docente indicó que se puede ampliar (Figma y Stitch como ejemplos) y se necesitaba un MCP útil para el frontend.
+
+| | Stitch (Google) | Figma |
 |---|---|---|
-| Propósito | Documentación actualizada de librerías | Consultas sobre una base SQLite |
-| Tipo | Remoto (`https://mcp.context7.com/mcp`), requiere internet | Local (`uvx mcp-server-sqlite --db-path <ruta>`) |
-| Capacidades | `context7_resolve-library-id` y `context7_query-docs` | `read_query`, `write_query`, `create_table`, `list_tables`, `describe-table`, `append_insight` |
-| Compatibilidad con OpenCode | Sí (guía oficial; v1 desde 1.18.29 y v2) | No evaluada |
-| Credenciales y costo | Sin clave en nuestra configuración; cuenta gratuita y API key opcionales. Plan Free USD 0 con 1.000 llamadas incluidas; Pro USD 10 por usuario/mes | Sin credenciales ni costo |
-| Mantenimiento | Activo (a confirmar) | **Archivado** (sin actualizaciones desde 10/07/2025) |
-| Riesgos | Sale a internet: no enviar datos del proyecto | Puede escribir y crear tablas; sin parches de seguridad |
+| Propósito | Generar y editar pantallas de interfaz desde texto | Leer diseños de Figma, generar código y escribir en el lienzo |
+| Tipo y URL | Remoto: `https://stitch.googleapis.com/mcp` | Remoto: `https://mcp.figma.com/mcp` |
+| Capacidades | 12 herramientas: `create_project`, `get_project`, `list_projects`, `list_screens`, `get_screen`, `generate_screen_from_text`, `edit_screens`, `generate_variants` y 4 de sistemas de diseño | `get_design_context`, entre otras (lista completa no verificada) |
+| Autenticación | Clave de API u OAuth con gcloud | Inicio de sesión de Figma |
+| Clientes documentados | Cursor, Antigravity, VS Code, Claude Code, Gemini CLI | VS Code |
+| Costo | No figura en la documentación consultada | Planes Starter y superiores; gratuito no confirmado |
+| Riesgos | Credencial: no versionarla; los prompts salen a Google | Requiere diseños previos en Figma |
 
-**Elección: Context7.** Se descarta SQLite por estar archivado y exponer escritura. Context7 aporta a C-16 al verificar contra la documentación oficial de FastAPI cómo se serializa un modelo de respuesta heredado (tarea 3.3).
+**Elección: Stitch.** No necesita diseños previos ni desarrollar un servidor, y su resultado alimenta C-18. Cliente usado: **Antigravity**.
 
-- **Estado de la instalación:** Active Stack ya lo trae configurado en la configuración global de OpenCode (`~/.config/opencode/opencode.json`): `"context7": {"type": "remote", "url": "https://mcp.context7.com/mcp", "enabled": true}`. Sin clave. Para reproducirlo en otra máquina: agregar ese bloque bajo `mcp` en su `opencode.json` (o seguir la guía oficial: `npx ctx7 setup --opencode`).
-- **Comprobar la conexión:** `opencode mcp list` muestra `context7 connected`; `opencode mcp debug context7` diagnostica problemas de conexión.
-- **Qué puede consultar o modificar:** solo documentación pública de librerías; no modifica nada del repositorio ni de la base.
-- **Límites:** no incluir en las consultas datos de pacientes ni credenciales; el proyecto usa solo datos ficticios.
-- **Pendiente:** confirmar con el docente que vale un MCP que ya viene preinstalado con Active Stack; si no, se elegirá otro.
+- **Requisitos:** cuenta de Google, SDK de Google Cloud (`gcloud`) y un proyecto de Google Cloud con la API de Stitch habilitada.
+- **Autenticación (verificado):** la clave de API creada en Stitch permitió listar herramientas, pero las llamadas reales devolvieron `401: API keys are not supported by this API`. Se usa OAuth: `gcloud auth login`, `gcloud auth application-default login`, `gcloud services enable stitch.googleapis.com --project=<ID>`. El token dura aproximadamente 1 hora y debe renovarse.
+- **Configuración:** Stitch no figura en el Marketplace de Antigravity; se agrega a mano en su configuración global de MCP (`~/.gemini/config/mcp_config.json`, fuera del repositorio) con `serverUrl: https://stitch.googleapis.com/mcp` y las cabeceras `Authorization: Bearer <token>` y `X-Goog-User-Project: <ID del proyecto>`. Nunca se envían clave y token juntos. Ejemplo sin secretos: `docs/skills-mcp/` (README).
+- **Comprobar la conexión:** pedir al agente que use `list_projects`; una respuesta sin error de autenticación (aunque sea vacía) confirma la conexión. Luego `create_project` y `generate_screen_from_text`.
+- **Qué puede consultar o modificar:** crear y editar proyectos y pantallas de la cuenta de Stitch; no toca el repositorio ni la base de datos.
+- **Límites:** solo datos ficticios y el contrato público de la API; ningún dato de pacientes; credenciales fuera del repositorio, del informe y del video.
+- **Pendiente de verificar:** costo y cuotas de Stitch; compatibilidad con OpenCode (no figura entre sus clientes documentados).
 
 ## 5. Archivos de la fundación a actualizar
 
-`.atl/skill-registry.md` y `AGENTS.md`/`CLAUDE.md` (skill: hecho; MCP: propósito, momento de uso y límites, pendiente); `README.md` (requisitos, configuración sin secretos y comprobación del MCP); `docs/skills-mcp/` (ficha, informe y evidencias).
+`.atl/skill-registry.md` y `AGENTS.md`/`CLAUDE.md` (skill: hecho; MCP: propósito, momento de uso y límites); `README.md` (requisitos, autenticación, configuración sin secretos, comprobación); `docs/skills-mcp/` (ficha, informe y evidencias 01 a 04).
 
-## 6. Fuentes (consultadas el 2026-10-29)
+## 6. Fuentes
 
-- Context7, instalación: https://context7.com/docs/installation y para OpenCode: https://context7.com/docs/clients/opencode
-- Context7, precios: https://context7.com (sección Pricing)
-- OpenCode, servidores MCP: https://opencode.ai/docs/mcp-servers/ y skills: https://opencode.ai/docs/skills/
+Consultadas el 2026-10-30:
+- Stitch, documentación de MCP (botón Docs de https://stitch.withgoogle.com): clientes, claves de API y OAuth con gcloud.
+- Foro de Google AI, reportes de autenticación en Stitch MCP: https://discuss.ai.google.dev/t/mcp-generate-screen-from-text-rejects-all-credentials-api-key-and-oauth-both-fail-management-tools-work/174160
+- Figma, servidor MCP: https://help.figma.com/hc/en-us/articles/39890361040535-VS-Code-and-Figma-Set-up-the-MCP-server
+
+Consultadas el 2026-10-29:
+- Context7: https://context7.com/docs/installation
+- OpenCode, MCP y skills: https://opencode.ai/docs/mcp-servers/ y https://opencode.ai/docs/skills/
 - `mcp-server-sqlite`: https://pypi.org/project/mcp-server-sqlite/
-- Anthropic, repositorio de skills: https://github.com/anthropics/skills (solo la fuente del autor; se descartan copias de terceros)
+- Anthropic, repositorio de skills: https://github.com/anthropics/skills (solo la fuente del autor)
