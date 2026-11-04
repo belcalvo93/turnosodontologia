@@ -4,7 +4,7 @@
 
 ## 1. Configuración TypeScript y estructura base estática (D1, D6)
 
-- [ ] 1.1 Crear `package.json` (solo `typescript` en `devDependencies`, scripts `build` con `tsc`, `typecheck` con `tsc --noEmit` y `test` con `npm run build && node --test frontend/tests/`), `tsconfig.json` (`target: "ES2022"`, `module: "ES2022"`, `strict: true`, `rootDir: "frontend/src"`, `outDir: "app/static"`) y actualizar `.gitignore` para ignorar `node_modules/`, manteniendo `app/static/` versionado.
+- [x] 1.1 Crear `package.json` (solo `typescript` en `devDependencies`, scripts `build` con `tsc`, `typecheck` con `tsc --noEmit` y `test` con `npm run build && node --test frontend/tests/logica.test.mjs`), `tsconfig.json` (`target: "ES2022"`, `module: "ES2022"`, `strict: true`, `rootDir: "frontend/src"`, `outDir: "app/static"`) y actualizar `.gitignore` para ignorar `node_modules/`, manteniendo `app/static/` versionado.
 - [ ] 1.2 Crear `app/static/index.html` y `app/static/styles.css` tomando la paleta y estructura visual de Stitch (`projects/6865582647500750696/screens/c0d0c78ded4b46778fd80bf0604d9ee2`), incluyendo los contenedores con `id="login"`, `id="agenda"`, `id="crear-turno"` e `id="crear-bloqueo"` (Login, Agenda de Profesional, Crear Turno y Crear Bloqueo con tabla de `turnos_afectados`), y excluyendo los elementos descartados en `design.md` D6 (`Notificar a todos`, `Exportar lista`, acciones `Reprogramar`/`Cancelar` en la tabla, menús `Pacientes`/`Reportes`/`Configuración`).
 
 ## 2. Montaje de archivos estáticos en FastAPI y lógica pura del frontend con TDD (D2, D7, RN-GLO-01)

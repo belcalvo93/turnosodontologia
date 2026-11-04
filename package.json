@@ -1,0 +1,14 @@
+{
+  "name": "turnos-odontologia-frontend",
+  "version": "0.1.0",
+  "private": true,
+  "description": "Frontend mínimo (TypeScript compilado con tsc) de Turnos Odontológicos",
+  "scripts": {
+    "build": "tsc",
+    "typecheck": "tsc --noEmit",
+    "test": "npm run build && node --test frontend/tests/logica.test.mjs"
+  },
+  "devDependencies": {
+    "typescript": "^7.0.2"
+  }
+}
