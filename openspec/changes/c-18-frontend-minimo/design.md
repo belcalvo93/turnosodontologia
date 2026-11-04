@@ -87,6 +87,11 @@ Se consultó mediante `get_screen` de Stitch el diseño de referencia:
 - **Pruebas:** `frontend/tests/logica.test.mjs` usa el ejecutor nativo `node --test` e importa el JS compilado (`app/static/logica.js`), por lo que `typescript` sigue siendo la única dependencia. `npm test` compila y luego ejecuta los tests.
 - **Los tests NO se publican en `app/static/`:** viven en `frontend/tests/`, fuera de `rootDir` (`frontend/src`) y de `outDir`.
 
+### D8 — Una vista por módulo para repartir el trabajo
+
+- **Elección:** Cada vista vive en su propio módulo (`frontend/src/vistas/login.ts`, `agenda.ts`, `crear-turno.ts`, `crear-bloqueo.ts`); `frontend/src/app.ts` solo las conecta y maneja la navegación por rol. Así varias personas pueden implementar vistas distintas sin tocar los mismos archivos.
+- **Compilados:** `app/static/**/*.js` lo genera y commitea una sola persona (tarea 3.6) para evitar conflictos de merge en archivos generados. Excepción: la tarea 2.2 commitea el `app.js` inicial.
+
 ## UI Mockups
 
 Decision: no (no design-system policy configured in `.active-orchestrator-state.json`; visual reference is directly provided by Stitch screen `projects/6865582647500750696/screens/c0d0c78ded4b46778fd80bf0604d9ee2` per `D-09` and user confirmation).
