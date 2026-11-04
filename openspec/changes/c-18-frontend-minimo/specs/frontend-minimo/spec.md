@@ -8,13 +8,13 @@ Entrega de la interfaz web mínima en TypeScript compilada a archivos estáticos
 
 ### Requirement: Entrega de documentos y recursos estáticos sin alterar el 404 JSON
 
-El sistema SHALL servir el documento principal HTML en `GET /` con código `200` y tipo `text/html`, y los recursos estáticos compilados (`.js` y `.css`) bajo el prefijo `/static/`. Cualquier ruta inexistente fuera de `/static/` SHALL seguir respondiendo `404` en formato JSON con `codigo = "no_encontrado"` y `mensaje` en español (`RN-GLO-01`).
+El sistema SHALL servir el documento principal HTML en `GET /` con código `200` y tipo `text/html`, y los recursos estáticos compilados (`.js` y `.css`) bajo el prefijo `/static/`. El documento SHALL incluir los cuatro contenedores de vista con identificadores literales fijos. Cualquier ruta inexistente fuera de `/static/` SHALL seguir respondiendo `404` en formato JSON con `codigo = "no_encontrado"` y `mensaje` en español (`RN-GLO-01`).
 
 #### Scenario: Carga inicial de la interfaz web en la raíz
 
 - **Dado** la aplicación FastAPI iniciada
 - **Cuando** un cliente solicita `GET /`
-- **Entonces** el sistema responde `200` con `Content-Type` que incluye `text/html` y el cuerpo de `index.html` con los contenedores de login, agenda, crear turno y crear bloqueo
+- **Entonces** el sistema responde `200` con `Content-Type` que incluye `text/html` y el cuerpo de `index.html` con los cuatro contenedores de vista identificados literalmente como `id="login"`, `id="agenda"`, `id="crear-turno"` e `id="crear-bloqueo"`
 
 #### Scenario: Carga de los recursos estáticos compilados bajo /static
 
@@ -60,6 +60,12 @@ La interfaz SHALL consultar `GET /agenda/profesionales/{id}?desde=&hasta=` para 
 - **Cuando** selecciona al profesional y el rango de fechas y consulta la agenda
 - **Entonces** la interfaz llama a `GET /agenda/profesionales/{id}?desde=&hasta=` y muestra la lista ordenada por `inicio` con el horario, estado, sillón, prestación y nombre del paciente ficticio
 
+#### Scenario: Odontólogo ve su propia agenda con "Paciente #<id>" sin error (RN-ACC-03)
+
+- **Dado** un usuario autenticado con rol `odontologo` vinculado al profesional A, con turnos `reservado` en el rango
+- **Cuando** selecciona en el desplegable a su propio profesional A y consulta la agenda
+- **Entonces** la interfaz no invoca `GET /pacientes`, no muestra ningún error y lista los turnos ordenados por `inicio` identificando a cada paciente como `"Paciente #<paciente_id>"`
+
 #### Scenario: Odontólogo que consulta la agenda de otro profesional ve el error 403 en español (RN-ACC-03, RN-GLO-01)
 
 - **Dado** un usuario autenticado con rol `odontologo` vinculado al profesional A
@@ -76,7 +82,7 @@ La interfaz SHALL consultar `GET /agenda/profesionales/{id}?desde=&hasta=` para 
 
 La interfaz SHALL permitir a los roles `administracion` y `recepcion` enviar `POST /turnos` seleccionando paciente, profesional, sillón y prestación activos e ingresando la fecha y hora de `inicio` en formato local sin zona horaria (`RN-TUR-01`, `RN-TUR-02`). Cuando la API rechaza la operación con `409` (`conflicto_agenda`, `fuera_de_horario`, `dentro_de_bloqueo`) o `422` (`dato_invalido`), la interfaz SHALL mostrar el `mensaje` en español de la respuesta (`RN-GLO-01`).
 
-#### Scenario: Alta exitosa de turno muestra confirmación con el horario calculado (RN-TUR-01, RN-TUR-14)
+#### Scenario: Alta exitosa de turno muestra confirmación con el horario calculado (RN-TUR-01, RN-TUR-02, RN-TUR-14)
 
 - **Dado** un usuario autenticado con rol `recepcion` y recursos activos cargados en los selectores (con pacientes ficticios `RN-PAC-03`)
 - **Cuando** completa paciente, profesional, sillón, prestación e `inicio` válido dentro del horario de atención y envía el formulario
@@ -92,7 +98,13 @@ La interfaz SHALL permitir a los roles `administracion` y `recepcion` enviar `PO
 
 - **Dado** un usuario autenticado con rol `recepcion` en el formulario de crear turno
 - **Cuando** envía datos que la API rechaza con `422` y `codigo = "dato_invalido"`
-- **Entonces** la interfaz muestra el `mensaje` en español y los `detalles` por campo devueltos por la API
+- **Entonces** la interfaz muestra el `mensaje` en español y, solo si la respuesta incluye `detalles`, los `detalles` por campo devueltos por la API; si no los incluye, muestra únicamente el `mensaje` sin inventar detalles
+
+#### Scenario: Recurso inactivo no se ofrece en los selectores de crear turno (RN-REC-03)
+
+- **Dado** un usuario autenticado con rol `recepcion` y catálogos donde un profesional, un sillón o una prestación figuran con `activo = false` (`activa = false` para la prestación)
+- **Cuando** abre el formulario de crear turno y se cargan los selectores
+- **Entonces** los selectores solo ofrecen los recursos activos y el recurso inactivo no aparece como opción seleccionable
 
 ### Requirement: Creación de bloqueo horario con visualización de turnos afectados
 
