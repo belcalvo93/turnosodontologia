@@ -1,0 +1,5 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" width="64" height="64" role="img" aria-label="Diente">
+  <path d="M20 9 C13.5 9 8.5 14 8.5 21 C8.5 27 11.5 30 12.5 36 C13.5 43 14.5 53 18.5 55.5 C22 57.5 24.5 50 25.5 44 C26.3 40 28.3 38 32 38 C35.7 38 37.7 40 38.5 44 C39.5 50 42 57.5 45.5 55.5 C49.5 53 50.5 43 51.5 36 C52.5 30 55.5 27 55.5 21 C55.5 14 50.5 9 44 9 C39 9 36 12.5 32 12.5 C28 12.5 25 9 20 9 Z"
+        fill="#e0f2fe" stroke="#0284c7" stroke-width="3" stroke-linejoin="round"/>
+  <path d="M16.5 20 C16.5 16.5 19 14.5 22 14.5" fill="none" stroke="#ffffff" stroke-width="3" stroke-linecap="round"/>
+</svg>
