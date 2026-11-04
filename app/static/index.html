@@ -1,0 +1,719 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Turnos Odontología — Gestión de turnos y agendas</title>
+  <link rel="icon" type="image/svg+xml" href="/static/diente.svg" />
+  <link rel="stylesheet" href="/static/styles.css" />
+  <script type="module" src="/static/app.js"></script>
+</head>
+<body>
+  <a href="#contenido-principal" class="skip-link">Saltar al contenido principal</a>
+
+  <!-- CABECERA Y NAVEGACIÓN PRINCIPAL (visible tras iniciar sesión; controlada por JS según rol RN-ACC-02) -->
+  <header id="barra-navegacion" class="top-navbar" hidden>
+    <div class="navbar-inner">
+      <div class="brand-group">
+        <div class="brand-isotipo">
+          <img src="/static/diente.svg" alt="" width="26" height="26" />
+        </div>
+        <div class="brand-text">
+          <span class="brand-title">Turnos Odontología</span>
+          <span class="brand-subtitle">Consultorios odontológicos</span>
+        </div>
+      </div>
+
+      <nav class="nav-links" aria-label="Secciones del sistema">
+        <button type="button" id="nav-agenda" class="nav-tab is-active" data-vista="agenda">
+          <span>Agenda de profesional</span>
+        </button>
+
+        <button type="button" id="nav-crear-turno" class="nav-tab" data-vista="crear-turno" hidden>
+          <span>Crear turno</span>
+        </button>
+
+        <button type="button" id="nav-crear-bloqueo" class="nav-tab" data-vista="crear-bloqueo" hidden>
+          <span>Crear bloqueo</span>
+        </button>
+      </nav>
+
+      <div class="user-session">
+        <!-- Los datos de sesión marcados con data-ejemplo son reemplazados dinámicamente por JavaScript -->
+        <div class="user-meta">
+          <span id="sesion-usuario" class="user-name" data-ejemplo>admin_demo</span>
+          <span id="sesion-rol" class="badge badge-role" data-ejemplo>Administración</span>
+        </div>
+        <button type="button" id="btn-cerrar-sesion" class="btn btn-secondary btn-sm">
+          Cerrar sesión
+        </button>
+      </div>
+    </div>
+  </header>
+
+  <main id="contenido-principal" class="main-canvas">
+    <!-- CONTENEDOR TRANSVERSAL DE ALERTAS (oculto por defecto; JS lo muestra ante errores 401/403/409/422, RN-GLO-01) -->
+    <div id="alerta-global" class="alert-banner alert-error" role="alert" aria-live="assertive" hidden>
+      <div class="alert-icon" aria-hidden="true">!</div>
+      <div class="alert-content">
+        <div class="alert-header">
+          <strong id="alerta-titulo" class="alert-title" data-ejemplo>No se pudo completar la operación</strong>
+        </div>
+        <p id="alerta-mensaje" class="alert-message" data-ejemplo>Los datos ingresados no son válidos.</p>
+        <ul id="alerta-detalles" class="alert-details" hidden></ul>
+      </div>
+      <button type="button" id="btn-cerrar-alerta" class="alert-close" aria-label="Cerrar aviso">
+        ✕
+      </button>
+    </div>
+
+    <!-- =================================================================== -->
+    <!-- VISTA 1: LOGIN (id="login", RN-ACC-01 / RN-ACC-02)                  -->
+    <!-- =================================================================== -->
+    <section id="login" class="view-section login-wrapper" aria-labelledby="titulo-login">
+      <div class="card login-split-card">
+        <!-- Panel izquierdo decorativo en escritorio (desde 900px) -->
+        <div class="login-hero">
+          <div class="login-hero-badge">Consultorios odontológicos</div>
+          <div class="login-hero-illustration">
+            <img src="/static/diente.svg" alt="" class="login-hero-tooth" width="96" height="96" />
+          </div>
+          <h2 class="login-hero-title">Gestión de turnos odontológicos</h2>
+          <p class="login-hero-text">
+            Organizá la agenda diaria de cada profesional, asigná turnos por sillón de atención y registrá ausencias o bloqueos horarios en un solo lugar.
+          </p>
+        </div>
+
+        <!-- Columna derecha: formulario de acceso (en celular muestra el logo chico arriba) -->
+        <div class="login-form-pane">
+          <div class="login-mobile-header">
+            <div class="brand-isotipo">
+              <img src="/static/diente.svg" alt="" width="28" height="28" />
+            </div>
+            <span class="pill-clinical">Acceso del personal</span>
+          </div>
+
+          <div class="login-heading">
+            <h1 id="titulo-login" class="headline-lg">Iniciar sesión</h1>
+            <p class="text-muted">Ingresá con tu usuario y contraseña para acceder al panel de la clínica.</p>
+          </div>
+
+          <!-- Alerta de error de login (oculta por defecto; JS la muestra con el mensaje de la API) -->
+          <div id="login-error" class="alert-banner alert-error" role="alert" hidden>
+            <div class="alert-icon" aria-hidden="true">!</div>
+            <div class="alert-content">
+              <strong class="alert-title">No se pudo iniciar sesión</strong>
+              <p id="login-error-mensaje" class="alert-message" data-ejemplo>Usuario o contraseña inválidos.</p>
+            </div>
+          </div>
+
+          <form id="form-login" class="clinical-form" novalidate>
+            <div class="form-field">
+              <label for="login-username" class="field-label">
+                <span>Nombre de usuario <span class="required-mark" aria-hidden="true">*</span></span>
+              </label>
+              <input
+                type="text"
+                id="login-username"
+                name="username"
+                class="field-input"
+                placeholder="Ej.: recepcion_demo"
+                autocomplete="username"
+                required
+              />
+            </div>
+
+            <div class="form-field">
+              <label for="login-password" class="field-label">
+                <span>Contraseña <span class="required-mark" aria-hidden="true">*</span></span>
+              </label>
+              <input
+                type="password"
+                id="login-password"
+                name="password"
+                class="field-input"
+                placeholder="Ingresá tu contraseña"
+                autocomplete="current-password"
+                required
+              />
+            </div>
+
+            <div class="form-actions form-actions-full">
+              <button type="submit" id="btn-login-submit" class="btn btn-primary btn-block">
+                <span class="btn-spinner" aria-hidden="true"></span>
+                <span>Ingresar al sistema</span>
+              </button>
+            </div>
+          </form>
+
+          <!-- Cuentas de demostración marcadas con data-ejemplo -->
+          <div class="login-demo-panel" aria-label="Usuarios de prueba disponibles">
+            <div class="demo-panel-header">
+              <span class="status-dot status-dot-online" aria-hidden="true"></span>
+              <span class="demo-panel-title">Usuarios de prueba del consultorio</span>
+            </div>
+            <div class="demo-roles-grid">
+              <div class="demo-role-chip" data-ejemplo>
+                <code>admin_demo</code>
+                <span>Agenda, turnos y bloqueos</span>
+              </div>
+              <div class="demo-role-chip" data-ejemplo>
+                <code>recepcion_demo</code>
+                <span>Agenda y carga de turnos</span>
+              </div>
+              <div class="demo-role-chip" data-ejemplo>
+                <code>odontologo_demo</code>
+                <span>Consulta de agenda propia</span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- =================================================================== -->
+    <!-- VISTA 2: AGENDA DE UN PROFESIONAL (id="agenda", US-009 / RN-ACC-03) -->
+    <!-- =================================================================== -->
+    <section id="agenda" class="view-section" aria-labelledby="titulo-agenda" hidden>
+      <div class="page-header">
+        <div>
+          <p class="eyebrow">Consulta diaria y semanal</p>
+          <h1 id="titulo-agenda" class="headline-lg">Agenda de profesional</h1>
+          <p class="text-muted">Consultá los turnos reservados y los bloqueos horarios ordenados por fecha y hora.</p>
+        </div>
+        <span class="clinic-badge">
+          <span class="status-dot status-dot-online" aria-hidden="true"></span>
+          Datos ficticios de demostración
+        </span>
+      </div>
+
+      <div class="card">
+        <div class="card-header">
+          <div>
+            <h2 class="headline-md">Filtros de búsqueda</h2>
+            <p class="text-muted">Elegí el profesional y el período que querés consultar.</p>
+          </div>
+          <span class="pill-clinical">Horario del consultorio</span>
+        </div>
+
+        <form id="form-agenda" class="clinical-form" novalidate>
+          <div class="form-grid form-grid-12">
+            <div class="form-field col-span-6">
+              <label for="agenda-profesional" class="field-label">
+                <span>Profesional <span class="required-mark" aria-hidden="true">*</span></span>
+              </label>
+              <!-- Las opciones con data-ejemplo son reemplazadas por JavaScript al consultar GET /profesionales -->
+              <select id="agenda-profesional" name="profesional_id" class="field-select" required>
+                <option value="1" data-ejemplo>Odontólogo Ficticio A — Mat. 0001 (ficticia)</option>
+                <option value="2" data-ejemplo>Odontóloga Ficticia B — Mat. 0002 (ficticia)</option>
+              </select>
+              <p class="field-help">Cada odontólogo puede consultar únicamente su propia agenda.</p>
+            </div>
+
+            <div class="form-field col-span-3">
+              <label for="agenda-desde" class="field-label">
+                <span>Desde <span class="required-mark" aria-hidden="true">*</span></span>
+              </label>
+              <input
+                type="datetime-local"
+                id="agenda-desde"
+                name="desde"
+                class="field-input"
+                value="2026-11-05T08:00"
+                required
+              />
+              <p class="field-help">Fecha y hora de comienzo de la búsqueda.</p>
+            </div>
+
+            <div class="form-field col-span-3">
+              <label for="agenda-hasta" class="field-label">
+                <span>Hasta <span class="required-mark" aria-hidden="true">*</span></span>
+              </label>
+              <input
+                type="datetime-local"
+                id="agenda-hasta"
+                name="hasta"
+                class="field-input"
+                value="2026-11-05T20:00"
+                required
+              />
+              <p class="field-help">Fecha y hora límite de la búsqueda.</p>
+            </div>
+          </div>
+
+          <div class="form-actions">
+            <button type="submit" id="btn-consultar-agenda" class="btn btn-primary">
+              <span class="btn-spinner" aria-hidden="true"></span>
+              <span>Consultar agenda</span>
+            </button>
+          </div>
+        </form>
+      </div>
+
+      <!-- Alerta puntual de Agenda (oculta por defecto; JS la muestra si la API responde 403/422) -->
+      <div id="agenda-alerta" class="alert-banner alert-error" role="alert" hidden>
+        <div class="alert-icon" aria-hidden="true">!</div>
+        <div class="alert-content">
+          <div class="alert-header">
+            <strong class="alert-title">No se pudo consultar la agenda</strong>
+          </div>
+          <p id="agenda-alerta-mensaje" class="alert-message" data-ejemplo>Tu rol no tiene permiso para esta operación.</p>
+        </div>
+      </div>
+
+      <!-- Resultado de la Agenda -->
+      <div class="card card-table">
+        <div class="card-header">
+          <div>
+            <div class="section-title-row">
+              <span class="section-dot" aria-hidden="true"></span>
+              <h2 class="headline-md">Turnos y bloqueos del período</h2>
+            </div>
+            <!-- El texto y contador con data-ejemplo son reemplazados por JavaScript con los datos reales de la API -->
+            <p id="agenda-resumen-rango" class="text-muted" data-ejemplo>
+              Odontólogo Ficticio A — Jueves 05/11/2026 de 08:00 a 20:00
+            </p>
+          </div>
+          <div class="metrics-inline">
+            <span id="agenda-contador-items" class="badge badge-info" data-ejemplo>2 horarios en agenda</span>
+          </div>
+        </div>
+
+        <div id="agenda-tabla-contenedor" class="table-responsive">
+          <table id="agenda-tabla" class="clinical-table" aria-label="Turnos y bloqueos del profesional">
+            <thead>
+              <tr>
+                <th scope="col">Horario</th>
+                <th scope="col">Tipo</th>
+                <th scope="col">Estado</th>
+                <th scope="col">Paciente / Detalle</th>
+                <th scope="col">Prestación / Motivo</th>
+                <th scope="col">Sillón de atención</th>
+              </tr>
+            </thead>
+            <!-- Las filas con data-ejemplo son de muestra; JavaScript las reemplaza con la respuesta de GET /agenda/profesionales/{id} -->
+            <tbody id="agenda-tbody">
+              <tr data-ejemplo>
+                <td data-label="Horario" class="cell-mono">05/11/2026 09:00 — 09:30</td>
+                <td data-label="Tipo"><span class="badge badge-turno">Turno</span></td>
+                <td data-label="Estado"><span class="badge badge-reservado"><span class="badge-dot"></span>reservado</span></td>
+                <td data-label="Paciente / Detalle">
+                  <div class="patient-cell">
+                    <strong>Paciente Ficticio 1</strong>
+                    <span class="dni-tag">DNI 00000001 (ficticio)</span>
+                  </div>
+                </td>
+                <td data-label="Prestación / Motivo">Consulta ficticia (30 min)</td>
+                <td data-label="Sillón de atención">Sillón 1</td>
+              </tr>
+              <tr class="row-bloqueo" data-ejemplo>
+                <td data-label="Horario" class="cell-mono">05/11/2026 11:00 — 12:00</td>
+                <td data-label="Tipo"><span class="badge badge-bloqueo">Bloqueo</span></td>
+                <td data-label="Estado"><span class="badge badge-warning"><span class="badge-dot"></span>bloqueado</span></td>
+                <td data-label="Paciente / Detalle">
+                  <div class="patient-cell">
+                    <strong>Horario no disponible</strong>
+                    <span class="dni-tag">Profesional</span>
+                  </div>
+                </td>
+                <td data-label="Prestación / Motivo">Ateneo clínico de endodoncia (ficticio)</td>
+                <td data-label="Sillón de atención">Odontólogo Ficticio A</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+
+        <!-- Estado vacío (oculto por defecto; JS lo muestra cuando items = []) -->
+        <div id="agenda-vacia" class="empty-state" hidden>
+          <div class="empty-state-icon">
+            <img src="/static/diente.svg" alt="" width="32" height="32" />
+          </div>
+          <h3 class="empty-state-title">No hay turnos ni bloqueos en este período</h3>
+          <p class="empty-state-text">El profesional seleccionado tiene disponibilidad libre en las fechas y horarios consultados.</p>
+        </div>
+      </div>
+    </section>
+
+    <!-- =================================================================== -->
+    <!-- VISTA 3: CREAR TURNO (id="crear-turno", RN-TUR-01 / RN-REC-03)      -->
+    <!-- =================================================================== -->
+    <section id="crear-turno" class="view-section" aria-labelledby="titulo-crear-turno" hidden>
+      <div class="page-header">
+        <div>
+          <p class="eyebrow">Atención al paciente</p>
+          <h1 id="titulo-crear-turno" class="headline-lg">Crear turno odontológico</h1>
+          <p class="text-muted">Completá los datos para reservar un nuevo turno. El horario de finalización se calcula automáticamente según la prestación elegida.</p>
+        </div>
+        <span class="pill-clinical">Reserva de turno</span>
+      </div>
+
+      <!-- Alerta de error de Crear Turno (oculta por defecto; JS la muestra ante 409 o 422) -->
+      <div id="crear-turno-error" class="alert-banner alert-error" role="alert" hidden>
+        <div class="alert-icon" aria-hidden="true">!</div>
+        <div class="alert-content">
+          <div class="alert-header">
+            <strong class="alert-title">No se pudo registrar el turno</strong>
+          </div>
+          <p id="crear-turno-error-mensaje" class="alert-message" data-ejemplo>El profesional ya tiene un turno asignado en ese horario.</p>
+          <ul id="crear-turno-error-detalles" class="alert-details" hidden></ul>
+        </div>
+      </div>
+
+      <!-- Alerta de éxito de Crear Turno (oculta por defecto; JS la muestra al recibir 201 Created) -->
+      <div id="crear-turno-exito" class="alert-banner alert-success" role="status" aria-live="polite" hidden>
+        <div class="alert-icon" aria-hidden="true">✓</div>
+        <div class="alert-content">
+          <div class="alert-header">
+            <strong class="alert-title">Turno reservado con éxito</strong>
+            <span class="badge badge-reservado"><span class="badge-dot"></span>reservado</span>
+          </div>
+          <p id="crear-turno-exito-mensaje" class="alert-message" data-ejemplo>
+            Se agendó el turno para el 05/11/2026 de 09:00 a 09:45 en Sillón 1.
+          </p>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="card-header">
+          <div>
+            <h2 class="headline-md">Datos del nuevo turno</h2>
+            <p class="text-muted">Seleccioná el paciente, el profesional, el sillón de atención y la práctica a realizar.</p>
+          </div>
+          <span class="badge badge-role">Recepción y Administración</span>
+        </div>
+
+        <form id="form-crear-turno" class="clinical-form" novalidate>
+          <!-- Las opciones con data-ejemplo en los selectores son reemplazadas por JavaScript con los catálogos activos de la API -->
+          <div class="form-grid form-grid-12">
+            <div class="form-field col-span-6">
+              <label for="turno-paciente" class="field-label">
+                <span>Paciente <span class="required-mark" aria-hidden="true">*</span></span>
+              </label>
+              <select id="turno-paciente" name="paciente_id" class="field-select" required>
+                <option value="1" data-ejemplo>Paciente Ficticio 1 — DNI 00000001 (ficticio)</option>
+                <option value="2" data-ejemplo>Paciente Ficticio 2 — DNI 00000002 (ficticio)</option>
+              </select>
+              <p class="field-help">Seleccioná el paciente que recibirá la atención.</p>
+            </div>
+
+            <div class="form-field col-span-6">
+              <label for="turno-profesional" class="field-label">
+                <span>Profesional <span class="required-mark" aria-hidden="true">*</span></span>
+              </label>
+              <select id="turno-profesional" name="profesional_id" class="field-select" required>
+                <option value="1" data-ejemplo>Odontólogo Ficticio A — Mat. 0001 (ficticia)</option>
+                <option value="2" data-ejemplo>Odontóloga Ficticia B — Mat. 0002 (ficticia)</option>
+              </select>
+              <p class="field-help">Elegí un profesional dentro de su horario habitual de atención.</p>
+            </div>
+
+            <div class="form-field col-span-4">
+              <label for="turno-sillon" class="field-label">
+                <span>Sillón de atención <span class="required-mark" aria-hidden="true">*</span></span>
+              </label>
+              <select id="turno-sillon" name="sillon_id" class="field-select" required>
+                <option value="1" data-ejemplo>Sillón 1</option>
+                <option value="2" data-ejemplo>Sillón 2</option>
+              </select>
+              <p class="field-help">Lugar donde se atiende al paciente.</p>
+            </div>
+
+            <div class="form-field col-span-4">
+              <label for="turno-prestacion" class="field-label">
+                <span>Prestación <span class="required-mark" aria-hidden="true">*</span></span>
+              </label>
+              <select id="turno-prestacion" name="prestacion_id" class="field-select" required>
+                <option value="1" data-ejemplo>Consulta ficticia (30 min)</option>
+                <option value="2" data-ejemplo>Limpieza ficticia (45 min)</option>
+                <option value="3" data-ejemplo>Tratamiento ficticio (60 min)</option>
+              </select>
+              <p class="field-help">La duración de la práctica define a qué hora termina el turno.</p>
+            </div>
+
+            <div class="form-field col-span-4">
+              <label for="turno-inicio" class="field-label">
+                <span>Fecha y hora de inicio <span class="required-mark" aria-hidden="true">*</span></span>
+              </label>
+              <input
+                type="datetime-local"
+                id="turno-inicio"
+                name="inicio"
+                class="field-input"
+                value="2026-11-05T09:00"
+                required
+              />
+              <p class="field-help">Elegí el día y la hora de comienzo de la consulta.</p>
+            </div>
+          </div>
+
+          <div class="info-callout">
+            <span class="info-callout-icon" aria-hidden="true">ℹ</span>
+            <div>
+              <strong>Verificación automática de disponibilidad:</strong>
+              Antes de guardar la reserva, el sistema comprueba que el profesional, el sillón de atención y el paciente estén libres en ese horario.
+            </div>
+          </div>
+
+          <div class="form-actions">
+            <button type="reset" class="btn btn-secondary">
+              Limpiar formulario
+            </button>
+            <button type="submit" id="btn-crear-turno-submit" class="btn btn-primary">
+              <span class="btn-spinner" aria-hidden="true"></span>
+              <span>Reservar turno</span>
+            </button>
+          </div>
+        </form>
+      </div>
+    </section>
+
+    <!-- =================================================================== -->
+    <!-- VISTA 4: CREAR BLOQUEO Y TURNOS AFECTADOS (id="crear-bloqueo")      -->
+    <!-- =================================================================== -->
+    <section id="crear-bloqueo" class="view-section" aria-labelledby="titulo-crear-bloqueo" hidden>
+      <div class="page-header">
+        <div>
+          <p class="eyebrow">Organización del consultorio</p>
+          <h1 id="titulo-crear-bloqueo" class="headline-lg">Bloqueo de agenda y ausencias</h1>
+          <p class="text-muted">Registrá ausencias de profesionales o mantenimientos de sillón de atención y revisá los turnos reservados que coincidan con ese período.</p>
+        </div>
+        <span class="pill-clinical">Gestión administrativa</span>
+      </div>
+
+      <!-- Alerta de error de Crear Bloqueo (oculta por defecto; JS la muestra si la API responde 422/403/404) -->
+      <div id="crear-bloqueo-error" class="alert-banner alert-error" role="alert" hidden>
+        <div class="alert-icon" aria-hidden="true">!</div>
+        <div class="alert-content">
+          <div class="alert-header">
+            <strong class="alert-title">No se pudo registrar el bloqueo horario</strong>
+          </div>
+          <p id="crear-bloqueo-error-mensaje" class="alert-message" data-ejemplo>La fecha y hora de fin debe ser posterior a la de inicio.</p>
+          <ul id="crear-bloqueo-error-detalles" class="alert-details" hidden></ul>
+        </div>
+      </div>
+
+      <!-- Alerta de confirmación del bloqueo creado (oculta por defecto; JS la muestra al recibir 201) -->
+      <div id="crear-bloqueo-exito" class="alert-banner alert-success" role="status" aria-live="polite" hidden>
+        <div class="alert-icon" aria-hidden="true">✓</div>
+        <div class="alert-content">
+          <div class="alert-header">
+            <strong class="alert-title">Bloqueo horario registrado</strong>
+            <span id="crear-bloqueo-exito-alcance" class="badge badge-bloqueo" data-ejemplo>Profesional</span>
+          </div>
+          <p id="crear-bloqueo-exito-mensaje" class="alert-message" data-ejemplo>
+            Se registró el bloqueo desde el 05/11/2026 09:00 hasta el 05/11/2026 13:00.
+          </p>
+        </div>
+      </div>
+
+      <!-- Card Formulario Crear Bloqueo -->
+      <div class="card">
+        <div class="card-header">
+          <div>
+            <h2 class="headline-md">Crear bloqueo de agenda</h2>
+            <p class="text-muted">Indicá qué profesional o sillón de atención no estará disponible y el motivo de la suspensión.</p>
+          </div>
+          <span class="badge badge-role">Administración</span>
+        </div>
+
+        <form id="form-crear-bloqueo" class="clinical-form" novalidate>
+          <!-- Las opciones y textos con data-ejemplo son reemplazados dinámicamente por JavaScript -->
+          <div class="form-grid form-grid-12">
+            <div class="form-field col-span-4">
+              <label for="bloqueo-alcance" class="field-label">
+                <span>Aplicar bloqueo sobre <span class="required-mark" aria-hidden="true">*</span></span>
+              </label>
+              <select id="bloqueo-alcance" name="alcance" class="field-select" required>
+                <option value="profesional" selected>Profesional</option>
+                <option value="sillon">Sillón de atención</option>
+              </select>
+              <p class="field-help">Elegí si el bloqueo corresponde a un profesional o a un sillón de atención.</p>
+            </div>
+
+            <div class="form-field col-span-8">
+              <label for="bloqueo-recurso" class="field-label">
+                <span>Profesional o sillón de atención <span class="required-mark" aria-hidden="true">*</span></span>
+              </label>
+              <select id="bloqueo-recurso" name="recurso_id" class="field-select" required>
+                <option value="1" data-ejemplo>Odontólogo Ficticio A — Mat. 0001 (ficticia)</option>
+                <option value="2" data-ejemplo>Odontóloga Ficticia B — Mat. 0002 (ficticia)</option>
+              </select>
+              <p class="field-help">Lugar donde se atiende al paciente o profesional cuya agenda se suspenderá.</p>
+            </div>
+
+            <div class="form-field col-span-6">
+              <label for="bloqueo-inicio" class="field-label">
+                <span>Fecha y hora de inicio <span class="required-mark" aria-hidden="true">*</span></span>
+              </label>
+              <input
+                type="datetime-local"
+                id="bloqueo-inicio"
+                name="inicio"
+                class="field-input"
+                value="2026-11-05T09:00"
+                required
+              />
+              <p class="field-help">Momento en que comienza la suspensión de atención.</p>
+            </div>
+
+            <div class="form-field col-span-6">
+              <label for="bloqueo-fin" class="field-label">
+                <span>Fecha y hora de fin <span class="required-mark" aria-hidden="true">*</span></span>
+              </label>
+              <input
+                type="datetime-local"
+                id="bloqueo-fin"
+                name="fin"
+                class="field-input"
+                value="2026-11-05T13:00"
+                required
+              />
+              <p class="field-help">Debe ser posterior a la fecha y hora de inicio.</p>
+            </div>
+
+            <div class="form-field col-span-12">
+              <label for="bloqueo-motivo" class="field-label">
+                <span>Motivo del bloqueo <span class="required-mark" aria-hidden="true">*</span></span>
+              </label>
+              <textarea
+                id="bloqueo-motivo"
+                name="motivo"
+                rows="2"
+                class="field-textarea"
+                placeholder="Ej.: Congreso odontológico, licencia médica o mantenimiento de equipo."
+                data-ejemplo
+                required
+              >Congreso de Endodoncia — Jornadas Odontológicas (ficticio)</textarea>
+              <p class="field-help">Breve descripción que verá el equipo al consultar la agenda.</p>
+            </div>
+          </div>
+
+          <div class="info-callout">
+            <span class="info-callout-icon" aria-hidden="true">ℹ</span>
+            <div>
+              <strong>Importante sobre los turnos ya otorgados:</strong>
+              Al guardar el bloqueo no se permitirán nuevas reservas en ese horario. Los turnos que ya estaban agendados se mantienen reservados y se listan aquí abajo para que puedas comunicarte con cada paciente.
+            </div>
+          </div>
+
+          <div class="form-actions">
+            <button type="reset" class="btn btn-secondary">
+              Limpiar formulario
+            </button>
+            <button type="submit" id="btn-crear-bloqueo-submit" class="btn btn-primary">
+              <span class="btn-spinner" aria-hidden="true"></span>
+              <span>Registrar bloqueo</span>
+            </button>
+          </div>
+        </form>
+      </div>
+
+      <!-- SECCIÓN INFORMATIVA: TABLA DE TURNOS AFECTADOS (sin acciones descartadas en design.md D6) -->
+      <div id="panel-turnos-afectados" class="card card-table">
+        <div class="card-header">
+          <div>
+            <div class="section-title-row">
+              <span class="section-dot" aria-hidden="true"></span>
+              <h2 class="headline-md">Turnos afectados en el horario bloqueado</h2>
+            </div>
+            <p class="text-muted">
+              Listado informativo de turnos reservados que coinciden con el bloqueo registrado, para coordinar su atención con los pacientes.
+            </p>
+          </div>
+          <div class="metrics-inline">
+            <span id="turnos-afectados-contador" class="badge badge-warning" data-ejemplo>2 turnos afectados</span>
+          </div>
+        </div>
+
+        <div id="turnos-afectados-tabla-contenedor" class="table-responsive">
+          <table id="tabla-turnos-afectados" class="clinical-table" aria-label="Turnos afectados por el bloqueo horario">
+            <thead>
+              <tr>
+                <th scope="col">Turno</th>
+                <th scope="col">Paciente</th>
+                <th scope="col">Profesional y sillón de atención</th>
+                <th scope="col">Inicio</th>
+                <th scope="col">Fin</th>
+                <th scope="col">Estado</th>
+              </tr>
+            </thead>
+            <!-- Las filas con data-ejemplo son reemplazadas por JavaScript con el arreglo turnos_afectados devuelto por POST /bloqueos -->
+            <tbody id="turnos-afectados-tbody">
+              <tr data-ejemplo>
+                <td data-label="Turno" class="cell-mono">#101</td>
+                <td data-label="Paciente">
+                  <div class="patient-cell">
+                    <strong>Paciente Ficticio 1</strong>
+                    <span class="dni-tag">DNI 00000001 (ficticio)</span>
+                  </div>
+                </td>
+                <td data-label="Profesional y sillón de atención">
+                  <div class="resource-cell">
+                    <span>Odontólogo Ficticio A</span>
+                    <span class="sub-tag">Sillón 1 · Consulta ficticia</span>
+                  </div>
+                </td>
+                <td data-label="Inicio" class="cell-mono">05/11/2026 09:30</td>
+                <td data-label="Fin" class="cell-mono">05/11/2026 10:00</td>
+                <td data-label="Estado">
+                  <span class="badge badge-reservado">
+                    <span class="badge-dot"></span>
+                    reservado
+                  </span>
+                </td>
+              </tr>
+              <tr data-ejemplo>
+                <td data-label="Turno" class="cell-mono">#102</td>
+                <td data-label="Paciente">
+                  <div class="patient-cell">
+                    <strong>Paciente Ficticio 2</strong>
+                    <span class="dni-tag">DNI 00000002 (ficticio)</span>
+                  </div>
+                </td>
+                <td data-label="Profesional y sillón de atención">
+                  <div class="resource-cell">
+                    <span>Odontólogo Ficticio A</span>
+                    <span class="sub-tag">Sillón 2 · Limpieza ficticia</span>
+                  </div>
+                </td>
+                <td data-label="Inicio" class="cell-mono">05/11/2026 10:30</td>
+                <td data-label="Fin" class="cell-mono">05/11/2026 11:15</td>
+                <td data-label="Estado">
+                  <span class="badge badge-reservado">
+                    <span class="badge-dot"></span>
+                    reservado
+                  </span>
+                </td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+
+        <!-- Aviso explícito de lista vacía (oculto por defecto; JS lo muestra cuando turnos_afectados = []) -->
+        <div id="turnos-afectados-vacio" class="empty-state" hidden>
+          <div class="empty-state-icon empty-state-icon-success">
+            <img src="/static/diente.svg" alt="" width="32" height="32" />
+          </div>
+          <h3 class="empty-state-title">No hay turnos afectados en este horario</h3>
+          <p class="empty-state-text">
+            El bloqueo horario quedó registrado y no había turnos reservados que coincidieran con ese período.
+          </p>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <footer class="clinical-footer">
+    <div class="footer-inner">
+      <div class="footer-brand">
+        <strong>Turnos Odontología</strong>
+        <span aria-hidden="true">·</span>
+        <span>Sistema de gestión de turnos y agendas</span>
+      </div>
+      <div class="footer-meta">
+        <span>Entorno académico · datos ficticios</span>
+      </div>
+    </div>
+  </footer>
+</body>
+</html>

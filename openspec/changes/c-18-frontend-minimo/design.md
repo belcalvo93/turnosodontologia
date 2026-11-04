@@ -81,6 +81,17 @@ Se consultó mediante `get_screen` de Stitch el diseño de referencia:
 | Menús de navegación **"Pacientes"**, **"Reportes"** y **"Configuración"** | `C-18` solo incluye las 4 vistas de `D-09` (login, agenda de profesional, crear turno, crear bloqueo); reportes es Etapa Posterior (`SE-16`) | `D-09`, `CHANGES.md §C-18`, `SE-16` |
 | Feriados generales / bloqueo de alcance **"consultorio"** | `POST /bloqueos` solo admite `alcance` `"profesional"` o `"sillon"` | `SE-24`, `C-09`, `C-16` |
 
+### D7 — Lógica pura en módulos testeables y pruebas con `node --test`
+
+- **Elección:** La lógica sin DOM ni red vive en `frontend/src/logica.ts` (importada por `auth.ts`, `api.ts` y `app.ts`): normalizar fecha local a `YYYY-MM-DDTHH:MM:00`, filtrar recursos activos, formatear `"Paciente #<id>"`, interpretar errores de la API (`mensaje` y `detalles` opcionales) y decodificar `rol` y `exp` del JWT.
+- **Pruebas:** `frontend/tests/logica.test.mjs` usa el ejecutor nativo `node --test` e importa el JS compilado (`app/static/logica.js`), por lo que `typescript` sigue siendo la única dependencia. `npm test` compila y luego ejecuta los tests.
+- **Los tests NO se publican en `app/static/`:** viven en `frontend/tests/`, fuera de `rootDir` (`frontend/src`) y de `outDir`.
+
+### D8 — Una vista por módulo para repartir el trabajo
+
+- **Elección:** Cada vista vive en su propio módulo (`frontend/src/vistas/login.ts`, `agenda.ts`, `crear-turno.ts`, `crear-bloqueo.ts`); `frontend/src/app.ts` solo las conecta y maneja la navegación por rol. Así varias personas pueden implementar vistas distintas sin tocar los mismos archivos.
+- **Compilados:** `app/static/**/*.js` lo genera y commitea una sola persona (tarea 3.6) para evitar conflictos de merge en archivos generados. Excepción: la tarea 2.2 commitea el `app.js` inicial.
+
 ## UI Mockups
 
 Decision: no (no design-system policy configured in `.active-orchestrator-state.json`; visual reference is directly provided by Stitch screen `projects/6865582647500750696/screens/c0d0c78ded4b46778fd80bf0604d9ee2` per `D-09` and user confirmation).

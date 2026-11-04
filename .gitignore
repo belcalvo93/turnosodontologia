@@ -3,3 +3,6 @@ __pycache__/
 .pytest_cache/
 .env
 *.db
+
+# Node (solo desarrollo del frontend; app/static/ se versiona)
+node_modules/
