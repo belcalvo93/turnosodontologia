@@ -1,10 +1,13 @@
-"""Aplicación FastAPI: crea la app, aplica el esquema y monta los routers (C-01, C-03..C-17)."""
+"""Aplicación FastAPI: crea la app, aplica el esquema y monta los routers (C-01, C-03..C-18)."""
 
 from collections.abc import AsyncIterator, Callable
 from contextlib import asynccontextmanager
 from datetime import UTC, datetime
+from pathlib import Path
 
 from fastapi import FastAPI
+from fastapi.responses import FileResponse
+from fastapi.staticfiles import StaticFiles
 
 from app.api.agenda import router as router_agenda
 from app.api.auditoria import router as router_auditoria
@@ -23,6 +26,8 @@ from app.api.usuarios import router as router_usuarios
 from app.config import Config, cargar_config
 from app.db.conexion import abrir_conexion, inicializar_esquema
 from app.db.seed import sembrar_demo
+
+RUTA_STATIC = Path(__file__).resolve().parent / "static"
 
 
 def _hora_real() -> datetime:
@@ -81,6 +86,12 @@ def create_app(
     aplicacion.include_router(router_turnos)
     aplicacion.include_router(router_auditoria)
     aplicacion.include_router(router_agenda)
+
+    @aplicacion.get("/", include_in_schema=False)
+    def servir_index() -> FileResponse:
+        return FileResponse(RUTA_STATIC / "index.html")
+
+    aplicacion.mount("/static", StaticFiles(directory=RUTA_STATIC), name="static")
     return aplicacion
 
 
