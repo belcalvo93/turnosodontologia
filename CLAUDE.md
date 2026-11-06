@@ -12,10 +12,10 @@
 | Capa | Tecnología | Versión mínima |
 |------|------------|----------------|
 | Lenguaje | Python | 3.11 |
-| Framework API | FastAPI (+ Pydantic para validación de entrada/salida) | A definir al crear el proyecto |
+| Framework API | FastAPI (+ Pydantic para validación de entrada/salida) | Definido |
 | Persistencia | SQLite (provisional) | Incluida con Python |
-| Tests | pytest (+ cliente de pruebas de FastAPI / TestClient) | A definir |
-| Autenticación | Token firmado (JWT es el candidato; no decidido, ver D-03) | — |
+| Tests | pytest (+ cliente de pruebas de FastAPI / TestClient) | Definido |
+| Autenticación | JWT firmado con PyJWT (ver D-03) | — |
 | Despliegue | Local / entorno académico. Docker no es requisito | — |
 
 Detalle completo: [knowledge-base/02_descripcion_general.md](knowledge-base/02_descripcion_general.md)

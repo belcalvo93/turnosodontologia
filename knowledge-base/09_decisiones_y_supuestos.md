@@ -19,11 +19,11 @@ Las decisiones del equipo se registran como **DD** o con ID **D-xx**. Las que de
 **Justificación**: la separación mínima permite tests de dominio sin DB ni HTTP, que es lo que el informe resalta como "reglas de negocio verificables" (C.4), sin ceremonia innecesaria para un MVP.
 **Trade-offs aceptados**: los routers orquestan (cargar contexto, llamar al dominio, guardar); si crece la lógica de orquestación, se evalúa extraerla más adelante.
 
-### D-03 — Mecanismo de autenticación: pendiente (JWT candidato)
-**Decisión**: PROVISIONAL. Se asume token firmado con JWT, con rol en el token. No está decidido (ver SE-17).
+### D-03 — Mecanismo de autenticación: JWT firmado con PyJWT
+**Decisión**: token JWT firmado con PyJWT (algoritmo configurable, `HS256` por defecto), con el rol en el token (claims `sub`, `rol`, `iat`, `exp`). Las contraseñas se guardan con hash Argon2id (`pwdlib`). Implementado en `app/api/seguridad.py` (ver SE-17).
 **Contexto**: el informe exige autenticación y roles (D.3 #8) pero no el mecanismo.
 **Alternativas consideradas**: JWT; sesiones con cookie; token opaco guardado en DB.
-**Justificación**: JWT es el candidato por simplicidad en una API sin estado.
+**Justificación**: JWT por simplicidad en una API sin estado.
 **Trade-offs aceptados**: revocación más difícil; se mitiga con duración corta.
 
 ### D-04 — MVP acotado a D.3 ítems 1 a 9
@@ -42,8 +42,8 @@ Las decisiones del equipo se registran como **DD** o con ID **D-xx**. Las que de
 **Decisión**: fechas y horas locales del consultorio sin offset; intervalos `[inicio, fin)`.
 **Justificación**: simplicidad y permitir turnos contiguos. Ambos son supuestos (SE-05 y SE-10).
 
-### D-07 — Persistencia sin ORM (propuesta)
-**Decisión**: PROVISIONAL. Usar el módulo `sqlite3` de la biblioteca estándar con SQL parametrizado, o SQLAlchemy si el equipo lo prefiere (SE-20).
+### D-07 — Persistencia sin ORM
+**Decisión**: se usa el módulo `sqlite3` de la biblioteca estándar con SQL parametrizado, sin ORM ni SQLAlchemy (SE-20). La conexión y las transacciones viven en `app/db/conexion.py`.
 **Justificación**: menos dependencias y control explícito de transacciones; el `discovery` de nivel superior mencionaba SQLAlchemy.
 
 ### D-08 — Datos ficticios
