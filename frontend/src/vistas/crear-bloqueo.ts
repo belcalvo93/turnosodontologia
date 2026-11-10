@@ -30,6 +30,7 @@ import {
   describirIntervalo,
   fijarValorInicial,
   formatearFechaHora,
+  llevarALaVista,
   marcarCargando,
   mostrarAlerta,
   nombreProfesional,
@@ -109,9 +110,10 @@ function mostrarError(error: unknown): void {
       return;
     }
     mostrarAlerta(ID_ERROR, ID_ERROR_MENSAJE, ID_ERROR_DETALLES, error.mensaje, error.detalles, ETIQUETAS_CAMPOS);
-    return;
+  } else {
+    mostrarAlerta(ID_ERROR, ID_ERROR_MENSAJE, ID_ERROR_DETALLES, interpretarErrorApi(error).mensaje);
   }
-  mostrarAlerta(ID_ERROR, ID_ERROR_MENSAJE, ID_ERROR_DETALLES, interpretarErrorApi(error).mensaje);
+  llevarALaVista(ID_ERROR);
 }
 
 function nombreRecurso(alcance: AlcanceBloqueo, recursoId: number): string {
@@ -285,6 +287,7 @@ function mostrarExito(bloqueo: BloqueoCreadoSalida): void {
       `${describirIntervalo(bloqueo.inicio, bloqueo.fin)}.${motivo}`
   );
   renderizarTurnosAfectados(bloqueo);
+  llevarALaVista(ID_PANEL_AFECTADOS);
 }
 
 /**

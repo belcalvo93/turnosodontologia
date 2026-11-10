@@ -25,6 +25,7 @@ import type {
 import {
   describirIntervalo,
   fijarValorInicial,
+  llevarALaVista,
   marcarCargando,
   mostrarAlerta,
   nombreProfesional,
@@ -80,9 +81,10 @@ function mostrarError(error: unknown): void {
       return;
     }
     mostrarAlerta(ID_ERROR, ID_ERROR_MENSAJE, ID_ERROR_DETALLES, error.mensaje, error.detalles, ETIQUETAS_CAMPOS);
-    return;
+  } else {
+    mostrarAlerta(ID_ERROR, ID_ERROR_MENSAJE, ID_ERROR_DETALLES, interpretarErrorApi(error).mensaje);
   }
-  mostrarAlerta(ID_ERROR, ID_ERROR_MENSAJE, ID_ERROR_DETALLES, interpretarErrorApi(error).mensaje);
+  llevarALaVista(ID_ERROR);
 }
 
 function poblarSelectores(): void {
@@ -156,6 +158,7 @@ function mostrarExito(turno: TurnoResponse): void {
     badgeEstado.replaceChildren(punto, document.createTextNode(turno.estado));
   }
   mostrarAlerta(ID_EXITO, ID_EXITO_MENSAJE, null, describirTurnoCreado(turno));
+  llevarALaVista(ID_EXITO);
 }
 
 /**
