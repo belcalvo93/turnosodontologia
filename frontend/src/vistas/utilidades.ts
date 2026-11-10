@@ -190,6 +190,22 @@ export function ocultarAlerta(contenedorId: string, detallesId: string | null = 
 }
 
 /**
+ * Desplaza la página lo justo para que se vea el elemento, por ejemplo una alerta que aparece arriba
+ * del formulario cuando el usuario está abajo, en el botón de envío (en celular siempre pasa).
+ */
+export function llevarALaVista(id: string): void {
+  const elem = obtenerElemento<HTMLElement>(id);
+  if (elem === null || elem.hidden || typeof elem.scrollIntoView !== "function") {
+    return;
+  }
+  const sinAnimacion =
+    typeof window !== "undefined" &&
+    typeof window.matchMedia === "function" &&
+    window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+  elem.scrollIntoView({ behavior: sinAnimacion ? "auto" : "smooth", block: "nearest" });
+}
+
+/**
  * Activa o desactiva el estado de carga de un botón de envío.
  */
 export function marcarCargando(boton: HTMLButtonElement | null, cargando: boolean): void {

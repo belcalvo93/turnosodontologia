@@ -24,6 +24,7 @@ import type {
   RolUsuario,
   SillonSalida,
 } from "../types.js";
+import { quitarElementosEjemplo } from "./utilidades.js";
 
 interface CatalogosAgenda {
   profesionales: Map<number, ProfesionalSalida>;
@@ -37,22 +38,6 @@ function obtenerElemento<T extends HTMLElement>(id: string): T | null {
     return null;
   }
   return document.getElementById(id) as T | null;
-}
-
-function eliminarElementosEjemploAgenda(): void {
-  if (typeof document === "undefined") {
-    return;
-  }
-  const seccion = document.getElementById("agenda");
-  if (seccion === null) {
-    return;
-  }
-  for (const elem of seccion.querySelectorAll("option[data-ejemplo], tr[data-ejemplo]")) {
-    elem.remove();
-  }
-  for (const elem of seccion.querySelectorAll("[data-ejemplo]")) {
-    elem.removeAttribute("data-ejemplo");
-  }
 }
 
 export function mostrarAlertaAgenda(mensaje: string): void {
@@ -476,7 +461,7 @@ export async function ejecutarConsultaAgenda(): Promise<void> {
  * elimina los nodos `data-ejemplo` y ejecuta la consulta inicial de la agenda.
  */
 export async function cargarVistaAgenda(): Promise<void> {
-  eliminarElementosEjemploAgenda();
+  quitarElementosEjemplo("agenda");
   ocultarAlertaAgenda();
 
   const rol = obtenerRolActual();
@@ -505,7 +490,7 @@ export async function cargarVistaAgenda(): Promise<void> {
  * Registra los eventos de la vista de Agenda (`#form-agenda`) y limpia los elementos `data-ejemplo`.
  */
 export function inicializarVistaAgenda(): void {
-  eliminarElementosEjemploAgenda();
+  quitarElementosEjemplo("agenda");
   ocultarAlertaAgenda();
 
   if (listenerRegistrado) {
