@@ -52,6 +52,8 @@ interface ModuloVistaOpcional {
 
 const vistasOpcionalesInicializadas = new Set<string>();
 
+const MENSAJE_VISTA_NO_CARGADA = "No se pudo cargar la pantalla. Recargá la página.";
+
 function obtenerElemento<T extends HTMLElement>(id: string): T | null {
   if (typeof document === "undefined") {
     return null;
@@ -191,8 +193,10 @@ async function activarVistaOpcional(vista: "crear-turno" | "crear-bloqueo"): Pro
     if (typeof fnRefrescar === "function") {
       await fnRefrescar();
     }
-  } catch {
-    // El módulo de la vista puede no estar disponible aún en ramas parciales.
+  } catch (error: unknown) {
+    // Si el módulo de la vista no carga, se avisa en pantalla en lugar de dejarla en blanco.
+    console.error(error);
+    mostrarAlertaGlobal(MENSAJE_VISTA_NO_CARGADA);
   }
 }
 
