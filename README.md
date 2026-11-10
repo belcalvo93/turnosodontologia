@@ -6,7 +6,7 @@ Desarrollado con Spec-Driven Development usando OpenSpec y Active Stack (ciclo O
 
 ## Estado actual
 
-Implementados los **17 changes del MVP (`C-01` a `C-17`)**. La suite completa pasa en verde: `785 passed`.
+Implementados los **17 changes del MVP (`C-01` a `C-17`)**. La suite completa pasa en verde: `789 passed`.
 
 - **Base técnica y dominio (`C-01`, `C-02`, `C-10`):** configuración desde variables de entorno, conexión SQLite con transacciones atómicas (`BEGIN IMMEDIATE`), aplicación idempotente del esquema, `GET /health` público y dominio puro (modelos inmutables, intervalos semiabiertos `[inicio, fin)`, reloj inyectado y reglas de alta, reprogramación y cancelación sin base de datos ni HTTP).
 - **Acceso y usuarios (`C-03`, `C-07`):** login con JWT firmado (`POST /auth/login`), hash Argon2id, control de acceso por rol (`administracion`, `recepcion`, `odontologo`) y gestión de usuarios internos.
@@ -117,7 +117,9 @@ Desde la raíz del repositorio, con el entorno virtual activo:
 pytest tests
 ```
 
-Resultado esperado: `785 passed`. Los tests de dominio corren sin base de datos ni HTTP; los de `tests/api/` usan una SQLite temporal por test y un reloj fijo (`RelojFijo`), así que no dependen de la hora ni de la zona horaria de la máquina.
+Resultado esperado: `789 passed`. Los tests de dominio corren sin base de datos ni HTTP; los de `tests/api/` usan una SQLite temporal por test y un reloj fijo (`RelojFijo`), así que no dependen de la hora ni de la zona horaria de la máquina.
+
+Los tests de la lógica del frontend se corren aparte con `npm test` (ver [Frontend web](#frontend-web-c-18)).
 
 La cobertura de las 31 reglas de negocio de `knowledge-base/05_reglas_de_negocio.md` está documentada en [`docs/trazabilidad-rn-test.md`](docs/trazabilidad-rn-test.md) y verificada automáticamente por `tests/test_trazabilidad.py`.
 
@@ -382,6 +384,46 @@ Body inválido (`422`), por ejemplo un login sin `password`:
 | otro | `error_http` | Otro error HTTP del framework (conserva su status) |
 | `500` | `error_interno` | Error inesperado |
 
+## Frontend web (`C-18`)
+
+La misma API sirve una interfaz web mínima, hecha en TypeScript sin framework y compilada con `tsc`, con cuatro pantallas: **Login**, **Agenda de profesional**, **Crear turno** y **Crear bloqueo**. Usa solo los endpoints existentes y muestra tal cual los mensajes de error en español de la API.
+
+### Abrir el frontend
+
+1. Exportar las variables de [Variables de entorno](#variables-de-entorno), incluidas las tres `SEED_*_PASSWORD`, y levantar la API con `uvicorn app.main:app`.
+2. Abrir **<http://127.0.0.1:8000/>** en el navegador.
+3. Ingresar con un usuario demo. Cada rol ve solo sus pantallas:
+
+| Usuario | Contraseña | Pantallas |
+|---------|------------|-----------|
+| `admin_demo` | la de `SEED_ADMIN_PASSWORD` | Agenda, Crear turno y Crear bloqueo |
+| `recepcion_demo` | la de `SEED_RECEPCION_PASSWORD` | Agenda y Crear turno |
+| `odontologo_demo` | la de `SEED_ODONTOLOGO_PASSWORD` | Agenda |
+
+- **No hace falta Node.js para usarlo:** FastAPI sirve `index.html` en `GET /` y los `.js` ya compilados desde `app/static/` (`/static/*`).
+- La sesión se guarda en `sessionStorage`, así que cada pestaña tiene la suya: se pueden probar dos roles a la vez en pestañas distintas.
+- En `development`, si no definiste `JWT_SECRET`, reiniciar la API invalida los tokens: la pantalla vuelve al login con el mensaje `"Se requiere un token de acceso válido."`.
+
+### Compilar el TypeScript (opcional, solo para desarrollar)
+
+Requiere Node.js 18 o superior. El código fuente está en `frontend/src/` y se compila a `app/static/`:
+
+```bash
+npm install        # instala typescript, la única dependencia (de desarrollo)
+npm run build      # compila frontend/src/ hacia app/static/
+npx tsc --noEmit   # chequea los tipos sin generar archivos
+npm test           # compila y corre los tests de la lógica del frontend (node --test)
+```
+
+Resultado esperado: `npx tsc --noEmit` termina sin mostrar nada (cero errores) y `npm test` informa `# pass 15` y `# fail 0`. Si cambiás un `.ts`, volvé a correr `npm run build`: el navegador carga los `.js` de `app/static/`, no los `.ts`.
+
+### Limitaciones conocidas de `C-18`
+
+- **Rol `odontologo`:** el token no incluye el `profesional_id`, así que la Agenda le muestra el selector con todos los profesionales. Si elige el suyo (en el seed, `odontologo_demo` está vinculado al `"Odontólogo Ficticio A"`), ve su agenda con cada paciente como `"Paciente #<id>"`, porque su rol no puede consultar `GET /pacientes`. Si elige otro profesional, la API responde `403` y la pantalla muestra `"Tu rol no tiene permiso para esta operación."`.
+- **Alcance de `turnos_afectados`:** la tabla que aparece al crear un bloqueo es solo informativa. Lista los turnos `reservado` que se superponen con el bloqueo en el momento de crearlo, pero no los cancela, no los reprograma, no avisa a los pacientes y no se puede exportar. Los turnos contiguos, que terminan justo cuando empieza el bloqueo, no figuran (`RN-TUR-04`). Para reubicar un turno afectado se usa la API (`POST /turnos/{id}/reprogramar` o `POST /turnos/{id}/cancelar`).
+- **Bloqueos:** solo de un profesional o de un sillón. No hay bloqueo de todo el consultorio (feriado general).
+- **Fuera de alcance:** no hay pantallas para cancelar o reprogramar turnos ni para administrar pacientes, reportes o configuración.
+
 ## Estructura
 
 ```
@@ -407,6 +449,10 @@ app/db/conexion.py                 Conexión SQLite, transacciones y aplicación
 app/db/esquema.sql                 Esquema de la base (tablas e índices del MVP y triggers append-only)
 app/db/repositorio*.py             Consultas parametrizadas por entidad (usuarios, recursos, turnos, agenda, auditoría)
 app/db/seed.py                     Seed demo idempotente (catálogo ficticio y usuarios admin_demo, recepcion_demo y odontologo_demo)
+app/static/                        Frontend compilado que sirve FastAPI (index.html, styles.css y módulos .js)
+frontend/src/                      Código TypeScript del frontend (lógica pura, sesión, cliente HTTP y vistas)
+frontend/tests/                    Tests de la lógica del frontend (node --test)
+package.json / tsconfig.json       Compilación del frontend con tsc (única dependencia: typescript)
 tests/domain/                      Tests unitarios de dominio puro (pytest)
 tests/api/                         Tests de API, repositorios, seed y flujo E2E con SQLite temporal
 tests/trazabilidad.py              Helpers puros de verificación de trazabilidad RN → test
