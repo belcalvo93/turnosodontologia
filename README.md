@@ -424,6 +424,29 @@ Resultado esperado: `npx tsc --noEmit` termina sin mostrar nada (cero errores) y
 - **Bloqueos:** solo de un profesional o de un sillón. No hay bloqueo de todo el consultorio (feriado general).
 - **Fuera de alcance:** no hay pantallas para cancelar o reprogramar turnos ni para administrar pacientes, reportes o configuración.
 
+## Limitaciones y supuestos
+
+- **Persistencia:** SQLite, decisión provisional para este trabajo (D-01). Se pasa a PostgreSQL si hay concurrencia real de varios usuarios o varias sedes.
+- **Datos:** todo es ficticio; no hay pacientes ni profesionales reales.
+- **Supuestos del equipo, sin validar con odontólogos** (`knowledge-base/09_decisiones_y_supuestos.md`):
+  - SU-01: todo turno ocupa un sillón.
+  - SU-02: los consultorios necesitan controlar el sillón como recurso.
+  - SU-03: un paciente no puede tener dos turnos a la vez.
+  - SU-04: no hay sobreturnos.
+  - SU-05: los turnos contiguos son válidos (intervalos semiabiertos).
+  - SU-06: una sola sede, con varios odontólogos y sillones.
+  - SU-07: matriz de permisos por rol (administración, recepción, odontólogo).
+- **Frontend:** ver [Limitaciones conocidas de C-18](#limitaciones-conocidas-de-c-18).
+
+## Próximos pasos
+
+Quedaron fuera del MVP por decisión consciente (ver `docs/discovery/`):
+
+- **Recordatorios por WhatsApp** con confirmación y cancelación del turno: tienen costo por mensaje y requieren un proveedor oficial.
+- **Portal de reserva para pacientes**, sin contraseña (con documento, obra social y nombre), eligiendo especialidad o profesional y sucursal: sería un nuevo change (C-19) con endpoints públicos y protección contra abuso.
+- **Varias sucursales, especialidades y obras sociales.**
+- **Migración a PostgreSQL** cuando el uso lo requiera.
+
 ## Estructura
 
 ```
