@@ -27,7 +27,7 @@
 
 ## 4. Verificación integral (TypeScript, pytest, reglas duras y checklist manual por rol)
 
-- [ ] 4.1 Ejecutar `npx tsc --noEmit` y verificar cero errores de tipos en `frontend/src/`.
+- [x] 4.1 Ejecutar `npx tsc --noEmit` y verificar cero errores de tipos en `frontend/src/`.
 - [ ] 4.2 Ejecutar `npm test` (todos los tests de lógica del frontend en verde) y la suite completa con `pytest`, y confirmar que pasan todos los tests existentes más los nuevos de `tests/api/test_frontend_estatico.py` (incluyendo `GET /` → `200`, `/static/*` → `200` y `GET /no-existe` → `404` JSON `no_encontrado`).
 - [ ] 4.3 Validar el cumplimiento de todas las reglas duras de `AGENTS.md`: `app/domain/` sin imports de FastAPI/DB ni `datetime.now()`, datos ficticios con DNI terminado en `"(ficticio)"` (`RN-PAC-03`), sin secretos versionados.
 - [ ] 4.4 Completar el checklist manual por rol levantando la app en desarrollo con el seed demo (`C-17`):
