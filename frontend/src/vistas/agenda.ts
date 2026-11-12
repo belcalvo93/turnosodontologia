@@ -361,9 +361,14 @@ function limpiarTablaAnteError(): void {
   const contenedorTabla = obtenerElemento<HTMLElement>("agenda-tabla-contenedor");
   const estadoVacio = obtenerElemento<HTMLElement>("agenda-vacia");
   const contadorItems = obtenerElemento<HTMLElement>("agenda-contador-items");
+  const resumenRango = obtenerElemento<HTMLElement>("agenda-resumen-rango");
 
   if (tbody !== null) {
     tbody.replaceChildren();
+  }
+  // si no se vacia, sigue mostrando el profesional de la consulta anterior
+  if (resumenRango !== null) {
+    resumenRango.textContent = "";
   }
   if (contenedorTabla !== null) {
     contenedorTabla.hidden = true;
