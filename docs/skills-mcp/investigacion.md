@@ -1,7 +1,7 @@
 # Ficha de investigación: skill propia y MCP para el sistema de turnos odontológico
 
 Metodología I · UTN Mendoza · Equipo: Bruno Fiouchetta, Elías Tello, Belén Calvo, Hernán González, Joaquín Morán
-Fecha: 2026-10-30 · Repositorio: https://github.com/belcalvo93/turnosodontologia
+Fecha: 2026-11-12 · Repositorio: https://github.com/belcalvo93/turnosodontologia
 
 ## 1. Necesidad detectada
 
@@ -12,7 +12,7 @@ Al preparar un change (explore, propose, specs, tasks) detectamos errores que se
 
 ## 2. Change elegido: C-18 `frontend-minimo`
 
-Pendiente en `CHANGES.md` (FASE 5b). Sus dependencias (C-03, C-11, C-14, C-16) ya están en `main`. Cuatro pantallas (login, agenda de un profesional, crear turno y crear bloqueo con la lista `turnos_afectados`) que consumen solo endpoints existentes y respetan los roles. Está preparado (explore, proposal, design, specs con 15 escenarios, tasks) y **no está implementado**. La skill revisa los escenarios de su spec; Stitch genera el diseño de la pantalla de bloqueo, que `design.md` referencia.
+Completado en `CHANGES.md` (FASE 5b) y archivado. Sus dependencias (C-03, C-11, C-14, C-16) ya estaban en `main`. Cuatro pantallas (login, agenda de un profesional, crear turno y crear bloqueo con la lista `turnos_afectados`) que consumen solo endpoints existentes y respetan los roles. La skill revisó los escenarios de su spec antes del apply (de 15 a 17 escenarios) y Stitch generó el diseño de la pantalla de bloqueo, que `design.md` referencia y dio la base visual de la interfaz. Está implementado, verificado y archivado; el detalle está en `docs/skills-mcp/aplicacion.md`.
 
 ## 3. Skill creadora y skill propia
 
