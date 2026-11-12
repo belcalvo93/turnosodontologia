@@ -6,13 +6,14 @@ Desarrollado con Spec-Driven Development usando OpenSpec y Active Stack (ciclo O
 
 ## Estado actual
 
-Implementados los **17 changes del MVP (`C-01` a `C-17`)**. La suite completa pasa en verde: `789 passed`.
+Implementados los **18 changes (`C-01` a `C-18`)**: los 17 del MVP más el frontend mínimo. La suite completa pasa en verde: `789 passed`.
 
 - **Base técnica y dominio (`C-01`, `C-02`, `C-10`):** configuración desde variables de entorno, conexión SQLite con transacciones atómicas (`BEGIN IMMEDIATE`), aplicación idempotente del esquema, `GET /health` público y dominio puro (modelos inmutables, intervalos semiabiertos `[inicio, fin)`, reloj inyectado y reglas de alta, reprogramación y cancelación sin base de datos ni HTTP).
 - **Acceso y usuarios (`C-03`, `C-07`):** login con JWT firmado (`POST /auth/login`), hash Argon2id, control de acceso por rol (`administracion`, `recepcion`, `odontologo`) y gestión de usuarios internos.
 - **Catálogo y disponibilidad (`C-04`, `C-05`, `C-06`, `C-08`, `C-09`, `C-16`):** profesionales, sillones, prestaciones con duración en minutos, pacientes (con DNI único y obra social opcional), horarios de atención semanales y bloqueos horarios con reporte de turnos afectados.
 - **Turnos, agenda y auditoría (`C-11`, `C-12`, `C-13`, `C-14`, `C-15`):** alta (`POST /turnos`), consulta (`GET /turnos/{id}`), reprogramación (`POST /turnos/{id}/reprogramar`), cancelación (`POST /turnos/{id}/cancelar`), agenda por profesional y por sillón (`GET /agenda/...`) y consulta de auditoría append-only (`GET /auditoria?turno_id=`).
 - **Seed demo, flujo E2E y trazabilidad (`C-17`):** siembra idempotente de 32 filas ficticias en desarrollo, prueba extremo a extremo del flujo de 6 pasos y verificación automática de [trazabilidad RN → test](docs/trazabilidad-rn-test.md).
+- **Frontend web mínimo (`C-18`):** frontend en TypeScript sin framework, servido por FastAPI como archivos estáticos (login, agenda, crear turno y bloqueos), con `npm test` en 15/15. Ver [Frontend web](#frontend-web-c-18).
 
 ## Requisitos
 

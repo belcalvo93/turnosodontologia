@@ -464,7 +464,7 @@ El MVP (C-01 a C-17) es solo backend, así que no hay agente de frontend. El fro
 > Posterior al MVP: no cambia `C-01` a `C-17`. Decisión D-09 (equipo, 2026-10-30).
 
 ### [C-18] `frontend-minimo`
-- **Estado**: `[ ]` pendiente
+- **Estado**: `[x]` completado
 - **Scope**:
   - Frontend en TypeScript sin framework, compilado a archivos estáticos (Vite o `tsc`) y servido por la misma API (FastAPI `StaticFiles`); Node.js solo en desarrollo
   - Pantallas: login, agenda de un profesional, crear turno, y bloqueo con la lista de `turnos_afectados`
