@@ -266,8 +266,13 @@ function limpiarTablaAnteError() {
     const contenedorTabla = obtenerElemento("agenda-tabla-contenedor");
     const estadoVacio = obtenerElemento("agenda-vacia");
     const contadorItems = obtenerElemento("agenda-contador-items");
+    const resumenRango = obtenerElemento("agenda-resumen-rango");
     if (tbody !== null) {
         tbody.replaceChildren();
+    }
+    // si no se vacia, sigue mostrando el profesional de la consulta anterior
+    if (resumenRango !== null) {
+        resumenRango.textContent = "";
     }
     if (contenedorTabla !== null) {
         contenedorTabla.hidden = true;
