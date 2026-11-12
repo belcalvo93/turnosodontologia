@@ -77,7 +77,7 @@ Cargá la skill correspondiente al contexto ANTES de escribir código.
 
 El plan de implementación completo está en [CHANGES.md](CHANGES.md). Resumen:
 
-- **Total**: 17 changes (C-01 a C-17) en 5 fases.
+- **Total**: 18 changes (C-01 a C-18) en 5 fases más una extensión (FASE 5b: `C-18` frontend mínimo, posterior al MVP).
 - **Camino crítico** (8): `C-01 → C-03 → C-04 → C-09 → C-11 → C-12 → C-15 → C-17`.
 - **Primer change**: `C-01` (`foundation-setup`), governance BAJO, sin dependencias.
 - **Cuello de botella**: `C-11 crear-turno` depende de 4 changes y bloquea 5.
