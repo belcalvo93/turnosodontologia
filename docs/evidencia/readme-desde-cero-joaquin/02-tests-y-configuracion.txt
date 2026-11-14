@@ -1,0 +1,84 @@
+(.venv) PS C:\Users\moran\prueba-readme\turnosodontologia> pytest tests
+=================================================================== test session starts ===================================================================
+platform win32 -- Python 3.13.7, pytest-9.2.0, pluggy-1.7.0
+rootdir: C:\Users\moran\prueba-readme\turnosodontologia
+plugins: anyio-4.16.0
+collected 789 items
+
+tests\api\test_agenda.py ............                                                                                                                [  1%]
+tests\api\test_auditoria.py ....................                                                                                                     [  4%]
+tests\api\test_auth.py ....................                                                                                                          [  6%]
+tests\api\test_bloqueos.py .............                                                                                                             [  8%]
+tests\api\test_cancelar_turno.py ..........                                                                                                          [  9%]
+tests\api\test_conexion.py .......                                                                                                                   [ 10%]
+tests\api\test_config.py .......................                                                                                                     [ 13%]
+tests\api\test_dependencias.py ........                                                                                                              [ 14%]
+tests\api\test_errores.py ....................                                                                                                       [ 16%]
+tests\api\test_esquema_usuario.py .......                                                                                                            [ 17%]
+tests\api\test_flujo_e2e.py ...                                                                                                                      [ 18%]
+tests\api\test_frontend_estatico.py ....                                                                                                             [ 18%]
+tests\api\test_hora_local.py .....                                                                                                                   [ 19%]
+tests\api\test_horarios.py ........                                                                                                                  [ 20%]
+tests\api\test_main.py ............                                                                                                                  [ 21%]
+tests\api\test_pacientes.py ...................................                                                                                      [ 26%]
+tests\api\test_prestaciones.py .........................                                                                                             [ 29%]
+tests\api\test_profesionales.py ............                                                                                                         [ 30%]
+tests\api\test_repositorio.py ........                                                                                                               [ 31%]
+tests\api\test_repositorio_agenda.py ......                                                                                                          [ 32%]
+tests\api\test_repositorio_auditoria.py ......                                                                                                       [ 33%]
+tests\api\test_repositorio_bloqueos.py ........                                                                                                      [ 34%]
+tests\api\test_repositorio_horarios.py ....                                                                                                          [ 34%]
+tests\api\test_repositorio_pacientes.py ........................                                                                                     [ 38%]
+tests\api\test_repositorio_prestaciones.py .....................                                                                                     [ 40%]
+tests\api\test_repositorio_profesionales.py .....                                                                                                    [ 41%]
+tests\api\test_repositorio_sillones.py ................                                                                                              [ 43%]
+tests\api\test_repositorio_turnos.py ..........................................                                                                      [ 48%]
+tests\api\test_repositorio_usuarios.py ...........                                                                                                   [ 50%]
+tests\api\test_reprogramar_turno.py .............................                                                                                    [ 53%]
+tests\api\test_requiere_rol.py .......                                                                                                               [ 54%]
+tests\api\test_salud.py .                                                                                                                            [ 54%]
+tests\api\test_seed.py ............                                                                                                                  [ 56%]
+tests\api\test_seed_demo.py ............                                                                                                             [ 57%]
+tests\api\test_seguridad.py .....................                                                                                                    [ 60%]
+tests\api\test_sillones.py ...................                                                                                                       [ 62%]
+tests\api\test_turnos.py ................................................                                                                            [ 68%]
+tests\api\test_usuario_actual.py ..............                                                                                                      [ 70%]
+tests\api\test_usuarios.py ............................................                                                                              [ 76%]
+tests\domain\test_bloqueos.py .....                                                                                                                  [ 76%]
+tests\domain\test_bloqueos_turnos_afectados.py ........                                                                                              [ 77%]
+tests\domain\test_cancelar_turno.py ....                                                                                                             [ 78%]
+tests\domain\test_estructura.py ....                                                                                                                 [ 78%]
+tests\domain\test_horarios.py ..........                                                                                                             [ 80%]
+tests\domain\test_intervalos.py .........                                                                                                            [ 81%]
+tests\domain\test_pacientes.py ...................                                                                                                   [ 83%]
+tests\domain\test_permisos_agenda.py .......                                                                                                         [ 84%]
+tests\domain\test_permisos_turno.py .......                                                                                                          [ 85%]
+tests\domain\test_prestaciones.py .......                                                                                                            [ 86%]
+tests\domain\test_profesionales.py .........                                                                                                         [ 87%]
+tests\domain\test_recursos_alta.py ..........                                                                                                        [ 88%]
+tests\domain\test_reglas_turno.py ..........................                                                                                         [ 92%]
+tests\domain\test_reprogramar_turno.py .........................                                                                                     [ 95%]
+tests\domain\test_sillones.py .....                                                                                                                  [ 95%]
+tests\domain\test_usuarios.py ........                                                                                                               [ 96%]
+tests\domain\test_usuarios_gestion.py ...................                                                                                            [ 99%]
+tests\test_trazabilidad.py .....                                                                                                                     [100%]
+
+==================================================================== warnings summary =====================================================================
+.venv\Lib\site-packages\fastapi\testclient.py:1
+  C:\Users\moran\prueba-readme\turnosodontologia\.venv\Lib\site-packages\fastapi\testclient.py:1: StarletteDeprecationWarning: Using `httpx` with `starlette.testclient` is deprecated; install `httpx2` instead.
+    from starlette.testclient import TestClient as TestClient  # noqa
+
+-- Docs: https://docs.pytest.org/en/stable/how-to/capture-warnings.html
+======================================================= 789 passed, 1 warning in 168.79s (0:02:48) ========================================================
+(.venv) PS C:\Users\moran\prueba-readme\turnosodontologia> $env:APP_ENV="development"
+(.venv) PS C:\Users\moran\prueba-readme\turnosodontologia> $env:DATABASE_URL="sqlite:///./turnos.db"
+(.venv) PS C:\Users\moran\prueba-readme\turnosodontologia> $env:CLINIC_TIMEZONE="America/Argentina/Buenos_Aires"
+(.venv) PS C:\Users\moran\prueba-readme\turnosodontologia> $env:JWT_SECRET="cambiar-por-un-secreto-propio-de-32-caracteres-o-mas"
+(.venv) PS C:\Users\moran\prueba-readme\turnosodontologia> $env:JWT_ALGORITHM="HS256"
+(.venv) PS C:\Users\moran\prueba-readme\turnosodontologia> $env:ACCESS_TOKEN_EXPIRE_MINUTES="60"
+(.venv) PS C:\Users\moran\prueba-readme\turnosodontologia> $env:SEED_ADMIN_PASSWORD="clave-admin-demo-ficticia"
+(.venv) PS C:\Users\moran\prueba-readme\turnosodontologia> $env:SEED_RECEPCION_PASSWORD="clave-recepcion-demo-ficticia"
+(.venv) PS C:\Users\moran\prueba-readme\turnosodontologia> $env:SEED_ODONTOLOGO_PASSWORD="clave-odontologo-demo-ficticia"
+(.venv) PS C:\Users\moran\prueba-readme\turnosodontologia> python -c "from app.config import cargar_config; print(cargar_config().database_path)"
+turnos.db
+(.venv) PS C:\Users\moran\prueba-readme\turnosodontologia>
