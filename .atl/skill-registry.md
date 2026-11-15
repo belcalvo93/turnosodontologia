@@ -47,7 +47,7 @@ Las skills vienen versionadas en el repositorio (`.agents/skills/` para OpenCode
 - Autenticación y autorización siempre del lado del servidor: 401 si no hay token válido, 403 si el rol no alcanza.
 - Validar todas las entradas del login; no revelar si falló el usuario o la contraseña.
 - Registrar los intentos de acceso fallidos (auditoría).
-- Mecanismo definitivo pendiente (D-03, JWT candidato): no decidirlo dentro de un change; resolverlo en `propose`.
+- Mecanismo decidido (D-03): JWT firmado con PyJWT; ver `knowledge-base/09_decisiones_y_supuestos.md`.
 
 ### api-design-principles
 - Sustantivos en plural para colecciones (`/turnos`, `/pacientes`); la acción va en el método HTTP.
@@ -74,7 +74,7 @@ Las skills vienen versionadas en el repositorio (`.agents/skills/` para OpenCode
 | Arquitectura | `knowledge-base/08_arquitectura_propuesta.md` | Dominio separado del framework y de la base de datos (D-02) |
 | Reglas de negocio | `knowledge-base/05_reglas_de_negocio.md` | Cada regla `RN-xx` tiene una verificación por API que sirve de test |
 | Modelo de datos | `knowledge-base/04_modelo_de_datos.md` | Fechas en hora local del consultorio e intervalos semiabiertos (D-06) |
-| Roadmap | `CHANGES.md` | 17 changes en 6 fases; solo el MVP (D-04) |
+| Roadmap | `CHANGES.md` | 19 changes (MVP C-01 a C-17 más extensiones C-18 y C-19; D-04) |
 | Visión, actores, funcionalidades, flujos, preguntas abiertas | `knowledge-base/01`, `02`, `03`, `06`, `07`, `10` | Leer antes de proponer un change |
 | Discovery | `docs/discovery/informe-discovery.md` | Origen del MVP y de los vacíos del mercado |
 | Datos de pacientes | RN-PAC-03 y D-08 | Solo datos ficticios en código, seeds, ejemplos, tests y capturas |

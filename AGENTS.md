@@ -35,9 +35,9 @@ La fuente de verdad del dominio vive en `knowledge-base/`. **Leé el archivo rel
 | [06_funcionalidades.md](knowledge-base/06_funcionalidades.md) | Historias de usuario por épica |
 | [07_flujos_principales.md](knowledge-base/07_flujos_principales.md) | Flujos extremo a extremo |
 | [08_arquitectura_propuesta.md](knowledge-base/08_arquitectura_propuesta.md) | Patrones, estructura de directorios, env vars |
-| [10_preguntas_abiertas.md](knowledge-base/10_preguntas_abiertas.md) | ⚠️ Inconsistencias a resolver ANTES de codear |
+| [10_preguntas_abiertas.md](knowledge-base/10_preguntas_abiertas.md) | ⚠️ Inconsistencias y supuestos (estado de resolución) |
 
-> ⚠️ Resolver las preguntas de prioridad **Alta** de `knowledge-base/10_preguntas_abiertas.md` antes de arrancar el primer change: IF-06, SE-01, SE-02, SE-06, SE-09, SE-10 y SE-12.
+> Las preguntas de prioridad **Alta** (IF-06, SE-01, SE-02, SE-06, SE-09, SE-10 y SE-12) se resolvieron o se asumieron como supuestos del equipo; ver `knowledge-base/10_preguntas_abiertas.md` para el estado de cada una.
 
 ---
 
@@ -81,7 +81,7 @@ El plan de implementación completo está en [CHANGES.md](CHANGES.md). Resumen:
 - **Camino crítico** (8): `C-01 → C-03 → C-04 → C-09 → C-11 → C-12 → C-15 → C-17`.
 - **Primer change**: `C-01` (`foundation-setup`), governance BAJO, sin dependencias.
 - **Cuello de botella**: `C-11 crear-turno` depende de 4 changes y bloquea 5.
-- **Bloqueado por decisión**: `C-16` no se propone hasta resolver SE-09.
+- **Histórico**: `C-16` esperó a resolver SE-09; ya resuelta, `C-16` está completado.
 
 **Antes de cualquier `/opsx:propose`**: leé [CHANGES.md](CHANGES.md), identificá las dependencias del change y los archivos de "Leer antes".
 

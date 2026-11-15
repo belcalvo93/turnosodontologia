@@ -14,6 +14,7 @@ Implementados los **19 changes (`C-01` a `C-19`)**: los 17 del MVP, el frontend 
 - **Turnos, agenda y auditoría (`C-11`, `C-12`, `C-13`, `C-14`, `C-15`):** alta (`POST /turnos`), consulta (`GET /turnos/{id}`), reprogramación (`POST /turnos/{id}/reprogramar`), cancelación (`POST /turnos/{id}/cancelar`), agenda por profesional y por sillón (`GET /agenda/...`) y consulta de auditoría append-only (`GET /auditoria?turno_id=`).
 - **Seed demo, flujo E2E y trazabilidad (`C-17`):** siembra idempotente de 32 filas ficticias en desarrollo, prueba extremo a extremo del flujo de 6 pasos y verificación automática de [trazabilidad RN → test](docs/trazabilidad-rn-test.md).
 - **Frontend web mínimo (`C-18`):** frontend en TypeScript sin framework, servido por FastAPI como archivos estáticos (login, agenda, crear turno y bloqueos), con `npm test` en 15/15. Ver [Frontend web](#frontend-web-c-18).
+- **Ajustes de la revisión de escenarios (`C-19`):** ajustes de specs y tests surgidos de la revisión de escenarios de `C-17`, sin cambios en `app/`.
 
 ## Requisitos
 
@@ -60,7 +61,7 @@ La configuración se lee del entorno del proceso. **No hay carga automática de 
 | `APP_ENV` | Entorno de ejecución (`development`, `test`, `production`, ...) | `development` |
 | `DATABASE_URL` | Ruta de la base SQLite (acepta `sqlite:///ruta` o un path plano) | `./turnos.db` |
 | `CLINIC_TIMEZONE` | Zona horaria del consultorio (define la hora local de turnos y horarios sembrados) | `America/Argentina/Buenos_Aires` |
-| `JWT_SECRET` | Clave para firmar los tokens: 32+ caracteres (64+ si usás `HS512`). **Obligatoria fuera de `development`/`test`** | Aleatoria por proceso en `development`/`test` |
+| `JWT_SECRET` | Clave para firmar los tokens: se recomiendan 32+ caracteres (64+ si usás `HS512`); la app solo rechaza un valor vacío. **Obligatoria fuera de `development`/`test`** | Aleatoria por proceso en `development`/`test` |
 | `JWT_ALGORITHM` | Algoritmo de firma: `HS256`, `HS384` o `HS512` | `HS256` |
 | `ACCESS_TOKEN_EXPIRE_MINUTES` | Minutos de validez del token (entero mayor que 0) | `60` |
 | `SEED_ADMIN_PASSWORD` | Contraseña inicial de `admin_demo`; habilita el seed demo en `development` | Sin definir (no se siembra nada) |
@@ -155,6 +156,8 @@ Al arrancar con `APP_ENV=development` y `SEED_ADMIN_PASSWORD` definida, el siste
 ### Flujo E2E de 6 pasos (ejemplo real)
 
 Con la API levantada en `development` y las tres variables `SEED_*_PASSWORD` definidas, el flujo completo de extremo a extremo (verificado en `tests/api/test_flujo_e2e.py`) recorre los 6 pasos siguientes. Todas las rutas protegidas llevan la cabecera `Authorization: Bearer <access_token>`.
+
+Las fechas de los ejemplos (`inicio`, `nuevo_inicio`) y los `ocurrio_en` de la auditoría salen del reloj fijo de `tests/api/test_flujo_e2e.py` (lunes 2026-01-05 09:00 en hora local). Contra la API real usá un día hábil futuro (por ejemplo, el próximo lunes) en `inicio` y `nuevo_inicio`, porque reprogramar y cancelar solo admiten turnos futuros (si no, responden `409`); `ocurrio_en` será el instante real de cada operación.
 
 #### 1. Login de recepción (`POST /auth/login` → `200`)
 
@@ -381,9 +384,12 @@ Body inválido (`422`), por ejemplo un login sin `password`:
 | `409` | `fuera_de_horario` | El turno no encaja en el horario de atención |
 | `409` | `dentro_de_bloqueo` | El turno cae dentro de un bloqueo |
 | `409` | `turno_no_modificable` | El turno no se puede modificar (pasado, en curso o cancelado) |
+| `409` | `nombre_duplicado` | Ya existe un recurso con ese nombre |
+| `409` | `dni_duplicado` | Ya existe un paciente con ese DNI |
+| `409` | `username_duplicado` | Ya existe un usuario con ese `username` |
 | `422` | `dato_invalido` | Datos de entrada o de dominio inválidos |
 | otro | `error_http` | Otro error HTTP del framework (conserva su status) |
-| `500` | `error_interno` | Error inesperado |
+| `500` | `error_interno` | Error de dominio sin mapeo (no cubre excepciones no controladas) |
 
 ## Frontend web (`C-18`)
 
@@ -438,13 +444,14 @@ Resultado esperado: `npx tsc --noEmit` termina sin mostrar nada (cero errores) y
   - SU-06: una sola sede, con varios odontólogos y sillones.
   - SU-07: matriz de permisos por rol (administración, recepción, odontólogo).
 - **Frontend:** ver [Limitaciones conocidas de C-18](#limitaciones-conocidas-de-c-18).
+- Diferencias menores de contrato conocidas: `horarios-atencion` devuelve 422 en POST y 404 en GET cuando el profesional de la ruta no existe, y el spec de reprogramar no lista explícitamente el 404 de turno inexistente.
 
 ## Próximos pasos
 
 Quedaron fuera del MVP por decisión consciente (ver `docs/discovery/`):
 
 - **Recordatorios por WhatsApp** con confirmación y cancelación del turno: tienen costo por mensaje y requieren un proveedor oficial.
-- **Portal de reserva para pacientes**, sin contraseña (con documento, obra social y nombre), eligiendo especialidad o profesional y sucursal: sería un nuevo change (C-19) con endpoints públicos y protección contra abuso.
+- **Portal de reserva para pacientes**, sin contraseña (con documento, obra social y nombre), eligiendo especialidad o profesional y sucursal: sería un change futuro con endpoints públicos y protección contra abuso.
 - **Varias sucursales, especialidades y obras sociales.**
 - **Migración a PostgreSQL** cuando el uso lo requiera.
 
@@ -486,9 +493,13 @@ docs/trazabilidad-rn-test.md       Tabla de trazabilidad de las 31 reglas RN-xx 
 .env.example                       Variables de entorno de referencia (placeholders)
 knowledge-base/                    Base de conocimiento del proyecto (10 archivos)
 docs/discovery/                    Informe de Discovery y verificación de fuentes
+docs/bitacora/                     Bitácoras individuales del equipo
+docs/evidencia/                    Evidencias de las etapas y de C-18
+docs/reflexion/                    Reflexiones individuales del equipo
+docs/skills-mcp/                   Investigación, aplicación y evidencias de skills y MCP
 openspec/specs/                    Specs vigentes del sistema
 openspec/changes/                  Changes en curso y archivados (proposal, design, specs, tasks y verify)
-CHANGES.md                         Roadmap de changes del MVP
+CHANGES.md                         Roadmap de changes (MVP y extensiones)
 AGENTS.md / CLAUDE.md              Reglas para los agentes de IA
 ```
 

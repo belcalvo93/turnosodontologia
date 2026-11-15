@@ -14,7 +14,7 @@ Prioridad: alta (bloquea el primer change), media (hay que decidirlo durante la 
 **Decisión provisional del equipo dice**: Python + FastAPI + pytest + SQLite (D-01).
 **El informe**: no define stack técnico.
 **Impacto**: cambia la configuración del entorno (Docker o no), el soporte de concurrencia y la forma de acceder a datos.
-**Resolución propuesta**: seguir con SQLite como decisión provisional (D-01), con criterios de revisión escritos; JWT queda como candidato (D-03); ORM a definir (D-07).
+**Resolución propuesta**: seguir con SQLite como decisión provisional (D-01), con criterios de revisión escritos; JWT firmado con PyJWT (decidido, D-03); sin ORM (decidido, D-07).
 
 ### IN-02 — Reglas del estado que no están en el informe
 **El `discovery` de nivel superior del estado incluye**: sin solapamiento por paciente, intervalos semiabiertos, sin sobreturnos, y "anticipación mínima" como opcional.

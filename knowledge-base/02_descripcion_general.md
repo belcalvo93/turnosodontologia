@@ -11,10 +11,10 @@ API REST (backend) para gestión de agenda de turnos de un consultorio odontoló
 | Capa | Tecnologías | Versión mínima |
 |------|-------------|----------------|
 | Lenguaje | Python | 3.11 (Supuesto del equipo) |
-| Framework API | FastAPI (+ Pydantic para validación de entrada/salida) | A definir al crear el proyecto |
+| Framework API | FastAPI (+ Pydantic para validación de entrada/salida) | Definido |
 | Persistencia | SQLite (provisional) | Incluida con Python |
-| Tests | pytest (+ cliente de pruebas de FastAPI para tests de API) | A definir |
-| Autenticación | Token firmado (JWT es candidato, no decidido; ver D-03) | — |
+| Tests | pytest (+ cliente de pruebas de FastAPI para tests de API) | Definido |
+| Autenticación | JWT firmado con PyJWT (decidido, ver D-03) | — |
 | Despliegue | Local / entorno académico. Docker no es requisito | — |
 
 ## Arquitectura general

@@ -44,7 +44,7 @@ C-06 + C-08 + C-09 + C-10
         ├── C-12 cancelar-turno
         ├── C-13 reprogramar-turno
         ├── C-14 agenda
-        └── C-16 bloqueos-turnos-afectados       ← requiere decidir SE-09 antes
+        └── C-16 bloqueos-turnos-afectados       ← SE-09 resuelta
 
 C-12 + C-13
   └── C-15 consulta-auditoria
@@ -54,6 +54,9 @@ C-07 + C-14 + C-15 + C-16
 
 C-03 + C-11 + C-14 + C-16 + C-17
   └── C-18 frontend-minimo                       ← extensión posterior al MVP
+
+C-17
+  └── C-19 ajustes-revision-escenarios           ← extensión posterior al MVP
 ```
 
 ### Paralelismo por fase
@@ -88,7 +91,7 @@ GATE 6: C-11 ✓                           ← FORK (4 paralelos)
   → C-12 cancelar-turno                  [Agente A]
   → C-13 reprogramar-turno               [Agente B]
   → C-14 agenda                          [Agente C]
-  → C-16 bloqueos-turnos-afectados       [Agente B — después de C-13, si SE-09 decidida]
+  → C-16 bloqueos-turnos-afectados       [Agente B — después de C-13]
 
 GATE 7: C-12 ✓ + C-13 ✓
   → C-15 consulta-auditoria              [Agente A]
@@ -98,6 +101,9 @@ GATE 8: C-07 ✓ + C-14 ✓ + C-15 ✓ + C-16 ✓
 
 GATE 9: C-17 ✓                           ← extensión posterior al MVP
   → C-18 frontend-minimo                 [Agente A]
+
+GATE 10: C-17 ✓                          ← extensión posterior al MVP
+  → C-19 ajustes-revision-escenarios     [Agente A]
 ```
 
 ### Camino crítico (8 changes — mínimo irreducible)
@@ -112,7 +118,7 @@ La rama del dominio (`C-02 → C-10`) es más corta y no está en el camino crí
 
 ### Plan óptimo con 3 agentes
 
-El MVP (C-01 a C-17) es solo backend, así que no hay agente de frontend. El frontend mínimo es `C-18`, posterior al MVP; el frontend React completo y la app móvil son etapa posterior (D.3). Los agentes se reparten por dominio.
+El MVP (C-01 a C-17) es solo backend, así que no hay agente de frontend. El frontend mínimo es `C-18` y los ajustes de la revisión de escenarios son `C-19`, ambos posteriores al MVP; el frontend React completo y la app móvil son etapa posterior (D.3). Los agentes se reparten por dominio.
 
 | Paso | Agente A (Dominio y turnos) | Agente B (Recursos y disponibilidad) | Agente C (Acceso y consultas) |
 |------|-----------------------------|--------------------------------------|-------------------------------|
@@ -130,7 +136,7 @@ El MVP (C-01 a C-17) es solo backend, así que no hay agente de frontend. El fro
 | Riesgo | Origen en la KB | Changes afectados | Mitigación propuesta |
 |--------|-----------------|-------------------|----------------------|
 | `C-11` es cuello de botella: depende de 4 changes y bloquea 5 | Estructura del grafo | C-11 a C-17 | Mantener `C-11` chico: solo crear y consultar por id; cancelar y reprogramar van aparte |
-| Comportamiento de turnos existentes al crear un bloqueo sin decidir | SE-09 (alta) | C-16 | No ejecutar `/opsx:propose` de `C-16` hasta que equipo/cátedra decida SE-09; `C-09` no depende de esa decisión |
+| Comportamiento de turnos existentes al crear un bloqueo | SE-09 (alta, resuelta) | C-16 | Resuelto: el bloqueo se crea y no cancela turnos; `POST /bloqueos` devuelve `turnos_afectados` (ver KB 10 §SE-09); `C-09` no dependía de esa decisión |
 | Concurrencia en reservas simultáneas | SE-06 (alta) | C-11, C-13 | Validar e insertar en una única transacción de escritura; test de API de doble reserva |
 | Intervalos semiabiertos y "todo turno usa sillón" son supuestos | SE-10, SE-02 (alta) | C-02, C-10, C-11 | Están escritos como reglas (RN-TUR-04, RN-TUR-02) con tests; si cambian, el impacto queda en `C-02`/`C-10` |
 | Matriz RBAC no validada con usuarios | SE-12 (alta) | C-03 y todos los routers | Centralizar el chequeo de rol en una dependencia de `C-03`; cada change declara su fila de la matriz de 03 |
@@ -428,7 +434,7 @@ El MVP (C-01 a C-17) es solo backend, así que no hay agente de frontend. El fro
 - **Scope**:
   - Según la propuesta actual del MVP: `POST /bloqueos` devuelve, junto al bloqueo creado, la lista de turnos activos que quedan dentro del intervalo y recurso
   - No cancela ni modifica esos turnos (recepción los reprograma a mano)
-  - Si equipo/cátedra decide otra opción en SE-09 (rechazar el bloqueo o cancelar automáticamente), este scope se reemplaza antes del propose
+  - Decisión tomada en SE-09 (equipo): el bloqueo se crea igual y no se cancelan turnos; las otras opciones (rechazar el bloqueo o cancelar automáticamente) quedaron descartadas
   - Tests: bloqueo sin turnos → lista vacía; bloqueo sobre 2 turnos activos y 1 cancelado → lista con 2; los turnos siguen en estado `reservado`
 - **Dependencias**: `C-11`
 - **Governance**: MEDIO
