@@ -12,6 +12,26 @@ Repositorio: https://github.com/belcalvo93/turnosodontologia · Fecha: 2026-11-1
 
 C-18 agrega una interfaz mínima en TypeScript, servida por la propia API, con cuatro pantallas: login, agenda de un profesional, crear turno y crear bloqueo con la lista `turnos_afectados` (decisión D-09). Consume solo endpoints existentes y respeta los roles. **Quedó implementado, verificado y archivado** (`openspec/changes/archive/2026-11-11-c-18-frontend-minimo/`): 5 requirements, 17 escenarios y 17 tareas, todas completadas. El `verify.md` traza cada escenario a un test o a una evidencia manual por rol (`docs/evidencia/c-18-*`); la suite pasa con 789 tests de pytest y 15 del frontend. En `CHANGES.md` figura como completado (`[x]`).
 
+**Evidencias del frontend en funcionamiento (pruebas manuales por rol, tarea 4.4):**
+
+- **Rol Administración (Bruno Fiouchetta)** — [`docs/evidencia/c-18-administracion-bruno/README.md`](../evidencia/c-18-administracion-bruno/README.md):
+  - Login y acceso a las tres vistas (`RN-ACC-02`): [`01-administracion-login-vistas.jpg`](../evidencia/c-18-administracion-bruno/01-administracion-login-vistas.jpg)
+  - Alta de turno válida (`201`) con horario calculado por prestación (`RN-TUR-01`, `RN-TUR-02`): [`02-administracion-crear-turno-201.jpg`](../evidencia/c-18-administracion-bruno/02-administracion-crear-turno-201.jpg)
+  - Bloqueo superpuesto mostrando la tabla `turnos_afectados` sin cancelar el turno (`RN-TUR-05`, `RN-TUR-08`): [`03-administracion-bloqueo-turnos-afectados.jpg`](../evidencia/c-18-administracion-bruno/03-administracion-bloqueo-turnos-afectados.jpg)
+  - Bloqueo sin turnos afectados, mostrando el estado vacío (`turnos_afectados = []`): [`04-administracion-bloqueo-sin-turnos-afectados.jpg`](../evidencia/c-18-administracion-bruno/04-administracion-bloqueo-sin-turnos-afectados.jpg)
+  - Bloqueo con intervalo inválido (`inicio >= fin`) rechazado con `422` en español (`RN-REC-02`, `RN-GLO-01`): [`05-administracion-bloqueo-422.jpg`](../evidencia/c-18-administracion-bruno/05-administracion-bloqueo-422.jpg)
+- **Rol Recepción (Hernán González)** — [`docs/evidencia/c-18-recepcion-hernan/README.md`](../evidencia/c-18-recepcion-hernan/README.md):
+  - Login con barra adaptada (sin bloqueo) y consulta de agenda con datos ficticios (`RN-ACC-02`, `RN-PAC-03`): [`01-recepcion-agenda-con-paciente.png`](../evidencia/c-18-recepcion-hernan/01-recepcion-agenda-con-paciente.png)
+  - Agenda sin turnos ni bloqueos en el período consultado (`items = []`): [`02-recepcion-agenda-vacia.png`](../evidencia/c-18-recepcion-hernan/02-recepcion-agenda-vacia.png)
+  - Rechazo `409` al intentar crear turno en horario bloqueado o solapado (`RN-TUR-03`, `RN-TUR-05`): [`03-recepcion-crear-turno-409.png`](../evidencia/c-18-recepcion-hernan/03-recepcion-crear-turno-409.png)
+  - Rechazo `422` al enviar datos inválidos en el alta de turno (`RN-GLO-01`): [`04-recepcion-crear-turno-422.png`](../evidencia/c-18-recepcion-hernan/04-recepcion-crear-turno-422.png)
+- **Rol Odontólogo (Joaquín Morán)** — [`docs/evidencia/c-18-odontologo-joaquin/README.md`](../evidencia/c-18-odontologo-joaquin/README.md):
+  - Login con vista exclusiva de agenda y visualización de su propia agenda con `"Paciente #1"` (`RN-ACC-02`, `RN-ACC-03`): [`01-odontologo-agenda-propia.png`](../evidencia/c-18-odontologo-joaquin/01-odontologo-agenda-propia.png)
+  - Rechazo `403` en español al consultar la agenda de otro profesional (`RN-ACC-03`, `RN-GLO-01`): [`02-odontologo-agenda-otro-403.png`](../evidencia/c-18-odontologo-joaquin/02-odontologo-agenda-otro-403.png)
+- **Login y sesión transversal (Elías Tello)** — [`docs/evidencia/c-18-login-sesion-elias/README.md`](../evidencia/c-18-login-sesion-elias/README.md) y verificación de suites [`docs/evidencia/c-18-verificacion-elias/README.md`](../evidencia/c-18-verificacion-elias/README.md):
+  - Login con credenciales incorrectas rechazado con `401` (`RN-GLO-01`): [`01-login-credenciales-invalidas.jpg`](../evidencia/c-18-login-sesion-elias/01-login-credenciales-invalidas.jpg)
+  - Token adulterado o vencido que limpia `sessionStorage` y redirige al login con aviso en español (`RN-ACC-01`, `RN-GLO-01`): [`02-sesion-token-adulterado.jpg`](../evidencia/c-18-login-sesion-elias/02-sesion-token-adulterado.jpg)
+
 ## 3. Cómo se usaron la skill y el MCP
 
 1. **Stitch (MCP).** Se probó la conexión con `list_projects` (respuesta vacía, sin error de autenticación), se creó el proyecto con `create_project` y se generó la pantalla de bloqueo con `generate_screen_from_text`. Al redactar `design.md`, el agente leyó esa pantalla con `get_screen` y la referenció (proyecto `6865582647500750696`, pantalla `c0d0c78ded4b46778fd80bf0604d9ee2`). Evidencia: `docs/skills-mcp/evidencias/03-stitch-mcp-invocaciones.md` y la captura `03-stitch-pantalla-generada.png`. La maquetación de C-18 (`index.html` y `styles.css`) tomó de esa pantalla la paleta y la estructura.
