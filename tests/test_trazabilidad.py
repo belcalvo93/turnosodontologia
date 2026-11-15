@@ -115,3 +115,28 @@ def test_una_tabla_completa_con_rn_glo_02_con_motivo_no_reporta_nada() -> None:
     )
 
     assert problemas == []
+
+
+def test_rn_tur_13_con_un_test_distinto_del_de_rn_tur_04_falla_nombrando_rn_tur_13() -> None:
+    """Escenario 'RN-TUR-13 con un test distinto del de RN-TUR-04 hace fallar la verificación'."""
+    texto_kb = (
+        "- **RN-TUR-04**: Intervalos semiabiertos.\n"
+        "- **RN-TUR-13**: Sin margen de limpieza.\n"
+    )
+    nodo_rn_tur_04 = "tests/domain/test_intervalos.py::test_turnos_contiguos_no_solapan"
+    nodo_rn_tur_13 = "tests/domain/test_intervalos.py::test_otro_test_distinto"
+    texto_tabla = (
+        "| RN | Regla | Test | Estado |\n"
+        "|---|---|---|---|\n"
+        f"| RN-TUR-04 | Intervalos semiabiertos | `{nodo_rn_tur_04}` | cubierta |\n"
+        f"| RN-TUR-13 | Sin margen de limpieza | `{nodo_rn_tur_13}` | cubierta |\n"
+    )
+
+    problemas = hallazgos(
+        codigos_de_reglas(texto_kb),
+        filas_de_tabla(texto_tabla),
+        {nodo_rn_tur_04, nodo_rn_tur_13},
+    )
+
+    assert len(problemas) == 1
+    assert "RN-TUR-13" in problemas[0]

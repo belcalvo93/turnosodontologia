@@ -6,7 +6,7 @@ Desarrollado con Spec-Driven Development usando OpenSpec y Active Stack (ciclo O
 
 ## Estado actual
 
-Implementados los **18 changes (`C-01` a `C-18`)**: los 17 del MVP más el frontend mínimo. La suite completa pasa en verde: `789 passed`.
+Implementados los **19 changes (`C-01` a `C-19`)**: los 17 del MVP, el frontend mínimo (`C-18`) y los ajustes de la revisión de escenarios (`C-19`). La suite completa pasa en verde: `795 passed`.
 
 - **Base técnica y dominio (`C-01`, `C-02`, `C-10`):** configuración desde variables de entorno, conexión SQLite con transacciones atómicas (`BEGIN IMMEDIATE`), aplicación idempotente del esquema, `GET /health` público y dominio puro (modelos inmutables, intervalos semiabiertos `[inicio, fin)`, reloj inyectado y reglas de alta, reprogramación y cancelación sin base de datos ni HTTP).
 - **Acceso y usuarios (`C-03`, `C-07`):** login con JWT firmado (`POST /auth/login`), hash Argon2id, control de acceso por rol (`administracion`, `recepcion`, `odontologo`) y gestión de usuarios internos.
@@ -118,7 +118,7 @@ Desde la raíz del repositorio, con el entorno virtual activo:
 pytest tests
 ```
 
-Resultado esperado: `789 passed`. Los tests de dominio corren sin base de datos ni HTTP; los de `tests/api/` usan una SQLite temporal por test y un reloj fijo (`RelojFijo`), así que no dependen de la hora ni de la zona horaria de la máquina.
+Resultado esperado: `795 passed`. Los tests de dominio corren sin base de datos ni HTTP; los de `tests/api/` usan una SQLite temporal por test y un reloj fijo (`RelojFijo`), así que no dependen de la hora ni de la zona horaria de la máquina.
 
 Los tests de la lógica del frontend se corren aparte con `npm test` (ver [Frontend web](#frontend-web-c-18)).
 
