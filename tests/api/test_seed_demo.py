@@ -388,3 +388,115 @@ def test_arranque_sin_seed_admin_password_no_siembra_nada(
         pass
 
     assert sum(_conteos_por_tabla(ruta).values()) == 0
+
+
+def _usuarios_demo(conexion: sqlite3.Connection) -> list[tuple[str, str, int | None, int]]:
+    return [
+        (str(f[0]), str(f[1]), f[2], int(f[3]))
+        for f in conexion.execute(
+            "SELECT username, rol, profesional_id, activo FROM usuario ORDER BY id"
+        ).fetchall()
+    ]
+
+
+def test_sembrar_demo_solo_con_hash_de_odontologo_crea_solo_odontologo_demo(
+    conexion: sqlite3.Connection,
+) -> None:
+    datos = sembrar_demo(
+        conexion,
+        password_hash_admin=HASH_ADMIN_FICTICIO,
+        password_hash_recepcion=None,
+        password_hash_odontologo=HASH_ODONTOLOGO_FICTICIO,
+    )
+
+    usuarios = _usuarios_demo(conexion)
+    assert [u[0] for u in usuarios] == ["admin_demo", "odontologo_demo"]
+    assert usuarios[1] == ("odontologo_demo", "odontologo", datos.profesional_a, 1)
+    assert datos.recepcion_demo is None
+
+
+def test_sembrar_demo_solo_con_hash_de_recepcion_crea_solo_recepcion_demo(
+    conexion: sqlite3.Connection,
+) -> None:
+    datos = sembrar_demo(
+        conexion,
+        password_hash_admin=HASH_ADMIN_FICTICIO,
+        password_hash_recepcion=HASH_RECEPCION_FICTICIO,
+        password_hash_odontologo=None,
+    )
+
+    usuarios = _usuarios_demo(conexion)
+    assert [u[0] for u in usuarios] == ["admin_demo", "recepcion_demo"]
+    assert usuarios[1] == ("recepcion_demo", "recepcion", None, 1)
+    assert datos.odontologo_demo is None
+
+
+def _arrancar_con_una_contrasena_de_rol(
+    tmp_path: Path, entorno_tres_claves_demo: dict[str, str], clave_rol: str, nombre_db: str
+) -> tuple[Path, list[str], int]:
+    """Arranca con admin + una sola contraseña de rol; devuelve ruta, usernames y status del login."""
+    from fastapi.testclient import TestClient
+    from app.main import create_app
+
+    ruta = tmp_path / nombre_db
+    config = _config_arranque_demo(
+        ruta,
+        {
+            "APP_ENV": "development",
+            "SEED_ADMIN_PASSWORD": entorno_tres_claves_demo["SEED_ADMIN_PASSWORD"],
+            clave_rol: entorno_tres_claves_demo[clave_rol],
+        },
+    )
+    username = (
+        "odontologo_demo" if clave_rol == "SEED_ODONTOLOGO_PASSWORD" else "recepcion_demo"
+    )
+    password = entorno_tres_claves_demo[clave_rol]
+    with TestClient(create_app(config)) as cliente:
+        login = cliente.post(
+            "/auth/login", json={"username": username, "password": password}
+        )
+    with closing(abrir_conexion(ruta)) as con:
+        usernames = [
+            f[0] for f in con.execute("SELECT username FROM usuario ORDER BY id").fetchall()
+        ]
+    return ruta, usernames, login.status_code
+
+
+def test_arranque_solo_con_contrasena_de_odontologo_crea_solo_odontologo_demo(
+    tmp_path: Path, entorno_tres_claves_demo: dict[str, str]
+) -> None:
+    """Escenario 'Solo la contraseña de odontología crea solo odontologo_demo'."""
+    ruta, usernames, status_login = _arrancar_con_una_contrasena_de_rol(
+        tmp_path, entorno_tres_claves_demo, "SEED_ODONTOLOGO_PASSWORD", "solo_odonto.db"
+    )
+
+    assert usernames == ["admin_demo", "odontologo_demo"]
+    assert status_login == 200
+    assert _conteos_por_tabla(ruta) == {
+        "profesional": 2,
+        "sillon": 2,
+        "prestacion": 3,
+        "horario_atencion": 20,
+        "paciente": 2,
+        "usuario": 2,
+    }
+
+
+def test_arranque_solo_con_contrasena_de_recepcion_crea_solo_recepcion_demo(
+    tmp_path: Path, entorno_tres_claves_demo: dict[str, str]
+) -> None:
+    """Escenario 'Solo la contraseña de recepción crea solo recepcion_demo'."""
+    ruta, usernames, status_login = _arrancar_con_una_contrasena_de_rol(
+        tmp_path, entorno_tres_claves_demo, "SEED_RECEPCION_PASSWORD", "solo_recepcion.db"
+    )
+
+    assert usernames == ["admin_demo", "recepcion_demo"]
+    assert status_login == 200
+    assert _conteos_por_tabla(ruta) == {
+        "profesional": 2,
+        "sillon": 2,
+        "prestacion": 3,
+        "horario_atencion": 20,
+        "paciente": 2,
+        "usuario": 2,
+    }

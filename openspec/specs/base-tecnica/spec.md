@@ -175,3 +175,10 @@ El repositorio SHALL mantener `docs/trazabilidad-rn-test.md` con una fila por re
 - **Dado** una tabla donde `RN-GLO-02` figura como `No aplica` con el motivo "declara una ausencia de funcionalidad del MVP"
 - **Cuando** se ejecuta la verificación
 - **Entonces** no reporta hallazgos para `RN-GLO-02` y no exige un test citado para esa fila
+
+#### Scenario: RN-TUR-13 con un test distinto del de RN-TUR-04 hace fallar la verificación
+
+- **Dado** un documento de reglas que declara `RN-TUR-04` y `RN-TUR-13`, y una tabla de trazabilidad donde cada una cita un test distinto, ambos existentes en la suite
+- **Cuando** se ejecuta la verificación
+- **Entonces** falla con exactamente un hallazgo
+- **Y** el mensaje nombra `RN-TUR-13`

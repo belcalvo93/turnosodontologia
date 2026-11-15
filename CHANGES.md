@@ -152,6 +152,7 @@ El MVP (C-01 a C-17) es solo backend, así que no hay agente de frontend. El fro
 | FASE 4 — Consultas y trazabilidad | C-14 a C-16 | ALTO |
 | FASE 5 — Cierre del MVP | C-17 | BAJO |
 | FASE 5b — Extensión: frontend mínimo | C-18 | MEDIO |
+| FASE 5c — Extensión: ajustes de revisión de escenarios | C-19 | BAJO |
 | FASE 6 — Posterior al MVP | sin changes (fuera de alcance) | — |
 
 ---
@@ -479,6 +480,26 @@ El MVP (C-01 a C-17) es solo backend, así que no hay agente de frontend. El fro
   - `knowledge-base/06_funcionalidades.md` §US-005, §US-009, §US-010
   - `knowledge-base/07_flujos_principales.md`
   - `knowledge-base/09_decisiones_y_supuestos.md` §D-09
+
+---
+
+## FASE 5c — Ajustes posteriores a la revisión de escenarios
+
+> Posterior al MVP: no cambia `C-01` a `C-18`. Surge de la revisión de `C-17` con la skill `revisor-escenarios-sdd`.
+
+### [C-19] `ajustes-revision-escenarios`
+- **Estado**: `[x]` completado
+- **Scope**:
+  - Ajustes a specs y tests surgidos de la revisión con la skill `revisor-escenarios-sdd` sobre `c-17`; sin cambios en `app/` ni en `frontend/`
+  - `RN-TUR-13`: escenario y test que fuerzan el fallo de la trazabilidad cuando no cita el mismo test que `RN-TUR-04`
+  - Seed con una sola contraseña de rol: escenarios y tests para `SEED_RECEPCION_PASSWORD` o `SEED_ODONTOLOGO_PASSWORD` definidas por separado
+  - Auditoría al desactivar un profesional: escenario y test (`RN-REC-03`); el escenario del profesional desactivado verifica también `estado` `reservado`
+  - Redacción de escenarios: ambas matrículas ficticias, turno anclado al reloj con `sillon_id`, rotulado de nombres sobre nombre + apellido
+- **Dependencias**: `C-17`
+- **Governance**: BAJO
+- **Leer antes**:
+  - `knowledge-base/05_reglas_de_negocio.md` §RN-TUR-13, §RN-REC-03, §RN-PAC-03
+  - `openspec/changes/archive/2026-10-30-c-17-seed-y-flujo-e2e/`
 
 ---
 

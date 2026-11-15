@@ -728,3 +728,28 @@ def test_desactivar_el_sillon_no_borra_ni_modifica_la_auditoria_del_turno(
     registros = respuesta_auditoria.json()["registros"]
     assert len(registros) == 1
     assert registros[0]["accion"] == "crear"
+
+
+def test_desactivar_el_profesional_no_borra_ni_modifica_la_auditoria_del_turno(
+    contexto_turnos: ContextoTurnos,
+) -> None:
+    """Escenario 'La desactivación del profesional no borra auditoría' (specs/turnos/spec.md, RN-REC-03)."""
+    ctx = contexto_turnos
+    creado = ctx.reservar(ctx.cuerpo()).json()
+    auditorias_previas = _auditorias(ctx)
+
+    baja = ctx.cliente.patch(
+        f"/profesionales/{ctx.profesional_a}",
+        json={"activo": False},
+        headers=ctx.cabeceras_admin,
+    )
+    assert baja.status_code == 200
+
+    assert _auditorias(ctx) == auditorias_previas
+    respuesta_auditoria = ctx.cliente.get(
+        f"/auditoria?turno_id={creado['id']}", headers=ctx.cabeceras_admin
+    )
+    assert respuesta_auditoria.status_code == 200
+    registros = respuesta_auditoria.json()["registros"]
+    assert len(registros) == 1
+    assert registros[0]["accion"] == "crear"
