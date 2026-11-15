@@ -70,7 +70,7 @@ router (api/turnos.py)
 
 ## Seguridad
 
-- Autenticación: token firmado emitido en `/auth/login` (JWT es el candidato; decisión pendiente D-03).
+- Autenticación: token firmado emitido en `/auth/login` (JWT firmado con PyJWT; decidido, ver D-03).
 - Autorización: dependencia de FastAPI por ruta contra la matriz de [03](03_actores_y_roles.md).
 - Validación de input: modelos Pydantic en la frontera de la API; las reglas de negocio las valida el dominio.
 - Secrets management: solo variables de entorno; `.env` fuera del repositorio; `.env.example` con placeholders. Contraseñas con hash (algoritmo estándar con sal, ej. bcrypt/argon2, SE).

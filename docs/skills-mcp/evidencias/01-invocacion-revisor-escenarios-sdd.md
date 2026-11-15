@@ -2,7 +2,7 @@
 
 - **Fecha:** 2026-10-29
 - **Skill usada:** `revisor-escenarios-sdd` (del proyecto)
-- **Ruta desde la que se cargó:** `C:\Users\beluu\Documents\1 Tec en Programacion\2DO\Metodologia de sistemas I\8 SDD y Active Stack\turnosodontologia\.agents\skills\revisor-escenarios-sdd`
+- **Ruta desde la que se cargó:** `.agents/skills/revisor-escenarios-sdd/SKILL.md`
 
 ## Solicitud textual
 
