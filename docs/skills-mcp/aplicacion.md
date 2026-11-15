@@ -14,23 +14,10 @@ C-18 agrega una interfaz mínima en TypeScript, servida por la propia API, con c
 
 **Evidencias del frontend en funcionamiento (pruebas manuales por rol, tarea 4.4):**
 
-- **Rol Administración (Bruno Fiouchetta)** — [`docs/evidencia/c-18-administracion-bruno/README.md`](../evidencia/c-18-administracion-bruno/README.md):
-  - Login y acceso a las tres vistas (`RN-ACC-02`): [`01-administracion-login-vistas.jpg`](../evidencia/c-18-administracion-bruno/01-administracion-login-vistas.jpg)
-  - Alta de turno válida (`201`) con horario calculado por prestación (`RN-TUR-01`, `RN-TUR-02`): [`02-administracion-crear-turno-201.jpg`](../evidencia/c-18-administracion-bruno/02-administracion-crear-turno-201.jpg)
-  - Bloqueo superpuesto mostrando la tabla `turnos_afectados` sin cancelar el turno (`RN-TUR-05`, `RN-TUR-08`): [`03-administracion-bloqueo-turnos-afectados.jpg`](../evidencia/c-18-administracion-bruno/03-administracion-bloqueo-turnos-afectados.jpg)
-  - Bloqueo sin turnos afectados, mostrando el estado vacío (`turnos_afectados = []`): [`04-administracion-bloqueo-sin-turnos-afectados.jpg`](../evidencia/c-18-administracion-bruno/04-administracion-bloqueo-sin-turnos-afectados.jpg)
-  - Bloqueo con intervalo inválido (`inicio >= fin`) rechazado con `422` en español (`RN-REC-02`, `RN-GLO-01`): [`05-administracion-bloqueo-422.jpg`](../evidencia/c-18-administracion-bruno/05-administracion-bloqueo-422.jpg)
-- **Rol Recepción (Hernán González)** — [`docs/evidencia/c-18-recepcion-hernan/README.md`](../evidencia/c-18-recepcion-hernan/README.md):
-  - Login con barra adaptada (sin bloqueo) y consulta de agenda con datos ficticios (`RN-ACC-02`, `RN-PAC-03`): [`01-recepcion-agenda-con-paciente.png`](../evidencia/c-18-recepcion-hernan/01-recepcion-agenda-con-paciente.png)
-  - Agenda sin turnos ni bloqueos en el período consultado (`items = []`): [`02-recepcion-agenda-vacia.png`](../evidencia/c-18-recepcion-hernan/02-recepcion-agenda-vacia.png)
-  - Rechazo `409` al intentar crear turno en horario bloqueado o solapado (`RN-TUR-03`, `RN-TUR-05`): [`03-recepcion-crear-turno-409.png`](../evidencia/c-18-recepcion-hernan/03-recepcion-crear-turno-409.png)
-  - Rechazo `422` al enviar datos inválidos en el alta de turno (`RN-GLO-01`): [`04-recepcion-crear-turno-422.png`](../evidencia/c-18-recepcion-hernan/04-recepcion-crear-turno-422.png)
-- **Rol Odontólogo (Joaquín Morán)** — [`docs/evidencia/c-18-odontologo-joaquin/README.md`](../evidencia/c-18-odontologo-joaquin/README.md):
-  - Login con vista exclusiva de agenda y visualización de su propia agenda con `"Paciente #1"` (`RN-ACC-02`, `RN-ACC-03`): [`01-odontologo-agenda-propia.png`](../evidencia/c-18-odontologo-joaquin/01-odontologo-agenda-propia.png)
-  - Rechazo `403` en español al consultar la agenda de otro profesional (`RN-ACC-03`, `RN-GLO-01`): [`02-odontologo-agenda-otro-403.png`](../evidencia/c-18-odontologo-joaquin/02-odontologo-agenda-otro-403.png)
-- **Login y sesión transversal (Elías Tello)** — [`docs/evidencia/c-18-login-sesion-elias/README.md`](../evidencia/c-18-login-sesion-elias/README.md) y verificación de suites [`docs/evidencia/c-18-verificacion-elias/README.md`](../evidencia/c-18-verificacion-elias/README.md):
-  - Login con credenciales incorrectas rechazado con `401` (`RN-GLO-01`): [`01-login-credenciales-invalidas.jpg`](../evidencia/c-18-login-sesion-elias/01-login-credenciales-invalidas.jpg)
-  - Token adulterado o vencido que limpia `sessionStorage` y redirige al login con aviso en español (`RN-ACC-01`, `RN-GLO-01`): [`02-sesion-token-adulterado.jpg`](../evidencia/c-18-login-sesion-elias/02-sesion-token-adulterado.jpg)
+- **Administración (Bruno Fiouchetta):** [`README`](../evidencia/c-18-administracion-bruno/README.md) · [login y vistas](../evidencia/c-18-administracion-bruno/01-administracion-login-vistas.jpg) · [alta turno 201](../evidencia/c-18-administracion-bruno/02-administracion-crear-turno-201.jpg) · [bloqueo con afectados](../evidencia/c-18-administracion-bruno/03-administracion-bloqueo-turnos-afectados.jpg) · [bloqueo sin afectados](../evidencia/c-18-administracion-bruno/04-administracion-bloqueo-sin-turnos-afectados.jpg) · [bloqueo 422](../evidencia/c-18-administracion-bruno/05-administracion-bloqueo-422.jpg).
+- **Recepción (Hernán González):** [`README`](../evidencia/c-18-recepcion-hernan/README.md) · [agenda con paciente](../evidencia/c-18-recepcion-hernan/01-recepcion-agenda-con-paciente.png) · [agenda vacía](../evidencia/c-18-recepcion-hernan/02-recepcion-agenda-vacia.png) · [turno 409](../evidencia/c-18-recepcion-hernan/03-recepcion-crear-turno-409.png) · [turno 422](../evidencia/c-18-recepcion-hernan/04-recepcion-crear-turno-422.png).
+- **Odontólogo (Joaquín Morán):** [`README`](../evidencia/c-18-odontologo-joaquin/README.md) · [agenda propia (`Paciente #1`)](../evidencia/c-18-odontologo-joaquin/01-odontologo-agenda-propia.png) · [agenda ajena 403](../evidencia/c-18-odontologo-joaquin/02-odontologo-agenda-otro-403.png).
+- **Login y sesión (Elías Tello):** [`README login`](../evidencia/c-18-login-sesion-elias/README.md) · [`README suites`](../evidencia/c-18-verificacion-elias/README.md) · [credenciales 401](../evidencia/c-18-login-sesion-elias/01-login-credenciales-invalidas.jpg) · [token adulterado 401](../evidencia/c-18-login-sesion-elias/02-sesion-token-adulterado.jpg).
 
 ## 3. Cómo se usaron la skill y el MCP
 
